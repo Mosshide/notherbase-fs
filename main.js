@@ -32,6 +32,11 @@ let explore = function explore(route, styles = [], scripts = []) {
     });
 }
 
+let to = function to() {
+    console.log(router);
+    return Object.assign({}, router);
+}
+
 let from = function from(currentDirectory) {
     dir = currentDirectory;
     router = require("express").Router();
@@ -40,10 +45,6 @@ let from = function from(currentDirectory) {
         explore: explore,
         to: to
     };
-}
-
-let to = function to() {
-    return Object.assign({}, router);
 }
 
 module.exports = {
