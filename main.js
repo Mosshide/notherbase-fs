@@ -3,7 +3,7 @@ const inventory = require(process.cwd() + "/models/inventory").inventory;
 let router;
 let dir;
 
-let explore = function explore(route, styles = [], scripts = []) {
+let explore = function explore(route, styles = [], scripts = [], needsKey = "") {
     styles = styles.map(style => {
         style = `${dir}/styles/${style}`;
         return style;
@@ -22,6 +22,17 @@ let explore = function explore(route, styles = [], scripts = []) {
         try {
             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
         
+
+            if (needsKey !== "" && foundInventory) {
+                let hasKey = false;
+
+                for (let i = 0; i < foundInventory.items.length; i++) {
+                    if (foundInventory.items[i].item.name === hasKey) hasKey = true;
+                }
+
+                if (!hasKey) res.redirect("#destination-locked")
+            }
+
             res.render(`explorer`, 
             {
                 siteTitle: "NotherBase",
