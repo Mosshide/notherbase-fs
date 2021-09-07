@@ -22,7 +22,7 @@ let explore = function explore(route, styles = [], scripts = []) {
                 siteTitle: "NotherBase",
                 user: null,
                 styles: styles,
-                main: `${dir}/views/${main}`,
+                main: `${__dirname}/views/${main}`,
                 scripts: scripts
             });
         }
