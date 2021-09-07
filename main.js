@@ -18,6 +18,8 @@ let explore = function explore(route, styles = [], scripts = []) {
 
     router.get(`/${route}`, async function(req, res) {
         try {
+            const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+        
             res.render(`explorer`, 
             {
                 siteTitle: "NotherBase",
@@ -25,7 +27,8 @@ let explore = function explore(route, styles = [], scripts = []) {
                 styles: styles,
                 main: main,
                 scripts: scripts,
-                pov: req.query.pov
+                pov: req.query.pov,
+                inventory: foundInventory
             });
         }
         catch(err) {
