@@ -22,12 +22,11 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
         try {
             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
         
-
             if (needsKey !== "" && foundInventory) {
                 let hasKey = false;
 
                 for (let i = 0; i < foundInventory.items.length; i++) {
-                    if (foundInventory.items[i].item.name === hasKey) hasKey = true;
+                    if (foundInventory.items[i].item.name === needsKey) hasKey = true;
                 }
 
                 if (!hasKey) res.redirect(dropOff);
@@ -52,7 +51,6 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                 pov: req.query.pov,
                 inventory: foundInventory
             });
-            
         }
         catch(err) {
             console.log(err);
