@@ -38,8 +38,12 @@ let from = function from(currentDirectory) {
 
     return {
         explore: explore,
-        router: router
+        exports: to
     };
+}
+
+let to = function to() {
+    return Object.assign({}, router);
 }
 
 module.exports = {
