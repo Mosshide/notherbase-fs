@@ -14,6 +14,7 @@ let explore = function explore(route, styles = [], scripts = []) {
 
     let main = "index";
     if (route !== "") main = route;
+    main = `${dir}/views/${main}`;
 
     router.get(`/${route}`, async function(req, res) {
         try {
@@ -22,7 +23,7 @@ let explore = function explore(route, styles = [], scripts = []) {
                 siteTitle: "NotherBase",
                 user: null,
                 styles: styles,
-                main: `${dir}5/views/${main}`,
+                main: main,
                 scripts: scripts
             });
         }
