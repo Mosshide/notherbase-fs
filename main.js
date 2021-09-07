@@ -34,12 +34,11 @@ let explore = function explore(route, styles = [], scripts = []) {
 
 let from = function from(currentDirectory) {
     dir = currentDirectory;
-    let newRouter = require("express").Router();
-    router = newRouter;
+    router = require("express").Router();
 
     return {
         explore: explore,
-        router: newRouter
+        router: router
     };
 }
 
