@@ -24,7 +24,8 @@ let explore = function explore(route, styles = [], scripts = []) {
                 user: null,
                 styles: styles,
                 main: main,
-                scripts: scripts
+                scripts: scripts,
+                pov: req.query.pov
             });
         }
         catch(err) {
