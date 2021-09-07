@@ -38,7 +38,7 @@ let from = function from(currentDirectory) {
 
     return {
         explore: explore,
-        exports: to
+        to: to
     };
 }
 
