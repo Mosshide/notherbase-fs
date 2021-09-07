@@ -1,4 +1,4 @@
-const router = require("express").Router();
+let router;
 let dir;
 
 let explore = function explore(route, styles = [], scripts = []) {
@@ -34,10 +34,14 @@ let explore = function explore(route, styles = [], scripts = []) {
 
 let from = function from(currentDirectory) {
     dir = currentDirectory;
+    router = require("express").Router();
+
+    return {
+        explore: explore,
+        router: router
+    };
 }
 
 module.exports = {
-    explore: explore,
-    from: from,
-    router: router
+    from: from
 }
