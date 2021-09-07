@@ -31,9 +31,18 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                 }
 
                 if (!hasKey) res.redirect(dropOff);
+                else res.render(`explorer`, 
+                {
+                    siteTitle: "NotherBase",
+                    user: null,
+                    styles: styles,
+                    main: main,
+                    scripts: scripts,
+                    pov: req.query.pov,
+                    inventory: foundInventory
+                });
             }
-
-            res.render(`explorer`, 
+            else res.render(`explorer`, 
             {
                 siteTitle: "NotherBase",
                 user: null,
@@ -43,6 +52,7 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                 pov: req.query.pov,
                 inventory: foundInventory
             });
+            
         }
         catch(err) {
             console.log(err);
