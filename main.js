@@ -1,5 +1,4 @@
 let router;
-let routers = [];
 let dir;
 
 let explore = function explore(route, styles = [], scripts = []) {
@@ -33,15 +32,9 @@ let explore = function explore(route, styles = [], scripts = []) {
     });
 }
 
-let to = function to() {
-    console.log(router);
-    return Object.assign({}, router);
-}
-
 let from = function from(currentDirectory) {
     dir = currentDirectory;
     router = require("express").Router();
-    routers.push(router);
 
     return {
         explore: explore,
