@@ -3,7 +3,7 @@ const inventory = require(process.cwd() + "/models/inventory").inventory;
 let router;
 let dir;
 
-let explore = function explore(route, styles = [], scripts = [], needsKey = "") {
+let explore = function explore(route, styles = [], scripts = [], needsKey = "", dropOff = "") {
     styles = styles.map(style => {
         style = `${dir}/styles/${style}`;
         return style;
@@ -30,7 +30,7 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "") 
                     if (foundInventory.items[i].item.name === hasKey) hasKey = true;
                 }
 
-                if (!hasKey) res.redirect("#destination-locked")
+                if (!hasKey) res.redirect(dropOff);
             }
 
             res.render(`explorer`, 
