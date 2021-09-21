@@ -38,7 +38,8 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                     main: main,
                     scripts: scripts,
                     pov: req.query.pov,
-                    inventory: foundInventory
+                    inventory: foundInventory,
+                    query: req.query
                 });
             }
             else res.render(`explorer`, 
@@ -49,7 +50,8 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                 main: main,
                 scripts: scripts,
                 pov: req.query.pov,
-                inventory: foundInventory
+                inventory: foundInventory,
+                query: req.query
             });
         }
         catch(err) {
