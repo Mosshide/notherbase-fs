@@ -3,12 +3,15 @@ const inventory = require(process.cwd() + "/models/inventory").inventory;
 let router;
 let dir;
 
-let explore = function explore(route, options = {
-    styles: [],
-    scripts: [],
-    needsKey: "",
-    dropOff: ""
-}) {
+let explore = function explore(route, options) {
+    options = {
+        styles: [],
+        scripts: [],
+        needsKey: "",
+        dropOff: "",
+        ...options
+    };
+
     options.styles = options.styles.map(style => {
         style = `${dir}/styles/${style}`;
         return style;
