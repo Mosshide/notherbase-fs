@@ -29,7 +29,7 @@ let explore = function explore(route, options) {
                     if (foundInventory.items[i].item.name === options.needsKey) hasKey = true;
                 }
 
-                if (!hasKey) res.redirect(dropOff);
+                if (!hasKey) res.redirect(options.dropOff);
                 else res.render(`explorer`, 
                 {
                     siteTitle: "NotherBase",
