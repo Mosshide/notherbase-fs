@@ -3,30 +3,30 @@ const inventory = require(process.cwd() + "/models/inventory").inventory;
 let router;
 let dir;
 
-let explore = function explore(route, styles = [], scripts = [], needsKey = "", dropOff = "") {
-    styles = styles.map(style => {
+let explore = function explore(route, options) {
+    options.styles = options.styles.map(style => {
         style = `${dir}/styles/${style}`;
         return style;
     });
 
-    scripts = scripts.map(script => {
+    options.scripts = options.scripts.map(script => {
         script = `${dir}/local-scripts/${script}`;
         return script;
     });
 
-    let main = "index";
-    if (route !== "") main = route;
-    main = `${dir}/views/${main}`;
+    options.main = "index";
+    if (route !== "") options.main = route;
+    options.main = `${dir}/views/${options.main}`;
 
     router.get(`/${route}`, async function(req, res) {
         try {
             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
         
-            if (needsKey !== "" && foundInventory) {
+            if (options.needsKey !== "" && foundInventory) {
                 let hasKey = false;
 
                 for (let i = 0; i < foundInventory.items.length; i++) {
-                    if (foundInventory.items[i].item.name === needsKey) hasKey = true;
+                    if (foundInventory.items[i].item.name === options.needsKey) hasKey = true;
                 }
 
                 if (!hasKey) res.redirect(dropOff);
@@ -34,9 +34,9 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
                 {
                     siteTitle: "NotherBase",
                     user: req.session.currentUserFull,
-                    styles: styles,
-                    main: main,
-                    scripts: scripts,
+                    styles: options.styles,
+                    main: options.main,
+                    scripts: options.scripts,
                     pov: req.query.pov,
                     inventory: foundInventory,
                     query: req.query
@@ -46,9 +46,9 @@ let explore = function explore(route, styles = [], scripts = [], needsKey = "", 
             {
                 siteTitle: "NotherBase",
                 user: req.session.currentUserFull,
-                styles: styles,
-                main: main,
-                scripts: scripts,
+                styles: options.styles,
+                main: options.main,
+                scripts: options.scripts,
                 pov: req.query.pov,
                 inventory: foundInventory,
                 query: req.query
