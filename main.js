@@ -18,6 +18,11 @@ let explore = function explore(route, options) {
         return style;
     });
 
+    options.externalStyles = options.externalStyles.map(style => {
+        style = `${dir}/${style}`;
+        return style;
+    });
+
     options.scripts = options.scripts.map(script => {
         script = `${dir}/local-scripts/${script}`;
         return script;
