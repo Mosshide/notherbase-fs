@@ -6,6 +6,7 @@ let dir;
 let explore = function explore(route, options) {
     options = {
         styles: [],
+        externalStyles: [],
         scripts: [],
         needsKey: "",
         dropOff: "",
@@ -43,6 +44,7 @@ let explore = function explore(route, options) {
                     siteTitle: "NotherBase",
                     user: req.session.currentUserFull,
                     styles: options.styles,
+                    externalStyles: options.externalStyles,
                     main: options.main,
                     scripts: options.scripts,
                     pov: req.query.pov,
@@ -55,6 +57,7 @@ let explore = function explore(route, options) {
                 siteTitle: "NotherBase",
                 user: req.session.currentUserFull,
                 styles: options.styles,
+                externalStyles: options.externalStyles,
                 main: options.main,
                 scripts: options.scripts,
                 pov: req.query.pov,
