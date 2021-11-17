@@ -1,4 +1,4 @@
-const inventory = require(process.cwd() + "/models/inventory").inventory;
+const inventory = require(process.cwd() + "/models/inventory");
 
 let router;
 let dir;
