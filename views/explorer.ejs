@@ -12,7 +12,7 @@
 <main class="override">
     <%- include(`${main}.ejs`); %>
     
-    <%- include("./inventory.ejs"); %>
+    <%- include("./inventory.ejs", {inventory: inventory}); %>
 
     <%- include("./contact.ejs"); %>
 </main>
