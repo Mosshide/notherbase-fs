@@ -44,7 +44,7 @@ let front = function front(detail) {
                 }
 
                 if (!hasKey) res.redirect(detail.options.dropOff);
-                else res.render(`explorer`, 
+                else res.render(`../views/explorer`, 
                 {
                     siteTitle: "NotherBase",
                     user: req.session.currentUserFull,
@@ -55,7 +55,7 @@ let front = function front(detail) {
                     query: req.query
                 });
             }
-            else res.render(`explorer`, 
+            else res.render(`../views/explorer`, 
             {
                 siteTitle: "NotherBase",
                 user: req.session.currentUserFull,
