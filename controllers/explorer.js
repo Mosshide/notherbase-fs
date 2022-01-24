@@ -50,7 +50,7 @@ let complete = function complete(explorerBuild) {
                     });
                 
                     detail.options.main = "index";
-                    if (detail.route !== "") detail.options.main = route;
+                    if (detail.route !== "") detail.options.main = detail.route;
                     detail.options.main = `${currentDir}/views/${detail.options.main}`;
                 
                     router.get(`${currentDir}/${detail.route}`, async function(req, res) {
