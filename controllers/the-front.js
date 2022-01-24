@@ -1,3 +1,5 @@
+const inventory = require("../models/inventory");
+
 let router = require("express").Router();
 let dir = "";
 
