@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 module.exports = {
     explore: function explore(path) {
         return `./${path}/${path}.js`;

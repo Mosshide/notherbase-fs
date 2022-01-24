@@ -3,8 +3,6 @@ let theFront, explorer = null;
 
 function start() {
     if (!started) {
-        require("dotenv").config();
-    
         // Setup for Express
         const express = require("express");
         const app = express();
