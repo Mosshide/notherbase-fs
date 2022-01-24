@@ -2,7 +2,7 @@
   "name": "notherbase-fs",
   "version": "1.0.38",
   "description": "Functions to help make developing for NotherBase easier.",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +17,15 @@
   },
   "homepage": "https://github.com/Mosshide/notherbase-fs#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "bcrypt": "^5.0.1",
+    "connect-mongo": "^4.6.0",
+    "dotenv": "^14.2.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "method-override": "^3.0.0",
+    "mongoose": "^6.1.7",
+    "serve-favicon": "^2.5.0",
+    "socket.io": "^4.4.1"
   }
 }
