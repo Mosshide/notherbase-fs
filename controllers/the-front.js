@@ -52,6 +52,7 @@ let front = function front(detail) {
                     externalStyles: detail.options.externalStyles,
                     main: detail.options.main,
                     scripts: detail.options.scripts,
+                    inventory: foundInventory,
                     query: req.query
                 });
             }
@@ -63,6 +64,7 @@ let front = function front(detail) {
                 externalStyles: detail.options.externalStyles,
                 main: detail.options.main,
                 scripts: detail.options.scripts,
+                inventory: foundInventory,
                 query: req.query
             });
         }
