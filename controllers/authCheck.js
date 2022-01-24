@@ -1,4 +1,4 @@
-const User = require("./user/models.js").user;
+const User = require("../models/user.js").user;
 
 const authCheck = async function authCheck(req, res, next){
     try {
