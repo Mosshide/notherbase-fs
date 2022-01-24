@@ -44,9 +44,9 @@ let front = function front(detail) {
                 }
 
                 if (!hasKey) res.redirect(detail.options.dropOff);
-                else res.render(`../views/explorer.ejs`, 
+                else res.render(`explorer`, 
                 {
-                    siteTitle: "NotherBase",
+                    siteTitle: "NotherBase | The Front",
                     user: req.session.currentUserFull,
                     styles: detail.options.styles,
                     externalStyles: detail.options.externalStyles,
@@ -55,9 +55,9 @@ let front = function front(detail) {
                     query: req.query
                 });
             }
-            else res.render(`../views/explorer.ejs`, 
+            else res.render(`explorer`, 
             {
-                siteTitle: "NotherBase",
+                siteTitle: "NotherBase | The Front",
                 user: req.session.currentUserFull,
                 styles: detail.options.styles,
                 externalStyles: detail.options.externalStyles,

@@ -65,7 +65,7 @@ let complete = function complete(explorerBuild) {
                                 }
                 
                                 if (!hasKey) res.redirect(detail.options.dropOff);
-                                else res.render(`../views/explorer.ejs`, 
+                                else res.render(`explorer`, 
                                 {
                                     siteTitle: "NotherBase",
                                     user: req.session.currentUserFull,
@@ -78,7 +78,7 @@ let complete = function complete(explorerBuild) {
                                     query: req.query
                                 });
                             }
-                            else res.render(`../views/explorer.ejs`, 
+                            else res.render(`explorer`, 
                             {
                                 siteTitle: "NotherBase",
                                 user: req.session.currentUserFull,
