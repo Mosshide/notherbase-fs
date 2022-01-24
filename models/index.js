@@ -6,4 +6,4 @@ module.exports = {
     inventory: require("./inventory"),
 }
 
-require("start-mongoose");
+require("./start-mongoose");
