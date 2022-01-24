@@ -1,6 +1,6 @@
 {
   "name": "notherbase-fs",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "description": "Functions to help make developing for NotherBase easier.",
   "main": "index.js",
   "scripts": {
