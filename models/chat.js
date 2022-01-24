@@ -8,6 +8,4 @@ const chatSchema = new Schema({
     date: Number
 });
 
-module.exports = {
-    chat: mongoose.model('chat', chatSchema)
-};
+module.exports = mongoose.model('chat', chatSchema);
