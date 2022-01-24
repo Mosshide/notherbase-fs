@@ -3,10 +3,10 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 
 // Import my Data
-const User = require("./models.js").user;
-const inventory = require("../../models/inventory");
+const User = require("../models/user").user;
+const inventory = require("../models/inventory");
 
-const authCheck = require("../authCheck");
+const authCheck = require("./authCheck");
 
 router.post("/register", async function(req, res) {
     try {
