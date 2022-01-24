@@ -1,7 +1,6 @@
 let started = false;
-let theFront, explorer = null;
 
-function start() {
+module.exports = function start(frontRouter, exploreRouter) {
     if (!started) {
         // Setup for Express
         const express = require("express");
@@ -61,25 +60,16 @@ function start() {
     
         app.use("/item", controllers.item);
     
-        app.use("/the-front", theFront);
+        app.use("/the-front", frontRouter);
     
-        app.use("/", controllers.authCheck, explorer);
+        app.use("/", controllers.authCheck, exploreRouter);
     
         // Go Off (On)
         server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);
         });
 
-        console.log(`Server`);
-    
         started = true;
     }
     else console.log("Server already started!");
-}
-
-module.exports = function set(frontRouter, exploreRouter) {
-    theFront = frontRouter;
-    explorer = exploreRouter;
-
-    return start;
 }

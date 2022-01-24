@@ -6,7 +6,7 @@ module.exports = {
     },
     data: require("./models"),
     chat: null,
-    start: function (world) {
+    start: function start(world) {
         let theFront = require("./controllers/the-front");
         let explorer = require("./controllers/explorer");
 
