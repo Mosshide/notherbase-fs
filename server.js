@@ -69,6 +69,8 @@ function start() {
         server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);
         });
+
+        console.log(`Server`);
     
         started = true;
     }
