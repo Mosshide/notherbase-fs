@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const contact = require(process.cwd() + "/models/contact");
+const contact = require("../models/contact");
 
 router.post("/", async function(req, res) {
     try {
