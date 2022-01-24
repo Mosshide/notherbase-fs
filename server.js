@@ -66,7 +66,9 @@ function start() {
         app.use("/", controllers.authCheck, explorer);
     
         // Go Off (On)
-        server.listen(process.env.PORT);
+        server.listen(process.env.PORT, function () {
+            console.log(`Server started at ${process.env.PORT}`);
+        });
     
         started = true;
     }

@@ -27,10 +27,10 @@ let front = function front(detail) {
     });
 
     detail.options.main = "index";
-    if (detail.route !== "") detail.options.main = detail.route;
+    if (detail.name !== "") detail.options.main = detail.name;
     detail.options.main = `${dir}/views/${detail.options.main}`;
 
-    router.get(`/${detail.route}`, async function(req, res) {
+    router.get(`/${detail.name}`, async function(req, res) {
         try {
             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
         
