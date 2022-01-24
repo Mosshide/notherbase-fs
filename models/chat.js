@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 
-//get schema template
-const Schema = mongoose.Schema;
-const chatSchema = new Schema({
+const chatSchema = new mongoose.Schema({
     name: String,
 	text: String,
     date: Number
