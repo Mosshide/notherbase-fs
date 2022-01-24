@@ -11,6 +11,6 @@ module.exports = {
         explorer.complete(world.explorer);
         theFront.complete(world.theFront);
 
-        require("server")(theFront.router, explorer.router);
+        require("./server")(theFront.router, explorer.router);
     }
 }
