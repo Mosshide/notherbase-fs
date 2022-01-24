@@ -5,8 +5,8 @@ module.exports = {
     data: require("./models"),
     chat: null,
     start: function (world) {
-        let theFront = require("the-front");
-        let explorer = require("explorer");
+        let theFront = require("./controllers/the-front");
+        let explorer = require("./controllers/explorer");
 
         explorer.complete(world.explorer);
         theFront.complete(world.theFront);
