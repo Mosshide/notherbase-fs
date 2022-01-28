@@ -100,6 +100,10 @@ let complete = function complete(explorerBuild) {
         }
     }
 
+    // start location
+    router.get("/", function(req, res) {
+        res.redirect("/the-front");
+    });
 
     //the void
     router.use(function(req, res, next){
@@ -113,11 +117,6 @@ let complete = function complete(explorerBuild) {
             inventory: null,
             main: `${dir}/${explorerBuild.void}/index`
         });
-    });
-
-    // start location
-    router.get("/", function(req, res) {
-        res.redirect("/the-front");
     });
 }
 
