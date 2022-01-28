@@ -1,32 +1,34 @@
-<% if (inventory.items) { %>
-    <div class="inventory invisible">
-        <% if (user.authLevels.length > 0) { 
-            for (let i = 0; i < user.authLevels.length; i++) {
-                if (user.authLevels[i] === "Creator") { %>
+<% if (inventory) { %>
+    <% if (inventory.items) { %>
+        <div class="inventory invisible">
+            <% if (user.authLevels.length > 0) { 
+                for (let i = 0; i < user.authLevels.length; i++) {
+                    if (user.authLevels[i] === "Creator") { %>
 
-                    <div class="item-spawner">
-                        <input type="text" class="search">
-                        <div class="search-results">
-                            
+                        <div class="item-spawner">
+                            <input type="text" class="search">
+                            <div class="search-results">
+                                
+                            </div>
                         </div>
-                    </div>
 
-                    <% break;
+                        <% break;
+                    }
                 }
-            }
-        } %>
+            } %>
 
-        <div class="item-list">
+            <div class="item-list">
+            </div>
         </div>
-    </div>
 
-    <button id="inventory-button">
-        <i class="fas fa-database"></i>
-    </button>
-<% } else { %>
-    <button id="inventory-button">
-        ERR
-    </button>
+        <button id="inventory-button">
+            <i class="fas fa-database"></i>
+        </button>
+    <% } else { %>
+        <button id="inventory-button">
+            ERR
+        </button>
+    <% } %>
 <% } %>
 
 <script>
