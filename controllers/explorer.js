@@ -103,10 +103,11 @@ let complete = function complete(explorerBuild) {
 
     //the void
     router.use(function(req, res, next){
-        res.render(`${dir}/${explorerBuild.void}/index`, 
+        res.render(`explorer`, 
         {
-            siteTitle: "NotherBase",
-            user: null
+            siteTitle: "NotherBase | The Void",
+            styles: detail.options.styles,
+            main: `${dir}/${explorerBuild.void}/index`
         });
     });
 
