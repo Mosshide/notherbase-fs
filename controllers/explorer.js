@@ -106,6 +106,7 @@ let complete = function complete(explorerBuild) {
         res.render(`explorer`, 
         {
             siteTitle: "NotherBase | The Void",
+            user: null,
             styles: [`${dir}/${explorerBuild.void}/styles/void`],
             externalStyles: [],
             scripts: [],
