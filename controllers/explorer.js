@@ -106,7 +106,7 @@ let complete = function complete(explorerBuild) {
         res.render(`explorer`, 
         {
             siteTitle: "NotherBase | The Void",
-            styles: [`${dir}/${explorerBuild.void}/styles/void.css`],
+            styles: [`${dir}/${explorerBuild.void}/styles/void`],
             main: `${dir}/${explorerBuild.void}/index`
         });
     });
