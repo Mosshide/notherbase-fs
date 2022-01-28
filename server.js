@@ -27,6 +27,7 @@ module.exports = function start(frontRouter, exploreRouter) {
     
         // allows us to get static files like css
         app.use(express.static('public'));
+        app.use(express.static(`${__dirname}/public`));
     
         // sets the favicon image
         const favicon = require('serve-favicon');
