@@ -53,7 +53,7 @@ let complete = function complete(explorerBuild) {
                     if (detail.name !== "") detail.options.main = detail.name;
                     detail.options.main = `${currentDir}/views/${detail.options.main}`;
                 
-                    router.get(`${currentDir}/${detail.name}`, async function(req, res) {
+                    router.get(`/${currentRegion}/${currentArea}/${currentPoi}/${detail.name}`, async function(req, res) {
                         try {
                             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
                         
