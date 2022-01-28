@@ -107,6 +107,9 @@ let complete = function complete(explorerBuild) {
         {
             siteTitle: "NotherBase | The Void",
             styles: [`${dir}/${explorerBuild.void}/styles/void`],
+            externalStyles: [],
+            scripts: [],
+            inventory: null,
             main: `${dir}/${explorerBuild.void}/index`
         });
     });
