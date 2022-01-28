@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 
 // Import my Data
-const User = require("../models/user").user;
+const User = require("../models/user");
 const inventory = require("../models/inventory");
 
 const authCheck = require("./authCheck");
