@@ -4,7 +4,7 @@
   "description": "Functions to help make developing for NotherBase easier.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nodemon test.js"
   },
   "repository": {
     "type": "git",

@@ -21,11 +21,11 @@
             </div>
         </div>
 
-        <button id="inventory-button">
+        <button id="inventory">
             <i class="fas fa-database"></i>
         </button>
     <% } else { %>
-        <button id="inventory-button">
+        <button id="inventory">
             ERR
         </button>
     <% } %>
@@ -39,7 +39,7 @@
             this.$search = $(".search");
             this.$searchResults = $(".search-results");
             this.searchResults = [];
-            this.$button = $("#inventory-button");
+            this.$button = $("button#inventory");
             this.items = [];
 
             this.$button.on("click", () => {

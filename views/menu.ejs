@@ -1,0 +1,28 @@
+<div class="menu invisible">
+    <button id="close">
+        X
+    </button>
+
+    <div class="tabs">
+        <%- include("./contact.ejs"); %>
+
+    </div>
+
+    <% if (user) { %> 
+        <a href="/user/logout">Logout</a>
+    <% } %> 
+</div>
+
+<button id="menu"><i class="fas fa-cog"></i></button>
+
+<script>
+    let $menu = $(".menu");
+
+    $("button#menu").on("click", function () {
+        $menu.toggleClass("invisible");
+    });
+
+    $("button#close").on("click", function () {
+        $menu.toggleClass("invisible");
+    });
+</script>

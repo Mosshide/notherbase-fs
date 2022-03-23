@@ -4,6 +4,35 @@
 
 <hr>
 
-<a class="return" href="/forest/pond/tower">
-    Back to the Wizard's Tower
-</a>
+<div class="auth-form" id="login-form">
+    <h1>NotherBase</h1>
+    <h3>Login to Your Account</h3>
+    <input type="text" name="username" placeholder="username" id="login-user">
+    <input type="password" name="password" placeholder="password" id="login-pass">
+    <button id="login-button">Login</button>
+    <p id="login-info"></p>
+</div>
+
+<script>
+    let $loginButton = $("#login-button");
+    let $loginInfo = $("#login-info");
+
+    $loginButton.on("click", async function () {
+        try {
+            await $.post("/user/login", {
+                username: $("#login-user").val(),
+                password: $("#login-pass").val()
+            }, (data) => {
+                $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
+            });
+        } catch (error) {
+            //console.log(error);
+            if (error.status === 401) {
+                $loginInfo.text("Login Error: Username or password incorrect!");
+            }
+            else if (error.status === 500) {
+                $loginInfo.text("Server Error: Try again later!");
+            }
+        }
+    });
+</script>

@@ -66,12 +66,11 @@ module.exports = function start(frontRouter, exploreRouter) {
     
         app.use("/", controllers.authCheck, exploreRouter);
     
-        // Go Off (On)
         server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);
+            started = true;
         });
 
-        started = true;
     }
     else console.log("Server already started!");
 }

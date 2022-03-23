@@ -11,11 +11,12 @@
 
 <main class="override">
     <%- include(`${main}.ejs`); %>
-    
-    <%- include("./inventory.ejs", {inventory: inventory}); %>
-
-    <%- include("./contact.ejs"); %>
 </main>
+
+<div class="ui">
+    <%- include("./inventory.ejs", {inventory: inventory}); %>
+    <%- include("./menu.ejs", {user: user}); %>
+</div>
 
 <script>
     <% for (let i = 0; i < scripts.length; i++) { %>
