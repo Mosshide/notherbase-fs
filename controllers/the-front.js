@@ -1,4 +1,4 @@
-const inventory = require("../models/inventory");
+const { inventory, connectionSuccess } = require("../models");
 
 let router = require("express").Router();
 let dir = "";
@@ -33,17 +33,30 @@ let front = function front(detail) {
     detail.options.main = `${dir}/views/${detail.options.main}`;
 
     router.get(`/${detail.name}`, async function(req, res) {
-        try {
-            const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
-        
-            if (detail.options.needsKey !== "" && foundInventory) {
-                let hasKey = false;
-
-                for (let i = 0; i < foundInventory.items.length; i++) {
-                    if (foundInventory.items[i].item.name === detail.options.needsKey) hasKey = true;
+        if (connectionSuccess) {
+            try {
+                const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            
+                if (detail.options.needsKey !== "" && foundInventory) {
+                    let hasKey = false;
+    
+                    for (let i = 0; i < foundInventory.items.length; i++) {
+                        if (foundInventory.items[i].item.name === detail.options.needsKey) hasKey = true;
+                    }
+    
+                    if (!hasKey) res.redirect(detail.options.dropOff);
+                    else res.render(`explorer`, 
+                    {
+                        siteTitle: "NotherBase | The Front",
+                        user: req.session.currentUserFull,
+                        styles: detail.options.styles,
+                        externalStyles: detail.options.externalStyles,
+                        main: detail.options.main,
+                        scripts: detail.options.scripts,
+                        inventory: foundInventory,
+                        query: req.query
+                    });
                 }
-
-                if (!hasKey) res.redirect(detail.options.dropOff);
                 else res.render(`explorer`, 
                 {
                     siteTitle: "NotherBase | The Front",
@@ -56,20 +69,24 @@ let front = function front(detail) {
                     query: req.query
                 });
             }
-            else res.render(`explorer`, 
+            catch(err) {
+                console.log(err);
+            }
+        }
+        else {
+            console.log("no db connection");
+
+            res.render(`explorer`, 
             {
                 siteTitle: "NotherBase | The Front",
-                user: req.session.currentUserFull,
+                user: null,
                 styles: detail.options.styles,
                 externalStyles: detail.options.externalStyles,
                 main: detail.options.main,
                 scripts: detail.options.scripts,
-                inventory: foundInventory,
+                inventory: null,
                 query: req.query
             });
-        }
-        catch(err) {
-            console.log(err);
         }
     });
 }

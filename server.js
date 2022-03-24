@@ -1,6 +1,6 @@
 let started = false;
 
-module.exports = function start(frontRouter, exploreRouter) {
+module.exports = function start(frontRouter, exploreRouter, dbConnected) {
     if (!started) {
         // Setup for Express
         const express = require("express");
@@ -37,12 +37,14 @@ module.exports = function start(frontRouter, exploreRouter) {
         const controllers = require("./controllers");
     
         //enable cookies
-        app.use(session({
-            store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-            secret: process.env.SECRET || "won",
-            resave: false,
-            saveUninitialized: false
-        }));
+        if (dbConnected) {
+            app.use(session({
+                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+                secret: process.env.SECRET || "won",
+                resave: false,
+                saveUninitialized: false
+            }));
+        }
     
         io.on('connection', (socket) => {
             socket.join(socket.handshake.query.room);
