@@ -4,7 +4,7 @@ const authCheck = async function authCheck(req, res, next){
     if (connectionSuccess) {
         try {
             if (req.session.currentUser) {
-                const foundAccount = await User.findById(req.session.currentUser);
+                const foundAccount = await user.findById(req.session.currentUser);
         
                 if (foundAccount) {
                     req.session.currentUserFull = foundAccount;
