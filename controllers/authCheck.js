@@ -26,7 +26,6 @@ const authCheck = async function authCheck(req, res, next){
     }
     else {
         console.log("AuthCheck failed: not connected to db");
-        req.session.currentUserFull = null;
         res.redirect("/the-front");
     }
 }
