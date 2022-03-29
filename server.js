@@ -45,7 +45,7 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
                 saveUninitialized: false
             }));
 
-            console.log("cookies enabled");
+            console.log("sessions enabled");
         }
         else console.log("sessions disabled");
     
