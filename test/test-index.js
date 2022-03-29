@@ -24,7 +24,10 @@ const world = {
                                 details: [
                                     {
                                         name: "",
-                                        options: {}
+                                        options: {
+                                            localScripts: ["game"],
+                                            serverScripts: ["game"]
+                                        }
                                     }
                                 ]
                             }

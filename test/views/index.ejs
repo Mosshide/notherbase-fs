@@ -1,5 +1,5 @@
 <p>
-    A random nono washes up on shore. Will you solve it?
+    Welcome to The Front.
 </p>
 
 <hr>
@@ -13,9 +13,26 @@
     <p id="login-info"></p>
 </div>
 
+<hr>
+
+<div class="locked to nother-base">
+    Go to Nono Cove
+</div>
+
+<a href="/coast/tall-beach/nono-cove" class="invisible to nother-base">
+    Go to Nono Cove
+</a>
+
 <script>
     let $loginButton = $("#login-button");
     let $loginInfo = $("#login-info");
+    let $toNonoButton = $(".locked.to.nother-base");
+    let $toNonoLink = $(".invisible.to.nother-base");
+
+    <% if (user) { %>
+        $toNonoButton.addClass("invisible");
+        $toNonoLink.removeClass("invisible");
+    <% } %>
 
     $loginButton.on("click", async function () {
         try {
@@ -24,6 +41,8 @@
                 password: $("#login-pass").val()
             }, (data) => {
                 $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
+                $toNonoButton.addClass("invisible");
+                $toNonoLink.removeClass("invisible");
             });
         } catch (error) {
             //console.log(error);

@@ -1,4 +1,4 @@
-const inventory = require("../models/inventory");
+const { inventory, game, item } = require("../models");
 
 let router = require("express").Router();;
 let dir = "";
@@ -24,11 +24,13 @@ let complete = function complete(explorerBuild) {
                     let detail = poi.details[l];
 
                     let currentDir = `${dir}/${currentRegion}/${currentArea}/${currentPoi}`;
+                    let currentRoute = `/${currentRegion}/${currentArea}/${currentPoi}/${detail.name}`;
 
                     detail.options = {
                         styles: [],
                         externalStyles: [],
-                        scripts: [],
+                        localScripts: [],
+                        serverScripts: [],
                         needsKey: "",
                         dropOff: "",
                         ...detail.options
@@ -44,8 +46,13 @@ let complete = function complete(explorerBuild) {
                         return style;
                     });
                 
-                    detail.options.scripts = detail.options.scripts.map(script => {
+                    detail.options.localScripts = detail.options.localScripts.map(script => {
                         script = `${currentDir}/local-scripts/${script}`;
+                        return script;
+                    });
+
+                    detail.options.serverScripts = detail.options.serverScripts.map(script => {
+                        script = require(`${currentDir}/server-scripts/${script}`);
                         return script;
                     });
                 
@@ -53,10 +60,33 @@ let complete = function complete(explorerBuild) {
                     if (detail.name !== "") detail.options.main = detail.name;
                     detail.options.main = `${currentDir}/views/${detail.options.main}`;
                 
-                    router.get(`/${currentRegion}/${currentArea}/${currentPoi}/${detail.name}`, async function(req, res) {
+                    router.get(currentRoute, async function(req, res) {
                         try {
                             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
                         
+                            let serverScriptReturns = [];
+
+                            for (let m = 0; m < detail.options.serverScripts.length; m++) {
+                                serverScriptReturns.push(await detail.options.serverScripts[m]({
+                                    game: game,
+                                    inventory: inventory,
+                                    item: item
+                                }));
+                            }
+
+                            let context = {
+                                siteTitle: "NotherBase",
+                                user: req.session.currentUserFull,
+                                styles: detail.options.styles,
+                                externalStyles: detail.options.externalStyles,
+                                main: detail.options.main,
+                                localScripts: detail.options.localScripts,
+                                serverScriptReturns: serverScriptReturns,
+                                pov: req.query.pov,
+                                inventory: foundInventory,
+                                query: req.query
+                            }
+
                             if (detail.options.needsKey !== "" && foundInventory) {
                                 let hasKey = false;
                 
@@ -65,31 +95,9 @@ let complete = function complete(explorerBuild) {
                                 }
                 
                                 if (!hasKey) res.redirect(detail.options.dropOff);
-                                else res.render(`explorer`, 
-                                {
-                                    siteTitle: "NotherBase",
-                                    user: req.session.currentUserFull,
-                                    styles: detail.options.styles,
-                                    externalStyles: detail.options.externalStyles,
-                                    main: detail.options.main,
-                                    scripts: detail.options.scripts,
-                                    pov: req.query.pov,
-                                    inventory: foundInventory,
-                                    query: req.query
-                                });
+                                else res.render(`explorer`, context);
                             }
-                            else res.render(`explorer`, 
-                            {
-                                siteTitle: "NotherBase",
-                                user: req.session.currentUserFull,
-                                styles: detail.options.styles,
-                                externalStyles: detail.options.externalStyles,
-                                main: detail.options.main,
-                                scripts: detail.options.scripts,
-                                pov: req.query.pov,
-                                inventory: foundInventory,
-                                query: req.query
-                            });
+                            else res.render(`explorer`, context);
                         }
                         catch(err) {
                             console.log(err);

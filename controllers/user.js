@@ -3,20 +3,19 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 
 // Import my Data
-const User = require("../models/user");
-const inventory = require("../models/inventory");
+const { user, inventory } = require("../models");
 
 const authCheck = require("./authCheck");
 
 router.post("/register", async function(req, res) {
     try {
-        const foundAccount = await User.findOne({ username: req.body.username });
+        const foundAccount = await user.findOne({ username: req.body.username });
 
         if (!foundAccount) {
             const salt = await bcrypt.genSalt(10);
             const hash = await bcrypt.hash(req.body.password, salt);
 
-            let qAuth = await User.create({
+            let qAuth = await user.create({
                 username: req.body.username,
                 password: hash,
                 email: "temp@example.com",
@@ -33,7 +32,7 @@ router.post("/register", async function(req, res) {
             res.status(200).send("Registration Successful!");
         }
         else {
-            res.status(400).send("Registration Failed: Username taken!");
+            res.status(400).send("Registration Failed: username taken!");
         }
     }
     catch(err) {
@@ -45,12 +44,12 @@ router.post("/register", async function(req, res) {
 
 router.post("/login", async function(req, res) {
     try {
-        const foundAccount = await User.findOne({ username: req.body.username });
+        const foundAccount = await user.findOne({ username: req.body.username });
 
         if (foundAccount) {
             if (await bcrypt.compare(req.body.password, foundAccount.password)) {
-                req.session.currentUser = { _id: foundAccount._id };
-                req.session.currentUserFull = foundAccount;
+                req.session.currentuser = { _id: foundAccount._id };
+                req.session.currentuserFull = foundAccount;
 
                 res.status(200).send("Login successful!");
             }
@@ -59,7 +58,7 @@ router.post("/login", async function(req, res) {
             }
         }
         else {
-            res.status(401).send("Login Failed: Username not found!");
+            res.status(401).send("Login Failed: username not found!");
         }
     }
     catch(err) {
@@ -82,9 +81,9 @@ router.get("/logout", authCheck, async function(req, res) {
 
 router.get("/all", authCheck, async function(req, res) {
     try {
-        let foundUsers = await User.find({}, 'username coin home authLevels location');
+        let foundusers = await user.find({}, 'username coin home authLevels location');
 
-        res.status(200).send({ foundUsers: foundUsers });
+        res.status(200).send({ foundusers: foundusers });
     }
     catch(err) {
         res.status(500).end();
@@ -94,7 +93,7 @@ router.get("/all", authCheck, async function(req, res) {
 
 router.delete("/", authCheck, async function(req, res) {
     try {
-        const found = await User.findByIdAndDelete(req.session.currentUser);
+        const found = await user.findByIdAndDelete(req.session.currentuser);
 
         if (!found) console.log("Could not find account. No deletion!");
 

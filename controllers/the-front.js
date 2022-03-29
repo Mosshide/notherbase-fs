@@ -7,7 +7,7 @@ let front = function front(detail) {
     detail.options = {
         styles: [],
         externalStyles: [],
-        scripts: [],
+        localScripts: [],
         needsKey: "",
         dropOff: "",
         ...detail.options
@@ -23,7 +23,7 @@ let front = function front(detail) {
         return style;
     });
 
-    detail.options.scripts = detail.options.scripts.map(script => {
+    detail.options.localScripts = detail.options.localScripts.map(script => {
         script = `${dir}/local-scripts/${script}`;
         return script;
     });
@@ -52,7 +52,7 @@ let front = function front(detail) {
                         styles: detail.options.styles,
                         externalStyles: detail.options.externalStyles,
                         main: detail.options.main,
-                        scripts: detail.options.scripts,
+                        localScripts: detail.options.localScripts,
                         inventory: foundInventory,
                         query: req.query
                     });
@@ -64,7 +64,7 @@ let front = function front(detail) {
                     styles: detail.options.styles,
                     externalStyles: detail.options.externalStyles,
                     main: detail.options.main,
-                    scripts: detail.options.scripts,
+                    localScripts: detail.options.localScripts,
                     inventory: foundInventory,
                     query: req.query
                 });
@@ -83,7 +83,7 @@ let front = function front(detail) {
                 styles: detail.options.styles,
                 externalStyles: detail.options.externalStyles,
                 main: detail.options.main,
-                scripts: detail.options.scripts,
+                localScripts: detail.options.localScripts,
                 inventory: null,
                 query: req.query
             });
