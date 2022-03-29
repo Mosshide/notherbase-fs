@@ -48,7 +48,7 @@ router.post("/login", async function(req, res) {
 
         if (foundAccount) {
             if (await bcrypt.compare(req.body.password, foundAccount.password)) {
-                req.session.currentuser = { _id: foundAccount._id };
+                req.session.currentuser = foundAccount._id;
                 req.session.currentuserFull = foundAccount;
 
                 res.status(200).send("Login successful!");
