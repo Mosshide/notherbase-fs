@@ -44,7 +44,10 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
                 resave: false,
                 saveUninitialized: false
             }));
+
+            console.log("cookies enabled");
         }
+        else console.log("sessions disabled");
     
         io.on('connection', (socket) => {
             socket.join(socket.handshake.query.room);
