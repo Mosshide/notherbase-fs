@@ -62,6 +62,8 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
         app.use("/chat", controllers.chat(io));
     
         app.use("/contact", controllers.contact);
+
+        app.use("/game", controllers.game);
     
         app.use("/inventory", controllers.inventory);
     

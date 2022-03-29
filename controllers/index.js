@@ -7,5 +7,6 @@ module.exports = {
     contact: require("./contact"),
     explorer: require("./explorer"),
     front: require("./the-front"),
-    inventory: require("./inventory")
+    inventory: require("./inventory"),
+    game: require("./game")
 }
