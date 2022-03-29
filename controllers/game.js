@@ -6,7 +6,7 @@ const { game } = require("../models");
 
 router.get("/all", async function(req, res) {
     try {
-        let foundGames = await game.find({game: req.query.game});
+        let foundGames = await game.find({name: req.query.name});
 
         res.status(200).send({ foundGames: foundGames });
     }
