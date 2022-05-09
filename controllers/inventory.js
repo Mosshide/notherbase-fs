@@ -74,10 +74,8 @@ router.post("/", async function(req, res) {
                 
                 if (!holding) {
                     if (req.body.change.amount > 0) {
-                        let foundItem = await item.findById(req.body.change.item);
-        
                         foundInventory.items.push({
-                            item: foundItem._id,
+                            item: req.body.change.item,
                             amount: req.body.change.amount
                         });
     

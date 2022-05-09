@@ -3,6 +3,7 @@ const { inventory, connectionSuccess } = require("../models");
 let router = require("express").Router();
 let dir = "";
 
+
 let front = function front(detail) {
     detail.options = {
         styles: [],

@@ -73,9 +73,7 @@
         render() {
             this.$list.empty();
             
-            console.log(this.items);
             for (let i = 0; i < this.items.length; i++) {
-                console.log(this.items[i].item);
                 let $new = this.$list.append(
                     `<div class="item-card">
                         <h5>${this.items[i].item.name}</h5>

@@ -9,6 +9,13 @@
     <% } %>
 </style>
 
+<script>
+    let itemIDs = [];
+    <% for (let i = 0; i < itemIDs.length; i++) { %>
+        itemIDs.push("<%= itemIDs[i] %>");
+    <% } %>
+</script>
+
 <main class="override">
     <%- include(`${main}.ejs`); %>
 </main>

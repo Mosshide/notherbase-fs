@@ -31,6 +31,7 @@ let complete = function complete(explorerBuild) {
                         externalStyles: [],
                         localScripts: [],
                         serverScripts: [],
+                        requiredItems: [],
                         needsKey: "",
                         dropOff: "",
                         ...detail.options
@@ -74,6 +75,13 @@ let complete = function complete(explorerBuild) {
                                 }));
                             }
 
+                            let foundItemIDs = [];
+                            for (let m = 0; m < detail.options.requiredItems.length; m++) {
+                                let foundItem = await item.findOne({name: detail.options.requiredItems[m]});
+
+                                foundItemIDs.push(foundItem._id);
+                            }
+
                             let context = {
                                 siteTitle: "NotherBase",
                                 user: req.session.currentUserFull,
@@ -82,6 +90,7 @@ let complete = function complete(explorerBuild) {
                                 main: detail.options.main,
                                 localScripts: detail.options.localScripts,
                                 serverScriptReturns: serverScriptReturns,
+                                itemIDs: foundItemIDs,
                                 pov: req.query.pov,
                                 inventory: foundInventory,
                                 query: req.query
@@ -121,8 +130,9 @@ let complete = function complete(explorerBuild) {
             user: null,
             styles: [`${dir}/${explorerBuild.void}/styles/void`],
             externalStyles: [],
-            scripts: [],
+            localScripts: [],
             inventory: null,
+            itemIDs: [],
             main: `${dir}/${explorerBuild.void}/index`
         });
     });

@@ -28,6 +28,16 @@ const world = {
                                             localScripts: ["game"],
                                             serverScripts: ["game"]
                                         }
+                                    },
+                                    {
+                                        name: "nono-og",
+                                        options: {
+                                            localScripts: ["nono"],
+                                            styles: ["nono"],
+                                            requiredItems: [
+                                                "Gold Coin"
+                                            ]
+                                        }
                                     }
                                 ]
                             }
