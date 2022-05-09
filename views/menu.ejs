@@ -47,7 +47,9 @@
 
     let switchTab = function switchTab(id) {
         $("#content-window .content").addClass("invisible");
+        $(".menu .tabs button").removeClass("selected");
         $(`#content-window #${id}`).removeClass("invisible");
+        $(`.menu .tabs #${id}`).addClass("selected");
     }
 
     switchTab("inventory");

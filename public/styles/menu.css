@@ -51,6 +51,10 @@
     padding: 0 10px;
 }
 
+.menu .tabs .selected {
+    border: 2px solid var(--textColorBright);
+}
+
 .menu #content-window {
     width: 100%;
     height: calc(100% - 30px);
