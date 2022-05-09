@@ -43,6 +43,10 @@
                 $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
                 $toNonoButton.addClass("invisible");
                 $toNonoLink.removeClass("invisible");
+                
+                if (playerInventory) {
+                    playerInventory.refresh();
+                }
             });
         } catch (error) {
             //console.log(error);

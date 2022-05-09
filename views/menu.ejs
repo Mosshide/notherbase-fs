@@ -1,6 +1,4 @@
 <div class="menu invisible">
-    
-
     <div class="tabs">
         <button id="inventory">
             Inventory
@@ -8,23 +6,26 @@
         <button id="player">
             Player
         </button>
-        <button id="contact">
+        <button id="contact-form">
             Contact
         </button>
-
-        <button id="close">
-            X
+        <button id="debug">
+            Debug
         </button>
     </div>
 
-    <div class="content">
-        <%- include("./contact.ejs"); %>
+    <button id="close">
+        X
+    </button>
 
+    <div id="content-window">
+        <%- include("./inventory.ejs"); %>
+        <%- include("./player.ejs"); %>
+        <%- include("./contact.ejs"); %>
+        <%- include("./debug.ejs"); %>
     </div>
 
-    <% if (user) { %> 
-        <a href="/user/logout">Logout</a>
-    <% } %> 
+    <a href="/user/logout" id="logout">Logout</a>
 </div>
 
 <button id="menu"><i class="fas fa-cog"></i></button>
@@ -36,7 +37,18 @@
         $menu.toggleClass("invisible");
     });
 
-    $("button#close").on("click", function () {
+    $(".menu button#close").on("click", function () {
         $menu.toggleClass("invisible");
     });
+
+    $(".menu .tabs button").on("click", function (e) {
+        switchTab(e.currentTarget.id);
+    });
+
+    let switchTab = function switchTab(id) {
+        $("#content-window .content").addClass("invisible");
+        $(`#content-window #${id}`).removeClass("invisible");
+    }
+
+    switchTab("debug");
 </script>

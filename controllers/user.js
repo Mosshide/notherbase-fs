@@ -48,8 +48,8 @@ router.post("/login", async function(req, res) {
 
         if (foundAccount) {
             if (await bcrypt.compare(req.body.password, foundAccount.password)) {
-                req.session.currentuser = { _id: foundAccount._id };
-                req.session.currentuserFull = foundAccount;
+                req.session.currentUser = { _id: foundAccount._id };
+                req.session.currentUserFull = foundAccount;
 
                 res.status(200).send("Login successful!");
             }
@@ -93,7 +93,7 @@ router.get("/all", authCheck, async function(req, res) {
 
 router.delete("/", authCheck, async function(req, res) {
     try {
-        const found = await user.findByIdAndDelete(req.session.currentuser);
+        const found = await user.findByIdAndDelete(req.session.currentUser);
 
         if (!found) console.log("Could not find account. No deletion!");
 
