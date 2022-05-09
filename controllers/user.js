@@ -48,7 +48,7 @@ router.post("/login", async function(req, res) {
 
         if (foundAccount) {
             if (await bcrypt.compare(req.body.password, foundAccount.password)) {
-                req.session.currentUser = { _id: foundAccount._id };
+                req.session.currentUser = foundAccount._id;
                 req.session.currentUserFull = foundAccount;
 
                 res.status(200).send("Login successful!");
@@ -81,9 +81,9 @@ router.get("/logout", authCheck, async function(req, res) {
 
 router.get("/all", authCheck, async function(req, res) {
     try {
-        let foundusers = await user.find({}, 'username coin home authLevels location');
+        let foundUsers = await user.find({}, 'username coin home authLevels location');
 
-        res.status(200).send({ foundusers: foundusers });
+        res.status(200).send({ foundUsers: foundUsers });
     }
     catch(err) {
         res.status(500).end();

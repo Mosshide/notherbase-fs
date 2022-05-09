@@ -44,7 +44,10 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
                 resave: false,
                 saveUninitialized: false
             }));
+
+            console.log("sessions enabled");
         }
+        else console.log("sessions disabled");
     
         io.on('connection', (socket) => {
             socket.join(socket.handshake.query.room);
@@ -59,6 +62,8 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
         app.use("/chat", controllers.chat(io));
     
         app.use("/contact", controllers.contact);
+
+        app.use("/game", controllers.game);
     
         app.use("/inventory", controllers.inventory);
     
