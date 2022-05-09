@@ -15,7 +15,6 @@
 .ui button {
     background-color: var(--bgColor);
     border: 1px solid var(--textColor);
-    border-radius: 5px;
 }
 
 .ui button:hover {
@@ -74,4 +73,5 @@
     border-top: none;
     border-radius: 0 0 5px 5px;
     text-align: center;
+    z-index: 499;
 }
