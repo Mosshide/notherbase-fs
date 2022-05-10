@@ -9,6 +9,7 @@ let front = function front(detail) {
         styles: [],
         externalStyles: [],
         localScripts: [],
+        requiredItems: [],
         needsKey: "",
         dropOff: "",
         ...detail.options
@@ -34,6 +35,13 @@ let front = function front(detail) {
     detail.options.main = `${dir}/views/${detail.options.main}`;
 
     router.get(`/${detail.name}`, async function(req, res) {
+        let foundItemIDs = [];
+        for (let m = 0; m < detail.options.requiredItems.length; m++) {
+            let foundItem = await item.findOne({name: detail.options.requiredItems[m]});
+
+            foundItemIDs.push(foundItem._id);
+        }
+
         let context = {
             siteTitle: "NotherBase | The Front",
             user: null,
@@ -41,6 +49,7 @@ let front = function front(detail) {
             externalStyles: detail.options.externalStyles,
             main: detail.options.main,
             localScripts: detail.options.localScripts,
+            itemIDs: foundItemIDs,
             inventory: null,
             query: req.query
         }
