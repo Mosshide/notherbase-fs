@@ -1,4 +1,7 @@
 <div class="menu invisible">
+    <div class="fade">
+    
+    </div>
     <div class="tabs">
         <button id="inventory">
             Inventory
@@ -32,13 +35,30 @@
 
 <script>
     let $menu = $(".menu");
+    let $fade = $(".menu .fade");
+    let menuClosing = false;
+
+    let closeMenu = function closeMenu() {
+        menuClosing = true;
+        $fade.addClass("camo");
+        
+        setTimeout(() => { 
+            $menu.toggleClass("invisible");
+            menuClosing = false;
+        }, 100);
+    }
 
     $("button#menu").on("click", function () {
         $menu.toggleClass("invisible");
+        $fade.removeClass("camo");
+    });
+
+    $fade.on("click", function () {
+        if (!menuClosing) closeMenu();
     });
 
     $(".menu button#close").on("click", function () {
-        $menu.toggleClass("invisible");
+        closeMenu();
     });
 
     $(".menu .tabs button").on("click", function (e) {
