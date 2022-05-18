@@ -1,6 +1,8 @@
 :root {
     --bgColor: rgb(37, 37, 37);
+    --bgColorTransparent: rgba(37, 37, 37, 0.404);
     --darkBgColor: rgb(27, 27, 27);
+    --veryDarkBgColorTransparent: rgba(15, 15, 15, 0.404);
     --veryDarkBgColor: rgb(15, 15, 15);
     --lightBgColor: rgb(57, 57, 57);
     --shadowColor: rgb(26, 26, 26);

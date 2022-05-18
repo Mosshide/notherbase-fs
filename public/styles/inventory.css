@@ -6,8 +6,6 @@
     background-color: var(--bgColor);
     padding: 5px;
     z-index: 500;
-    display: flex;
-    flex-wrap: wrap;
     overflow: auto;
 }
 

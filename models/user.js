@@ -9,7 +9,13 @@ const user = mongoose.model('users',
         coin: Number,
         home: String,
         authLevels: [ String ],
-        location: String
+        location: String,
+        attributes: {
+            translation: Number,
+            strength: Number,
+            agility: Number,
+            defense: Number
+        }
     })
 );
 
