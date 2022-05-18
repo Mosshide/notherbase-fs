@@ -7,6 +7,29 @@ const { user, inventory } = require("../models");
 
 const authCheck = require("./authCheck");
 
+let getAttributes = async function getAttributes(userID) {
+    try {
+        let foundUser = await user.findById(userID, 'attributes');
+    
+        if (!foundUser.attributes || foundUser.attributes == {}) {
+            foundUser.attributes = {
+                translation: 0,
+                strength: 0,
+                agility: 0,
+                defense: 0
+            }
+    
+            await foundUser.save();
+        }
+    
+        return foundUser;
+    } 
+    catch (err) {
+        console.log(err);
+        return null;
+    }
+}
+
 router.post("/register", async function(req, res) {
     try {
         const foundAccount = await user.findOne({ username: req.body.username });
@@ -77,24 +100,38 @@ router.post("/login", async function(req, res) {
 
 router.post("/attributes", async function(req, res) {
     try {
-        let foundUser = await user.findById(req.session.currentUser, 'attributes');
+        let foundUser = await getAttributes(req.session.currentUser);
 
         if (foundUser) {
-            if (!foundUser.attributes || foundUser.attributes == {}) {
-                foundUser.attributes = {
-                    translation: 0,
-                    strength: 0,
-                    agility: 0,
-                    defense: 0
-                }
-    
-                await foundUser.save();
-            }
-
             foundUser.attributes[req.body.change] = parseInt(req.body.to);
             await foundUser.save();
 
             res.status(200).send("AttUp successful!");
+        }
+        else {
+            res.status(401).send("AttUp Failed: user not found!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Login Failed: Database error!");
+    }
+});
+
+router.post("/attributes/increment", async function(req, res) {
+    try {
+        let foundUser = await getAttributes(req.session.currentUser);
+
+        if (foundUser) {
+            if (foundUser.attributes[req.body.change] < req.body.max) {
+                foundUser.attributes[req.body.change]++;
+                await foundUser.save();
+                res.status(200).send({ newLevel: foundUser.attributes[req.body.change] });
+            } 
+            else {
+                res.status(304).send({ newLevel: foundUser.attributes[req.body.change] });
+            }
         }
         else {
             res.status(401).send("AttUp Failed: user not found!");
@@ -132,20 +169,24 @@ router.get("/all", authCheck, async function(req, res) {
 
 router.get("/attributes", authCheck, async function(req, res) {
     try {
-        let foundUser = await user.findById(req.session.currentUser);
+        let foundUser = await getAttributes(req.session.currentUser);
 
-        if (!foundUser.attributes || foundUser.attributes == {}) {
-            foundUser.attributes = {
-                translation: 0,
-                strength: 0,
-                agility: 0,
-                defense: 0
-            }
+        res.status(200).send(foundUser.attributes);
+    }
+    catch(err) {
+        res.status(500).end();
+        console.log(err);
+    }
+});
 
-            await foundUser.save();
+router.get("/attributes/check", authCheck, async function(req, res) {
+    try {
+        let foundUser = await getAttributes(req.session.currentUser);
+
+        if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
+            res.status(200).send("Pass");
         }
-
-        res.status(200).send(foundUser);
+        else res.status(200).send("Fail");
     }
     catch(err) {
         res.status(500).end();

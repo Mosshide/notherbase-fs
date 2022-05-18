@@ -15,6 +15,23 @@
 
 <hr>
 
+<h3>Passive Check</h3>
+<% if (user.attributes.strength >= 5) { %>
+    <p>You moved the boulder with your incredible strength of <%= user.attributes.strength %>.</p>
+<% } else { %>
+    <p>You could not move the boulder with a strength of <%= user.attributes.strength %>.</p>
+<% } %>
+
+<h3>Active Check</h3>
+<p id="active-text">You have an unknown translation skill.</p>
+<button onclick="activeCheckTest()">Check</button>
+
+<h3>Train Check</h3>
+<p id="train-text">You have an unknown defense skill.</p>
+<button onclick="trainDefense()">Train Defense</button>
+
+<hr>
+
 <div class="locked to nother-base">
     Go to Nono Cove
 </div>
@@ -28,6 +45,24 @@
     let $loginInfo = $("#login-info");
     let $toNonoButton = $(".locked.to.nother-base");
     let $toNonoLink = $(".invisible.to.nother-base");
+    let $activeText = $("#active-text");
+    let $trainText = $("#train-text");
+
+
+    let activeCheckTest = function activeCheckTest() {
+        $.get("/user/attributes/check", { check: "translation", against: 5 }, function (data) {
+            if (data == "Pass") $activeText.text("You can translate pretty well.");
+            else $activeText.text("You can't translate much.");
+        });
+    }
+
+    let trainDefense = function trainDefense() {
+        $.post("/user/attributes/increment", { change: "defense", max: 10 }, function (data, status) {
+            console.log(status);
+            if (status == "success") $trainText.text(`Your defense is now ${data.newLevel}.`);
+            else if (status == "notmodified") $trainText.text("Your defense is maxed!");
+        });
+    }
 
     <% if (user) { %>
         $toNonoButton.addClass("invisible");

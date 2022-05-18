@@ -2,21 +2,20 @@
 
 </div>
 
+<% if (user) { %>
 <script>
     let $content = $(".content#player");
 
     let setAtt = async function setAtt(change, to) {
-        console.log(`${change} : ${to}`);
         await $.post("/user/attributes", { change: change, to: to }, async function (data) {
             await refreshPlayerContent();
         });
     }
 
     let refreshPlayerContent = async function refreshPlayerContent(params) {
-        $content.empty();
-
         $.get("/user/attributes", function (data) {
-            for (const [key, value] of Object.entries(data.attributes)) {
+            $content.empty();
+            for (const [key, value] of Object.entries(data)) {
                 <% if (user.authLevels.includes("Creator")) { %>
                     $content.append(`<h3 id="${key}">
                         ${key}: ${value}
@@ -32,3 +31,4 @@
 
     refreshPlayerContent();
 </script>
+<% } %>
