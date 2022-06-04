@@ -31,12 +31,7 @@
         <h3>Password:</h3>
         <div class="setting" id="password">
             <p>*********</p>
-            <button onclick="accountServices.editPassword()">Change Password</button>
-        </div>
-        <div class="edit invisible" id="password">
-            <input type="password" name="password">
-            <button onclick="accountServices.updatePassword()">Update</button>
-            <button onclick="accountServices.cancelPassword()">Cancel</button>
+            <p>Visit the Keeper to Change Your Password</p>
         </div>
 
         <p id="info"></p>
@@ -130,29 +125,6 @@
             catch(err) {
                 if (err.status === 401) this.$info.text("Username already taken!");
                 else this.$info.text("Server Error");
-            }
-        }
-
-        editPassword() {
-            this.$passwordSetting.addClass("invisible");
-            this.$passwordEdit.removeClass("invisible");
-        }
-
-        cancelPassword() {
-            this.$passwordSetting.removeClass("invisible");
-            this.$passwordEdit.addClass("invisible");
-            this.$passwordInput.val("");
-        }
-
-        async updatePassword() {
-            try {
-                await $.post("/user/password", { password: this.$passwordInput.val() }, (data) => {
-                    this.cancelPassword();
-                    this.$info.text("Password Updated!");
-                });
-            } 
-            catch(err) {
-                this.$info.text(err);
             }
         }
     }

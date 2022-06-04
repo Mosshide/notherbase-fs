@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
 
 // Import my Data
 const { user, inventory, sendMail } = require("../models");
