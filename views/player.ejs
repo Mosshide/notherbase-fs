@@ -1,34 +1,47 @@
 <div class="content invisible" id="player">
-
+    <p id="please-login">Please login to view your player stats.</p>
 </div>
 
-<% if (user) { %>
 <script>
-    let $content = $(".content#player");
+    class PlayerAttributes {
+        constructor() {
+            this.$content = $(".content#player");
 
-    let setAtt = async function setAtt(change, to) {
-        await $.post("/user/attributes", { change: change, to: to }, async function (data) {
-            await refreshPlayerContent();
-        });
-    }
+            <% if (user) { %>
+                this.refresh();
+            <% } %>
+        }
 
-    let refreshPlayerContent = async function refreshPlayerContent(params) {
-        $.get("/user/attributes", function (data) {
-            $content.empty();
-            for (const [key, value] of Object.entries(data)) {
-                <% if (user.authLevels.includes("Creator")) { %>
-                    $content.append(`<h3 id="${key}">
-                        ${key}: ${value}
-                        <input type="number"></input>
-                        <button onclick="setAtt('${key}', $('.content#player h3#${key} input').val())">Set</button>
-                    </h3>`);
-                <% } else { %>
-                    $content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
-                <% } %>
+        async setAtt(change, to) {
+            await $.post("/user/attributes", { change: change, to: to }, async (data) => {
+                await this.refresh();
+            });
+        }
+
+        async refresh() {
+            try {
+                await $.get("/user/attributes", (data) => {
+                    this.$content.empty();
+                    for (const [key, value] of Object.entries(data)) {
+                        <% if (user) { 
+                             if (user.authLevels.includes("Creator")) { %>
+                                this.$content.append(`<h3 id="${key}">
+                                    ${key}: ${value}
+                                    <input type="number"></input>
+                                    <button onclick="playerAttributes.setAtt('${key}', $('.content#player h3#${key} input').val())">Set</button>
+                                </h3>`);
+                            <% } 
+                        } else { %>
+                            this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+                        <% } %>
+                    }
+                });
+            } 
+            catch(err) {
+                console.log(err);
             }
-        });
+        }
     }
 
-    refreshPlayerContent();
+    let playerAttributes = new PlayerAttributes();
 </script>
-<% } %>

@@ -1,4 +1,4 @@
-const { inventory, connectionSuccess } = require("../models");
+const { user, inventory, connectionSuccess } = require("../models");
 
 let router = require("express").Router();
 let dir = "";
@@ -30,11 +30,11 @@ let front = function front(detail) {
         return script;
     });
 
-    detail.options.main = "index";
-    if (detail.name !== "") detail.options.main = detail.name;
-    detail.options.main = `${dir}/views/${detail.options.main}`;
-
     router.get(`/${detail.name}`, async function(req, res) {
+        detail.options.main = "index";
+        if (detail.name !== "") detail.options.main = detail.name;
+        detail.options.main = `${dir}/views/${detail.options.main}`;
+
         let foundItemIDs = [];
         for (let m = 0; m < detail.options.requiredItems.length; m++) {
             let foundItem = await item.findOne({name: detail.options.requiredItems[m]});
@@ -55,13 +55,11 @@ let front = function front(detail) {
         }
 
         if (connectionSuccess) {
-            context.user = req.session.currentUserFull;
-
             try {
-                const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
-                context.inventory = foundInventory;
+                context.user = await user.findById(req.session.currentUser);
+                context.inventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
             
-                if (detail.options.needsKey !== "" && foundInventory) {
+                if (detail.options.needsKey !== "" && context.inventory) {
                     let hasKey = false;
     
                     for (let i = 0; i < foundInventory.items.length; i++) {

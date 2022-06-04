@@ -7,7 +7,7 @@ const { inventory, item, connectionSuccess } = require("../models");
 router.get("/", async function(req, res) {
     if (connectionSuccess) {
         try {
-            if (req.session.currentUserFull) {
+            if (req.session.currentUser) {
                 let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
     
                 res.status(200).send({ foundInventory: foundInventory });

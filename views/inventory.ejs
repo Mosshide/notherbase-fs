@@ -63,11 +63,16 @@
         }
 
         async getData() {
-            await $.get("/inventory", (data) => {
-                if (data.foundInventory) this.items = data.foundInventory.items;
-
-                this.clearError();
-            });
+            try {
+                await $.get("/inventory", (data) => {
+                    if (data.foundInventory) this.items = data.foundInventory.items;
+    
+                    this.clearError();
+                });
+            } 
+            catch(err) {
+                
+            }
         }
         
         render() {
@@ -97,8 +102,13 @@
             }
         
         async refresh() {
-            await this.getData();
-            this.render();
+            try {
+                await this.getData();
+                this.render();
+            } 
+            catch(err) {
+                
+            }
         }
         
         clearError() {

@@ -15,6 +15,10 @@ const user = mongoose.model('users',
             strength: Number,
             agility: Number,
             defense: Number
+        },
+        reset: {
+            token: Number,
+            exp: Number
         }
     })
 );

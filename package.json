@@ -4,7 +4,10 @@
   "description": "Functions to help make developing for NotherBase easier.",
   "main": "index.js",
   "scripts": {
-    "test": "nodemon test.js"
+    "test": "nodemon test.js",
+    "gmail-auth": "node gmail-auth.js",
+    "gmail-token": "node gmail-token.js"
+
   },
   "repository": {
     "type": "git",
@@ -23,8 +26,10 @@
     "ejs": "^3.1.6",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
+    "googleapis": "^100.0.0",
     "method-override": "^3.0.0",
     "mongoose": "^6.1.7",
+    "nodemailer": "^6.7.5",
     "serve-favicon": "^2.5.0",
     "socket.io": "^4.4.1"
   }

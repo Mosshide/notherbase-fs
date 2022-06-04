@@ -4,31 +4,34 @@
 
 <hr>
 
-<div class="auth-form" id="login-form">
-    <h1>NotherBase</h1>
-    <h3>Login to Your Account</h3>
-    <input type="text" name="username" placeholder="username" id="login-user">
-    <input type="password" name="password" placeholder="password" id="login-pass">
-    <button id="login-button">Login</button>
-    <p id="login-info"></p>
-</div>
+<h3>Register Account</h3>
+<input type="email" placeholder="email" id="register-email">
+<input type="text" placeholder="username" id="register-user">
+<input type="password" placeholder="password" id="register-pass">
+<button id="register-button">register</button>
+<p id="register-info"></p>
 
 <hr>
 
-<h3>Passive Check</h3>
-<% if (user.attributes.strength >= 5) { %>
-    <p>You moved the boulder with your incredible strength of <%= user.attributes.strength %>.</p>
-<% } else { %>
-    <p>You could not move the boulder with a strength of <%= user.attributes.strength %>.</p>
-<% } %>
+<div class="auth-form" id="login-form">
+    <h1>NotherBase</h1>
+    <h3>Login to Your Account</h3>
+    <input type="email" name="email" placeholder="user@email.com" id="login-email">
+    <input type="password" name="password" placeholder="password" id="login-pass">
+    <button id="login-button">Login</button>
+    <button id="reset-password">Reset Password</button>
+    <p id="login-info"></p>
+</div>
 
-<h3>Active Check</h3>
-<p id="active-text">You have an unknown translation skill.</p>
-<button onclick="activeCheckTest()">Check</button>
-
-<h3>Train Check</h3>
-<p id="train-text">You have an unknown defense skill.</p>
-<button onclick="trainDefense()">Train Defense</button>
+<div class="auth-form" id="reset-form">
+    <h1>NotherBase</h1>
+    <h3>Login to Your Account</h3>
+    <input type="number" name="token" placeholder="Your Reset Code" id="token">
+    <input type="password" name="password" placeholder="Type Your New Password Here" minlength="8" required id="password">
+    <input type="password" name="confirmation" placeholder="Type Your New Password Here Again" minlength="8" required id="confirmation">
+    <button id="change-password">Change Password</button>
+    <p id="change-info"></p>
+</div>
 
 <hr>
 
@@ -41,28 +44,15 @@
 </a>
 
 <script>
+    let $resetPassword = $("#reset-password");
     let $loginButton = $("#login-button");
     let $loginInfo = $("#login-info");
+    let $registerButton = $("#register-button");
+    let $registerInfo = $("#register-info");
+    let $changePasswordButton = $("button#change-password");
+    let $changeInfo = $("#change-info");
     let $toNonoButton = $(".locked.to.nother-base");
     let $toNonoLink = $(".invisible.to.nother-base");
-    let $activeText = $("#active-text");
-    let $trainText = $("#train-text");
-
-
-    let activeCheckTest = function activeCheckTest() {
-        $.get("/user/attributes/check", { check: "translation", against: 5 }, function (data) {
-            if (data == "Pass") $activeText.text("You can translate pretty well.");
-            else $activeText.text("You can't translate much.");
-        });
-    }
-
-    let trainDefense = function trainDefense() {
-        $.post("/user/attributes/increment", { change: "defense", max: 10 }, function (data, status) {
-            console.log(status);
-            if (status == "success") $trainText.text(`Your defense is now ${data.newLevel}.`);
-            else if (status == "notmodified") $trainText.text("Your defense is maxed!");
-        });
-    }
 
     <% if (user) { %>
         $toNonoButton.addClass("invisible");
@@ -72,24 +62,85 @@
     $loginButton.on("click", async function () {
         try {
             await $.post("/user/login", {
-                username: $("#login-user").val(),
+                email: $("#login-email").val(),
                 password: $("#login-pass").val()
             }, (data) => {
                 $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
                 $toNonoButton.addClass("invisible");
                 $toNonoLink.removeClass("invisible");
                 
-                if (playerInventory) {
-                    playerInventory.refresh();
-                }
+                playerInventory.refresh();
+                playerAttributes.refresh();
+                accountServices.refresh();
             });
         } catch (error) {
-            //console.log(error);
             if (error.status === 401) {
-                $loginInfo.text("Login Error: Username or password incorrect!");
+                $loginInfo.text("Login Error: Email or password incorrect!");
             }
             else if (error.status === 500) {
                 $loginInfo.text("Server Error: Try again later!");
+            }
+        }
+    });
+
+    $registerButton.on("click", async function () {
+        try {
+            await $.post("/user/register", {
+                username: $("#register-user").val(),
+                password: $("#register-pass").val(),
+                email: $("#register-email").val()
+            }, (data) => {
+                $registerInfo.text("Account registered.");
+            });
+        } catch (error) {
+            //console.log(error);
+            if (error.status === 400) {
+                $registerInfo.text("Login Error: Username already taken!");
+            }
+            else if (error.status === 500) {
+                $registerInfo.text("Server Error: Try again later!");
+            }
+        }
+    });
+
+    $resetPassword.on("click", async function () {
+        try {
+            await $.get("/user/password-reset", { email: $("#login-email").val() });
+            $loginInfo.text("Reset link sent to your email.");
+        } 
+        catch(err) {
+            if (error.status === 401) {
+                $loginInfo.text("Reset Error: Email not found!");
+            }
+            else if (error.status === 500) {
+                $loginInfo.text("Server Error: Try again later!");
+            }
+        }
+    });
+
+    $changePasswordButton.on("click", async function () {
+        try {
+            let token = $("#reset-form #token").val();
+
+            await $.post(`/user/password-reset/${token}`, {
+                token: token,
+                password: $("#reset-form #password").val(),
+                confirmation: $("#reset-form #confirmation").val()
+            }, (data) => {
+                $changeInfo.text("Password changed.");
+            });
+        } catch (error) {
+            if (error.status === 498) {
+                $changeInfo.text("Change Error: Your reset code expired! Please request a new one.");
+            }
+            else if (error.status === 400) {
+                $changeInfo.text("Change Error: Passwords must match!");
+            }
+            else if (error.status === 404) {
+                $changeInfo.text("Change Error: Reset code not valid!");
+            }
+            else if (error.status === 500) {
+                $changeInfo.text("Server Error: Try again later!");
             }
         }
     });

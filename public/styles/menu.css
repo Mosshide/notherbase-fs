@@ -1,16 +1,19 @@
 .menu {
     width: 75%;
-    height: 75%;
-    margin: 5% 12.5%;
+    height: 50%;
     border: 1px solid var(--textColor);
     color: var(--textColor);
     position: fixed;
-    left: 0;
-    top: 0;
+    left: 12.5%;
+    top: 5%;
     background-color: var(--bgColorTransparent);
     backdrop-filter: blur(3px);
     border-radius: 5px;
     z-index: 500;
+}
+
+.menu hr {
+    margin: 0;
 }
 
 .ui .fade {
@@ -27,6 +30,8 @@
 .ui button {
     background-color: var(--bgColor);
     border: 1px solid var(--textColor);
+    margin: 0;
+
 }
 
 .ui button:hover {
@@ -50,6 +55,7 @@
     width: 32px;
     height: 32px;
     position: absolute;
+    border-radius: 0;
 }
 
 .menu .tabs {

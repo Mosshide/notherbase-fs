@@ -1,27 +1,12 @@
-const { user, connectionSuccess } = require("../models");
+const { connectionSuccess } = require("../models");
 
 const authCheck = async function authCheck(req, res, next){
     if (connectionSuccess) {
-        try {
-            if (req.session.currentUser) {
-                const foundAccount = await user.findById(req.session.currentUser);
-        
-                if (foundAccount) {
-                    req.session.currentUserFull = foundAccount;
-                    next();
-                }
-                else {
-                    req.session.currentUserFull = null;
-                    res.redirect("/the-front");
-                }
-            }
-            else{
-                res.redirect("/the-front");
-            }
+        if (req.session.currentUser) {
+            next();
         }
-        catch(err) {
-            console.log("database error");
-            console.log(err);
+        else {
+            res.redirect("/the-front");
         }
     }
     else {

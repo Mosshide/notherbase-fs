@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 
 // Import my Data
-const { user, inventory } = require("../models");
+const { user, inventory, sendMail } = require("../models");
 
 const authCheck = require("./authCheck");
 
@@ -30,9 +31,143 @@ let getAttributes = async function getAttributes(userID) {
     }
 }
 
+router.get("/basic", async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundUser = await user.findById(req.session.currentUser, 'username email');
+    
+            res.status(200).send(foundUser);
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).end();
+    }
+});
+
+router.get("/logout", authCheck, async function(req, res) {
+    try {
+        await req.session.destroy();
+
+        res.redirect(`/`);
+    }
+    catch {
+        console.log(err);
+    }
+});
+
+router.get("/all", async function(req, res) {
+    try {
+        let foundUsers = await user.find({}, 'username coin home authLevels location attributes');
+
+        res.status(200).send({ foundUsers: foundUsers });
+    }
+    catch(err) {
+        res.status(500).end();
+        console.log(err);
+    }
+});
+
+router.get("/password-reset", async function(req, res) {
+    try {
+        let foundUser = await user.findOne({ email: req.query.email });
+        
+        if (foundUser) {
+            foundUser.reset.token = Math.floor(Math.random() * 9999);
+            foundUser.reset.exp = Date.now() + (1000 * 60 * 30);
+            
+            await foundUser.save();
+
+            sendMail.passwordReset(req.query.email, foundUser.reset.token);
+
+            res.status(200).send("Reset link sent!");
+        }
+        else {
+            res.status(401).send("Failed: user not found!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Update Failed: Database error!");
+    }
+});
+
+router.post("/password-reset/:token", async function(req, res) {
+    try {
+        const foundUser = await user.findOne({ "reset.token": req.params.token });
+
+        if (foundUser) {
+            if (foundUser.reset.exp > Date.now()) {
+                if (req.body.password !== req.body.confirmation) res.status(400).send("Passwords must match!");
+                else {
+                    foundUser.reset = {};
+
+                    const salt = await bcrypt.genSalt(10);
+                    const hash = await bcrypt.hash(req.body.password, salt);
+        
+                    foundUser.password = hash;
+                    await foundUser.save();
+
+                    res.status(200).send("Password changed successfully!");
+                }
+            }
+            else res.status(498).send("Reset token expired!");
+        }
+        else {
+            res.status(404).send("Reset token not valid!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Internal Server Error!");
+    }
+});
+
+router.get("/attributes", async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundUser = await getAttributes(req.session.currentUser);
+
+            res.status(200).send(foundUser.attributes);
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        res.status(500).end();
+        console.log(err);
+    }
+});
+
+router.get("/attributes/check", authCheck, async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundUser = await getAttributes(req.session.currentUser);
+
+            if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
+                res.status(200).send("Pass");
+            }
+            else res.status(200).send("Fail");
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        res.status(500).end();
+        console.log(err);
+    }
+});
+
 router.post("/register", async function(req, res) {
     try {
-        const foundAccount = await user.findOne({ username: req.body.username });
+        let foundAccount = await user.findOne({ username: req.body.username });
 
         if (!foundAccount) {
             const salt = await bcrypt.genSalt(10);
@@ -41,11 +176,11 @@ router.post("/register", async function(req, res) {
             let qAuth = await user.create({
                 username: req.body.username,
                 password: hash,
-                email: "temp@example.com",
+                email: req.body.email,
                 coin: 0,
                 home: "/",
                 authLevels: [ "Basic" ],
-                location: "The Front",
+                location: "/the-front",
                 attributes: {
                     translation: 0,
                     strength: 0,
@@ -74,12 +209,11 @@ router.post("/register", async function(req, res) {
 
 router.post("/login", async function(req, res) {
     try {
-        const foundAccount = await user.findOne({ username: req.body.username });
+        const foundAccount = await user.findOne({ email: req.body.email });
 
         if (foundAccount) {
             if (await bcrypt.compare(req.body.password, foundAccount.password)) {
                 req.session.currentUser = foundAccount._id;
-                req.session.currentUserFull = foundAccount;
 
                 res.status(200).send("Login successful!");
             }
@@ -88,124 +222,181 @@ router.post("/login", async function(req, res) {
             }
         }
         else {
-            res.status(401).send("Login Failed: username not found!");
+            res.status(401).send("Login Failed: Email not found!");
         }
     }
     catch(err) {
         console.log(err);
 
         res.status(500).send("Login Failed: Database error!");
+    }
+});
+
+router.post("/email", async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundAccount = await user.findOne({ email: req.body.email });
+
+            if (!foundAccount) {
+                let foundUser = await user.findById(req.session.currentUser);
+
+                if (foundUser) {
+                    foundUser.email = req.body.email;
+                    await foundUser.save();
+
+                    res.status(200).send("Update successful!");
+                }
+                else {
+                    res.status(401).send("Update Failed: user not found!");
+                }
+            }
+            else {
+                res.status(401).send("Update Failed: email already in use!");
+            }
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Update Failed: Database error!");
+    }
+});
+
+router.post("/username", async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundAccount = await user.findOne({ username: req.body.username });
+
+            if (!foundAccount) {
+                let foundUser = await user.findById(req.session.currentUser);
+        
+                if (foundUser) {
+                    foundUser.username = req.body.username;
+                    await foundUser.save();
+        
+                    res.status(200).send("Update successful!");
+                }
+                else {
+                    res.status(401).send("Update Failed: user not found!");
+                }
+            }
+            else {
+                res.status(401).send("Update Failed: username taken!");
+            }
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Update Failed: Database error!");
+    }
+});
+
+router.post("/password", async function(req, res) {
+    try {
+        if (req.session.currentUser) {
+            let foundUser = await user.findById(req.session.currentUser);
+        
+            if (foundUser) {
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(req.body.password, salt);
+                foundUser.password = hash;
+                await foundUser.save();
+
+                res.status(200).send("Update successful!");
+            }
+            else {
+                res.status(401).send("Update Failed: user not found!");
+            }
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
+    }
+    catch(err) {
+        console.log(err);
+
+        res.status(500).send("Update Failed: Database error!");
     }
 });
 
 router.post("/attributes", async function(req, res) {
     try {
-        let foundUser = await getAttributes(req.session.currentUser);
+        if (req.session.currentUser) {
+            let foundUser = await getAttributes(req.session.currentUser);
 
-        if (foundUser) {
-            foundUser.attributes[req.body.change] = parseInt(req.body.to);
-            await foundUser.save();
+            if (foundUser) {
+                foundUser.attributes[req.body.change] = parseInt(req.body.to);
+                await foundUser.save();
 
-            res.status(200).send("AttUp successful!");
+                res.status(200).send("AttUp successful!");
+            }
+            else {
+                res.status(401).send("AttUp Failed: user not found!");
+            }
         }
         else {
-            res.status(401).send("AttUp Failed: user not found!");
+            res.status(401).send("Please login first!");
         }
     }
     catch(err) {
         console.log(err);
 
-        res.status(500).send("Login Failed: Database error!");
+        res.status(500).send("AttUp Failed: Database error!");
     }
 });
 
 router.post("/attributes/increment", async function(req, res) {
     try {
-        let foundUser = await getAttributes(req.session.currentUser);
+        if (req.session.currentUser) {
+            let foundUser = await getAttributes(req.session.currentUser);
 
-        if (foundUser) {
-            if (foundUser.attributes[req.body.change] < req.body.max) {
-                foundUser.attributes[req.body.change]++;
-                await foundUser.save();
-                res.status(200).send({ newLevel: foundUser.attributes[req.body.change] });
-            } 
+            if (foundUser) {
+                if (foundUser.attributes[req.body.change] < req.body.max) {
+                    foundUser.attributes[req.body.change]++;
+                    await foundUser.save();
+                    res.status(200).send({ newLevel: foundUser.attributes[req.body.change] });
+                } 
+                else {
+                    res.status(304).send({ newLevel: foundUser.attributes[req.body.change] });
+                }
+            }
             else {
-                res.status(304).send({ newLevel: foundUser.attributes[req.body.change] });
+                res.status(401).send("AttUp Failed: user not found!");
             }
         }
         else {
-            res.status(401).send("AttUp Failed: user not found!");
+            res.status(401).send("Please login first!");
         }
     }
     catch(err) {
         console.log(err);
 
-        res.status(500).send("Login Failed: Database error!");
-    }
-});
-
-router.get("/logout", authCheck, async function(req, res) {
-    try {
-        await req.session.destroy();
-
-        res.redirect(`/`);
-    }
-    catch {
-        console.log(err);
-    }
-});
-
-router.get("/all", authCheck, async function(req, res) {
-    try {
-        let foundUsers = await user.find({}, 'username coin home authLevels location attributes');
-
-        res.status(200).send({ foundUsers: foundUsers });
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-router.get("/attributes", authCheck, async function(req, res) {
-    try {
-        let foundUser = await getAttributes(req.session.currentUser);
-
-        res.status(200).send(foundUser.attributes);
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-router.get("/attributes/check", authCheck, async function(req, res) {
-    try {
-        let foundUser = await getAttributes(req.session.currentUser);
-
-        if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
-            res.status(200).send("Pass");
-        }
-        else res.status(200).send("Fail");
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
+        res.status(500).send("AttUp Failed: Database error!");
     }
 });
 
 router.delete("/", authCheck, async function(req, res) {
     try {
-        const found = await user.findByIdAndDelete(req.session.currentUser);
+        if (req.session.currentUser) {
+            await user.findByIdAndDelete(req.session.currentUser);
+            await req.session.destroy();
 
-        if (!found) console.log("Could not find account. No deletion!");
-
-        await req.session.destroy();
-
-        res.redirect("/");
+            res.redirect("/");
+        }
+        else {
+            res.status(401).send("Please login first!");
+        }
     }
     catch {
         console.log(err);
+        res.status(500).send("Delete Failed: Database error!");
     }
 });
 

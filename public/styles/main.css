@@ -93,7 +93,7 @@ p {
     width: 80%;
 }
 
-main input, main textarea {
+input, textarea {
     padding: 10px;
     width: calc(100% - 10px);
     background-color: var(--bgColor);
@@ -103,7 +103,7 @@ main input, main textarea {
     font-size: 15px;
 }
 
-main input[type=submit], main button, main a {
+input[type=submit], button, a {
     background-color: var(--bgColor);
     padding: 10px;
     border-radius: 5px;
@@ -115,7 +115,7 @@ main input[type=submit], main button, main a {
     text-align: center;
 }
 
-main input[type=submit]:hover, main button:hover, main a:hover {
+input[type=submit]:hover, button:hover, a:hover {
     border: 1px solid var(--textColorBright);
     color: var(--textColorBright);
     cursor: pointer;

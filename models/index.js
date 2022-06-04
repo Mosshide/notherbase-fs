@@ -5,5 +5,6 @@ module.exports = {
     user: require("./user"),
     contact: require("./contact"),
     inventory: require("./inventory"),
-    game: require("./game")
+    game: require("./game"),
+    sendMail: require("./send-mail")
 }
