@@ -96,9 +96,9 @@ router.get("/password-reset", async function(req, res) {
     }
 });
 
-router.post("/password-reset/:token", async function(req, res) {
+router.post("/password-reset", async function(req, res) {
     try {
-        const foundUser = await user.findOne({ "reset.token": req.params.token });
+        const foundUser = await user.findOne({ "reset.token": req.body.token });
 
         if (foundUser) {
             if (foundUser.reset.exp > Date.now()) {
