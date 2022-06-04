@@ -1,4 +1,4 @@
-const { inventory, game, item } = require("../models");
+const { inventory, game, item, user } = require("../models");
 
 let router = require("express").Router();;
 let dir = "";
@@ -63,6 +63,7 @@ let complete = function complete(explorerBuild) {
                 
                     router.get(currentRoute, async function(req, res) {
                         try {
+                            const foundUser = await user.findById(req.session.currentUser);
                             const foundInventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
                         
                             let serverScriptReturns = [];
@@ -84,7 +85,7 @@ let complete = function complete(explorerBuild) {
 
                             let context = {
                                 siteTitle: "NotherBase",
-                                user: req.session.currentUserFull,
+                                user: foundUser,
                                 styles: detail.options.styles,
                                 externalStyles: detail.options.externalStyles,
                                 main: detail.options.main,
