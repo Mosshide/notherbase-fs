@@ -1,4 +1,5 @@
 const { inventory, game, item, user } = require("../models");
+const path = require('path');
 
 let router = require("express").Router();;
 let dir = "";
@@ -94,7 +95,9 @@ let complete = function complete(explorerBuild) {
                                 itemIDs: foundItemIDs,
                                 pov: req.query.pov,
                                 inventory: foundInventory,
-                                query: req.query
+                                query: req.query,
+                                dir: dir,
+                                path: path
                             }
 
                             if (detail.options.needsKey !== "" && foundInventory) {
@@ -134,7 +137,9 @@ let complete = function complete(explorerBuild) {
             localScripts: [],
             inventory: null,
             itemIDs: [],
-            main: `${dir}/${explorerBuild.void}/index`
+            main: `${dir}/${explorerBuild.void}/index`,
+            dir: dir,
+            path: path
         });
     });
 }

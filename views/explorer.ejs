@@ -1,6 +1,13 @@
 <%- include("./head.ejs"); %>
 
 <style>
+    <%- include(path.resolve(dir, "../", "public/styles/main.css")); %>
+    <%- include(path.resolve(dir, "../", "public/styles/menu.css")); %>
+    <%- include(path.resolve(dir, "../", "public/styles/inventory.css")); %>
+    <%- include(path.resolve(dir, "../", "public/styles/player.css")); %>
+    <%- include(path.resolve(dir, "../", "public/styles/account.css")); %>
+    <%- include(path.resolve(dir, "../", "public/styles/more.css")); %>
+
     <% for (let i = 0; i < styles.length; i++) { %>
         <%- include(`${styles[i]}.css`); %>
     <% } %>

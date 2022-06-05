@@ -1,4 +1,5 @@
 const { user, inventory, connectionSuccess } = require("../models");
+const path = require('path');
 
 let router = require("express").Router();
 let dir = "";
@@ -51,7 +52,9 @@ let front = function front(detail) {
             localScripts: detail.options.localScripts,
             itemIDs: foundItemIDs,
             inventory: null,
-            query: req.query
+            query: req.query,
+            dir: dir,
+            path: path
         }
 
         if (connectionSuccess) {
