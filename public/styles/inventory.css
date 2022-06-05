@@ -3,7 +3,6 @@
     color: var(--textColor);
     width: 100%;
     height: 100%;
-    /* background-color: var(--bgColor); */
     padding: 5px;
     z-index: 500;
     overflow: auto;
@@ -46,6 +45,7 @@
     padding: 5px;
     margin: 2.5px;
     position: relative;
+    background-color: var(--bgColor);
 }
 
 .item-card button {

@@ -41,7 +41,7 @@ body {
 }
 
 main {
-    width: 500px;
+    width: 1000px;
     min-height: 500px;
     box-shadow: 5px 5px 5px 5px var(--shadowColor);
     padding: 20px;
@@ -62,7 +62,7 @@ footer {
     align-content: center;
     align-items: flex-start;
     min-height: 25px;
-    width: 500px;
+    width: 1000px;
     background-color: var(--veryDarkBgColor);
     border-radius: 0px 0px 5px 5px;
     box-shadow: 5px 5px 5px 5px var(--shadowColor);
@@ -224,8 +224,12 @@ iframe {
     font-size: 12px;
 }
 
-@media only screen and (max-width: 500px) {
+@media only screen and (max-width: 1000px) {
     main {
+        width: 100%;
+    }
+
+    footer {
         width: 100%;
     }
 }
