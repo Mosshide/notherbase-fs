@@ -29,7 +29,7 @@ router.get("/", async function(req, res) {
 router.post("/", async function(req, res) {
     if (connectionSuccess) {
         try {
-            if (req.session.currentUserFull) {
+            if (req.session.currentUser) {
                 let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
     
                 let holding = false;
