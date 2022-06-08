@@ -42,7 +42,6 @@
             await $.post("/inventory", { change: change }, (data, status) => {
                 if (status === "success") {
                     let holding = false;
-                    console.log(data);
 
                     for (let i = 0; i < this.items.length; i++) {
                         if (this.items[i].item._id === data.item._id) {
@@ -53,7 +52,7 @@
                         }
                     }
                     
-                    if (!holding) {
+                    if (!holding && data.amount > 0) {
                         this.items.push(data);
                     }
 
