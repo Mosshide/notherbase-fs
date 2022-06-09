@@ -1,7 +1,7 @@
 module.exports = {
     chat: require("./chat"),
     item: require("./item"),
-    portfolio: require("./portfolio/portfolio-controller.js"),
+    pages: require("./pages.js"),
     user: require("./user"),
     authCheck: require("./authCheck"),
     contact: require("./contact"),

@@ -8,13 +8,15 @@ module.exports = {
     },
     data: db,
     chat: null,
-    start: function start(world) {
+    start: function start(world, pagesPath) {
         let theFront = require("./controllers/the-front");
         let explorer = require("./controllers/explorer");
 
         explorer.complete(world.explorer);
         theFront.complete(world.theFront);
 
-        require("./server")(theFront.router, explorer.router, db.connectionSuccess);
+        let pagesRouter = require("./controllers/pages")(pagesPath);
+
+        require("./server")(theFront.router, explorer.router, pagesRouter, db.connectionSuccess);
     }
 }

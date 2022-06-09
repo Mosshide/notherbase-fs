@@ -1,6 +1,6 @@
 let started = false;
 
-module.exports = function start(frontRouter, exploreRouter, dbConnected) {
+module.exports = function start(frontRouter, exploreRouter, pagesRouter, dbConnected) {
     if (!started) {
         // Setup for Express
         const express = require("express");
@@ -57,8 +57,6 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
     
         app.use("/user", controllers.user);
     
-        app.use("/portfolio", controllers.portfolio);
-    
         app.use("/chat", controllers.chat(io));
     
         app.use("/contact", controllers.contact);
@@ -70,6 +68,8 @@ module.exports = function start(frontRouter, exploreRouter, dbConnected) {
         app.use("/item", controllers.item);
     
         app.use("/the-front", frontRouter);
+
+        app.use("/", pagesRouter);
     
         app.use("/", controllers.authCheck, exploreRouter);
     

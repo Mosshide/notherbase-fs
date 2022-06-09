@@ -1,3 +1,4 @@
+const path = require('path');
 const notherbase = require("../index");
 
 const world = {
@@ -60,4 +61,4 @@ const world = {
     }
 };
 
-notherbase.start(world);
+notherbase.start(world, path.resolve(__dirname, "pages"));

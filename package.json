@@ -4,7 +4,7 @@
   "description": "Functions to help make developing for NotherBase easier.",
   "main": "index.js",
   "scripts": {
-    "test": "nodemon test.js",
+    "test": "nodemon test/test-index.js",
     "gmail-auth": "node gmail-auth.js",
     "gmail-token": "node gmail-token.js"
   },
