@@ -8,7 +8,6 @@ module.exports = function name(path)
 
     files.forEach(file => {
         file = file.slice(0, -4);
-        console.log(file);
 
         router.get(`/${file}`, function(req, res) {
             res.render(`${path}/${file}.ejs`);
