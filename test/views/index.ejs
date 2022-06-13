@@ -2,6 +2,8 @@
     Welcome to The Front.
 </p>
 
+<button onclick="addGold()">Gold</button>
+
 <hr>
 
 <h3>Register Account</h3>
@@ -144,4 +146,8 @@
             }
         }
     });
+
+    let addGold = function addGold(params) {
+        playerInventory.change(itemIDs[0], 2);
+    }
 </script>

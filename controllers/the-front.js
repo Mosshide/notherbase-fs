@@ -1,4 +1,4 @@
-const { user, inventory, connectionSuccess } = require("../models");
+const { user, inventory, connectionSuccess, item } = require("../models");
 const path = require('path');
 
 let router = require("express").Router();

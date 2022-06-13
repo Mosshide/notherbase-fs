@@ -55,7 +55,9 @@ const world = {
         details: [
             {
                 name: "",
-                options: {}
+                options: {
+                    requiredItems: ["Gold Coin"]
+                }
             }
         ]
     }

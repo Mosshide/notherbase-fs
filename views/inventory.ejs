@@ -38,8 +38,13 @@
             setInterval(this.update, this.updateCooldown);
         }
 
-        async change(change) {
-            await $.post("/inventory", { change: change }, (data, status) => {
+        async change(itemID, amount) {
+            let change = {
+                item: itemID,
+                amount: amount
+            }
+
+            await $.post("/inventory", change, (data, status) => {
                 if (status === "success") {
                     let holding = false;
 
@@ -52,7 +57,7 @@
                         }
                     }
                     
-                    if (!holding && data.amount > 0) {
+                    if (!holding && data.amount > 0 && data.item) {
                         this.items.push(data);
                     }
 
