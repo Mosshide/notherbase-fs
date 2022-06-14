@@ -28,7 +28,11 @@ const world = {
                                         options: {
                                             localScripts: ["game", "items"],
                                             styles: ["items-floor"],
-                                            serverScripts: ["game"]
+                                            serverScripts: ["game"],
+                                            requiredItems: [
+                                                "Gold Coin",
+                                                "Rag Doll"
+                                            ]
                                         }
                                     },
                                     {

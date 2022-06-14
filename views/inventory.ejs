@@ -44,8 +44,8 @@
                 amount: amount
             }
 
-            await $.post("/inventory", change, (data, status) => {
-                if (status === "success") {
+            try {
+                await $.post("/inventory", change, (data, status) => {
                     let holding = false;
 
                     for (let i = 0; i < this.items.length; i++) {
@@ -62,9 +62,14 @@
                     }
 
                     this.render();
-                }
-                else console.log(status);
-            });
+                });
+
+                return true;
+            }
+            catch(err) {
+                console.log(err);
+                return false;
+            }
         }
 
         async getData() {

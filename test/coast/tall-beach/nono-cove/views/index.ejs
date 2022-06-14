@@ -11,6 +11,10 @@
 
 <hr>
 
+<button onclick="tradeForDoll()">Trade 5g for a doll</button>
+
+<hr>
+
 <section class="floor" id="items">
     <h2>Items</h2>
     <button id="toggle">Toggle</button>
@@ -62,3 +66,9 @@
 <a href="/coast/tall-beach/nono-cove/nono-og" class="to">
     Go to Nono Cove
 </a>
+
+<script>
+    let tradeForDoll = async function tradeForDoll() {
+        if (await playerInventory.change(itemIDs[0], -5)) await playerInventory.change(itemIDs[1], 1);
+    }
+</script>
