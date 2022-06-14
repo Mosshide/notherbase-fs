@@ -16,24 +16,11 @@ router.get("/all", async function(req, res) {
     }
 });
 
-router.get("/findOne", async function(req, res) {
-    try {
-        let foundItem = await items.findOne({name: req.query.name});
-
-        if (!foundItem) res.status(500).end();
-        else res.status(200).send({ foundItem: foundItem });
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
 router.get("/", async function(req, res) {
     try {
-        let foundItems = await items.find({ name: { $regex: req.query.name } });
+        let foundItem = await items.findOne({ name: req.query.name });
 
-        res.status(200).send({ foundItems: foundItems });
+        res.status(200).send({ foundItem: foundItem });
     }
     catch(err) {
         res.status(500).end();
@@ -43,11 +30,23 @@ router.get("/", async function(req, res) {
 
 router.post("/", async function(req, res) {
     try {
-        await items.create({
-            name: req.body.name,
-            shortDescription: req.body.shortDescription,
-            fullDescription: req.body.fullDescription
-        });
+        if (!req.body.id) {
+            await items.create({
+                name: req.body.name,
+                shortDescription: req.body.shortDescription,
+                fullDescription: req.body.fullDescription
+            });
+        }
+        else {
+            let foundItem = await items.findById(req.body.id);
+
+            if (foundItem) {
+                foundItem.name = req.body.name;
+                foundItem.shortDescription = req.body.shortDescription;
+                foundItem.fullDescription = req.body.fullDescription;
+                await foundItem.save();
+            }
+        }
 
         res.status(200).end();
     }
@@ -57,5 +56,16 @@ router.post("/", async function(req, res) {
     }
 });
 
+router.post("/delete", async function(req, res) {
+    try {
+        await items.findByIdAndDelete(req.body.id);
+
+        res.status(200).end();
+    }
+    catch(err) {
+        res.status(500).end();
+        console.log(err);
+    }
+});
 
 module.exports = router;

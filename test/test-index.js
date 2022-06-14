@@ -26,7 +26,8 @@ const world = {
                                     {
                                         name: "",
                                         options: {
-                                            localScripts: ["game"],
+                                            localScripts: ["game", "items"],
+                                            styles: ["items-floor"],
                                             serverScripts: ["game"]
                                         }
                                     },

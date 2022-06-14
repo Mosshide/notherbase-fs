@@ -11,6 +11,50 @@
 
 <hr>
 
+<section class="floor" id="items">
+    <h2>Items</h2>
+    <button id="toggle">Toggle</button>
+
+    <div class="content invisible">
+        <ul class="items">
+
+        </ul>
+    
+        <div class="editor">
+            <div class="edit invisible">
+                <h5>Item Name:</h5>
+                <input type="text" id="name">
+            
+                <h5>Short Item Description:</h5>
+                <textarea id="short" name="short" cols="30" rows="3"></textarea>
+            
+                <h5>Full Item Description:</h5>
+                <textarea id="full" name="full" cols="30" rows="10"></textarea>
+
+                <button id="cancel" onclick="itemFloor.cancelEdit()">Cancel</button>
+                <button id="save" onclick="itemFloor.saveSelectedItem()">Save</button>
+            </div>
+
+            <div class="read">
+                <h5 id="name">Item Name</h5>
+            
+                <h5>Short Item Description:</h5>
+                <p id="short"></p>
+            
+                <h5>Full Item Description:</h5>
+                <p id="full"></p>
+
+                <button id="new" onclick="itemFloor.createNewItem()">Create New</button>
+                <button id="edit" onclick="itemFloor.editSelectedItem()">Edit</button>
+                <button id="delete" onclick="itemFloor.deleteSelectedItem()">Delete</button>
+                <button id="refresh" onclick="itemFloor.updateItems()">Refresh List</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<hr>
+
 <a href="/the-front" class="to">
     Go to The Front
 </a>
