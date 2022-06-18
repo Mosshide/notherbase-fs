@@ -45,7 +45,7 @@ const explorer = async function explorer(worldPath, voidPath) {
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
 
-            if (fs.existsSync(main + ".js")) {
+            if (fs.existsSync(main + ".ejs")) {
                 let context = {
                     siteTitle: `NotherBase - ${req.params.detail}`,
                     user: foundUser,
@@ -82,7 +82,7 @@ const explorer = async function explorer(worldPath, voidPath) {
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/index`;
     
-            if (fs.existsSync(main + ".js")) {
+            if (fs.existsSync(main + ".ejs")) {
                 let context = {
                     siteTitle: `NotherBase - ${req.params.poi}`,
                     user: foundUser,
