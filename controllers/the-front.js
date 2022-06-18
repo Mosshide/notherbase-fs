@@ -1,104 +1,86 @@
-const { user, inventory, connectionSuccess, item } = require("../models");
-const path = require('path');
-
-let router = require("express").Router();
-let dir = "";
-
-
-let front = function front(detail) {
-    detail.options = {
-        styles: [],
-        externalStyles: [],
-        localScripts: [],
-        requiredItems: [],
-        needsKey: "",
-        dropOff: "",
-        ...detail.options
-    };
-
-    detail.options.styles = detail.options.styles.map(style => {
-        style = `${dir}/styles/${style}`;
-        return style;
-    });
-
-    detail.options.externalStyles = detail.options.externalStyles.map(style => {
-        style = `${dir}/${style}`;
-        return style;
-    });
-
-    detail.options.localScripts = detail.options.localScripts.map(script => {
-        script = `${dir}/local-scripts/${script}`;
-        return script;
-    });
-
-    router.get(`/${detail.name}`, async function(req, res) {
-        detail.options.main = "index";
-        if (detail.name !== "") detail.options.main = detail.name;
-        detail.options.main = `${dir}/views/${detail.options.main}`;
-
-        let foundItemIDs = [];
-        for (let m = 0; m < detail.options.requiredItems.length; m++) {
-            let foundItem = await item.findOne({name: detail.options.requiredItems[m]});
-
-            foundItemIDs.push(foundItem._id);
-        }
-
-        let context = {
-            siteTitle: "NotherBase | The Front",
-            user: null,
-            styles: detail.options.styles,
-            externalStyles: detail.options.externalStyles,
-            main: detail.options.main,
-            localScripts: detail.options.localScripts,
-            itemIDs: foundItemIDs,
-            inventory: null,
-            query: req.query,
-            dir: dir,
-            path: path
-        }
-
-        if (connectionSuccess) {
-            try {
-                context.user = await user.findById(req.session.currentUser);
-                context.inventory = await inventory.findOne({ user: req.session.currentUser }).populate("items.item");
-            
-                if (detail.options.needsKey !== "" && context.inventory) {
-                    let hasKey = false;
+const front = async function front(dir) {
+    const db = require("../models");
+    const path = require('path');
     
-                    for (let i = 0; i < foundInventory.items.length; i++) {
-                        if (foundInventory.items[i].item.name === detail.options.needsKey) hasKey = true;
-                    }
+    let router = require("express").Router();
     
-                    if (!hasKey) res.redirect(detail.options.dropOff);
-                    else res.render(`explorer`, context);
-                }
-                else res.render(`explorer`, context);
-            }
-            catch(err) {
-                console.log(err);
-            }
-        }
-        else {
-            console.log("no db connection");
+    router.post(`/serve/:script`, async function(req, res) {
+        try {
+            let currentRoute = `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
 
-            res.render(`explorer`, context);
+            let foundPoi = await db.poi.findOne({ route: currentRoute, type: "global" });
+
+            if (foundPoi === null) {
+                db.poi.create({
+                    route: currentRoute,
+                    name: req.params.detail,
+                    type: "global",
+                    global: {}
+                });
+            }
+    
+            let scriptResult = await require(`${worldPath}/${currentRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, req.session.currentUser, req.body);
+            res.send(scriptResult);
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
         }
     });
+    
+    router.get(`/:detail`, async function(req, res) {
+        try {
+            const foundUser = await db.user.findById(req.session.currentUser);
+            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+    
+            let main = `${dir}/views/${req.params.detail}`;
+    
+            let context = {
+                siteTitle: `NotherBase - ${req.params.detail}`,
+                user: foundUser,
+                main: main,
+                pov: req.query.pov,
+                inventory: foundInventory,
+                query: req.query,
+                dir: dir,
+                path: path
+            }
+    
+            await res.render(`explorer`, context);
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
+        }
+    });
+    
+    router.get(`/`, async function(req, res) {
+        try {
+            const foundUser = await db.user.findById(req.session.currentUser);
+            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+    
+            let main = `${dir}/views/index`;
+    
+            let context = {
+                siteTitle: `NotherBase - The Front`,
+                user: foundUser,
+                main: main,
+                pov: req.query.pov,
+                inventory: foundInventory,
+                query: req.query,
+                dir: dir,
+                path: path
+            }
+    
+            await res.render(`explorer`, context);
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
+        }
+    });
+    
+    return router;
 }
 
-let complete = function complete(frontBuild) {
-    dir = frontBuild.dirname;
-
-    for (let i = 0; i < frontBuild.details.length; i++) {
-        front(frontBuild.details[i]);
-    }
-}
-
-module.exports = {
-    setDir: function setDir(newDir) {
-        dir = newDir;
-    },
-    router: router,
-    front: front,
-    complete: complete
-}
+module.exports = front;

@@ -4,10 +4,10 @@
 
 <hr>
 
-<div class="game">
-    <h3><%= serverScriptReturns[0] %>Text</h3>
-    <button>Click</button>
-</div>
+<h3>Game Test</h3>
+
+<button onclick="addToTime()">Add</button>
+<p id="timer">0:00</p>
 
 <hr>
 
@@ -71,4 +71,38 @@
     let tradeForDoll = async function tradeForDoll() {
         if (await playerInventory.change(itemIDs[0], -5)) await playerInventory.change(itemIDs[1], 1);
     }
+
+    let time = 0;
+
+    let addToTime = async function addToTime() {
+        try {
+            await $.post(`/coast/tall-beach/nono-cove/index/serve/addToTimer`, function (data) {
+                time = Math.floor(data.scriptResult);
+                $("#timer").text(time);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    let getTime = async function getTime() {
+        try {
+            await $.post(`/coast/tall-beach/nono-cove/index/serve/getTimer`, function (data) {
+                time = Math.floor(data.scriptResult);
+                $("#timer").text(time);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    
+    let updateTime = function updateTime() {
+        if (time > 0) {
+            time--;
+            $("#timer").text(time);
+        }
+    }
+
+    setInterval(updateTime, 1000);
+    getTime();
 </script>

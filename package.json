@@ -2,7 +2,7 @@
   "name": "notherbase-fs",
   "version": "1.2.16",
   "description": "Functions to help make developing for NotherBase easier.",
-  "main": "index.js",
+  "main": "notherbase-fs.js",
   "scripts": {
     "test": "nodemon test/test-index.js",
     "gmail-auth": "node gmail-auth.js",

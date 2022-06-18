@@ -30,13 +30,15 @@ router.post("/", async function(req, res) {
     if (connectionSuccess) {
         try {
             if (req.body.item && req.body.amount) {
-                if (req.session.currentUser) {
+                let foundItem = await item.findOne({name: req.body.item});
+
+                if (foundItem) {
                     let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
         
                     let holding = false;
         
                     for (let j = 0; j < foundInventory.items.length; j++) {
-                        if (foundInventory.items[j].item._id.equals(req.body.item)) {
+                        if (foundInventory.items[j].item.name === req.body.item) {
                             holding = true;
         
                             if (foundInventory.items[j].amount >= -Math.floor(req.body.amount)) {
@@ -74,7 +76,7 @@ router.post("/", async function(req, res) {
                     if (!holding) {
                         if (req.body.amount > 0) {
                             foundInventory.items.push({
-                                item: req.body.item,
+                                item: foundItem._id,
                                 amount: req.body.amount
                             });
         
@@ -94,11 +96,13 @@ router.post("/", async function(req, res) {
                     };
                 }
                 else {
-                    res.status(401).send("User not logged in!");
+                    console.log(`${req.body.item} doesn't exist!`);
+                    res.status(400).send(`${req.body.item} doesn't exist!`);
                 }
             }
             else {
-                res.status(400).send("Check input!");
+                console.log(`${req.body.item} ${req.body.amount} Check Input!`);
+                res.status(400).send(`${req.body.item} ${req.body.amount} Check Input!`);
             }
         }
         catch(err) {

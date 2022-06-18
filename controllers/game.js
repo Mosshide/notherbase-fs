@@ -47,11 +47,12 @@ router.post("/", async function(req, res) {
             foundGame.markModified("data");
             await foundGame.save();
 
-            res.status(200).send();
+            res.status(200).end();
         }
     }
     catch(err) {
         res.status(500).end();
+        console.log(req.query);
         console.log(err);
     }
 });
