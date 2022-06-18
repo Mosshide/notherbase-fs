@@ -1,9 +1,10 @@
+const db = require("../models");
+const path = require('path');
+const fs = require("fs");
+
+let router = require("express").Router();
+
 const explorer = async function explorer(worldPath, voidPath) {
-    const db = require("../models");
-    const path = require('path');
-    
-    let router = require("express").Router();
-    
     router.post(`/:region/:area/:poi/:detail/serve/:script`, async function(req, res) {
         try {
             let currentAreaRoute = `${req.params.region}/${req.params.area}/${req.params.poi}`;
@@ -43,19 +44,30 @@ const explorer = async function explorer(worldPath, voidPath) {
             const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
-    
-            let context = {
-                siteTitle: `NotherBase - ${req.params.detail}`,
-                user: foundUser,
-                main: main,
-                pov: req.query.pov,
-                inventory: foundInventory,
-                query: req.query,
-                dir: worldPath,
-                path: path
+
+            if (fs.existsSync(main + ".js")) {
+                let context = {
+                    siteTitle: `NotherBase - ${req.params.detail}`,
+                    user: foundUser,
+                    main: main,
+                    pov: req.query.pov,
+                    inventory: foundInventory,
+                    query: req.query,
+                    dir: worldPath,
+                    path: path
+                }
+        
+                await res.render(`explorer`, context);
+            } 
+            else {
+                res.render(`explorer`, 
+                {
+                    siteTitle: "NotherBase | The Void",
+                    user: null,
+                    inventory: null,
+                    main: `${voidPath}/index`
+                });
             }
-    
-            await res.render(`explorer`, context);
         }
         catch(err) {
             console.log(err);
@@ -70,18 +82,29 @@ const explorer = async function explorer(worldPath, voidPath) {
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/index`;
     
-            let context = {
-                siteTitle: `NotherBase - ${req.params.poi}`,
-                user: foundUser,
-                main: main,
-                pov: req.query.pov,
-                inventory: foundInventory,
-                query: req.query,
-                dir: worldPath,
-                path: path
+            if (fs.existsSync(main + ".js")) {
+                let context = {
+                    siteTitle: `NotherBase - ${req.params.poi}`,
+                    user: foundUser,
+                    main: main,
+                    pov: req.query.pov,
+                    inventory: foundInventory,
+                    query: req.query,
+                    dir: worldPath,
+                    path: path
+                }
+        
+                await res.render(`explorer`, context);
+            } 
+            else {
+                res.render(`explorer`, 
+                {
+                    siteTitle: "NotherBase | The Void",
+                    user: null,
+                    inventory: null,
+                    main: `${voidPath}/index`
+                });
             }
-    
-            await res.render(`explorer`, context);
         }
         catch(err) {
             console.log(err);
@@ -101,9 +124,7 @@ const explorer = async function explorer(worldPath, voidPath) {
             siteTitle: "NotherBase | The Void",
             user: null,
             inventory: null,
-            main: `${voidPath}/index`,
-            dir: dir,
-            path: path
+            main: `${voidPath}/index`
         });
     });
     
