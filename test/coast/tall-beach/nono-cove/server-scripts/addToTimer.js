@@ -4,7 +4,6 @@ module.exports = async function addToTimer(db, route, user, params) {
 
         let now = Date.now();
 
-        console.log(poi.data);
         if (!poi.data) poi.data = {
             timer: 0,
             lastTime: now
@@ -13,13 +12,11 @@ module.exports = async function addToTimer(db, route, user, params) {
             if (!poi.data.lastTime) poi.data.lastTime = now;
             if (!poi.data.timer) poi.data.timer = 0;
         }
-        console.log(poi.data);
 
         let difference = (now - poi.data.lastTime) / 1000;
         poi.data.timer -= difference;
         if (poi.data.timer < 0) poi.data.timer = 0;
 
-        console.log(poi.data);
         poi.data.timer = poi.data.timer + 10;
         poi.data.lastTime = Date.now();
 

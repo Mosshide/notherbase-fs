@@ -149,6 +149,16 @@
                 });
             }
         }
+
+        hasItem(itemName, minAmount = 1) {
+            for (let i = 0; i < this.items.length; i++) {
+                if (this.items[i].item.name === itemName) {
+                    if (this.items[i].amount >= minAmount) return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     let playerInventory = new Inventory();
