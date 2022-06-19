@@ -11,7 +11,7 @@
 
 <hr>
 
-<button onclick="tradeForDoll()">Trade 5g for a doll</button>
+<button onclick="tradeForDoll()" id="trade">Trade 5g for a doll</button>
 
 <hr>
 
@@ -68,8 +68,22 @@
 </a>
 
 <script>
+    let bought = false;
+
     let tradeForDoll = async function tradeForDoll() {
-        if (await playerInventory.change(itemIDs[0], -5)) await playerInventory.change(itemIDs[1], 1);
+        if (!bought) {
+            $("#trade").addClass("invisible");
+
+            let paid = await playerInventory.change("Gold Coin", -5);
+            
+            if (paid) {
+                bought = true;
+                await playerInventory.change("Rag Doll", 1);
+            }
+            else {
+                $("#trade").removeClass("invisible");
+            }
+        }
     }
 
     let time = 0;

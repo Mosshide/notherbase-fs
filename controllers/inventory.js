@@ -51,18 +51,18 @@ router.post("/", async function(req, res) {
                                     await foundInventory.save();
             
                                     res.status(200).send({
-                                        item: itemToEmpty,
+                                        item: {
+                                            _id: itemToEmpty
+                                        },
                                         amount: 0
                                     });
                                 }
                                 else {
                                     await foundInventory.save();
-            
                                     res.status(200).send(foundInventory.items[j]);
                                 }
                             }
                             else {
-                                console.log("subtract from too few", req.change);
                                 res.status(304).send(
                                     `Unable to remove ${req.body.amount} ${req.body.item} 
                                     from inventory because the inventory has only ${foundInventory.items[j].amount}.`
@@ -87,7 +87,6 @@ router.post("/", async function(req, res) {
                             res.status(200).send(foundInventory.items[foundInventory.items.length - 1]);
                         }
                         else {
-                            console.log("subtract from none", req.body);
                             res.status(304).send(
                                 `Unable to remove ${req.body.amount} ${req.body.item} 
                                 from inventory because the inventory has none.`
@@ -96,12 +95,10 @@ router.post("/", async function(req, res) {
                     };
                 }
                 else {
-                    console.log(`${req.body.item} doesn't exist!`);
                     res.status(400).send(`${req.body.item} doesn't exist!`);
                 }
             }
             else {
-                console.log(`${req.body.item} ${req.body.amount} Check Input!`);
                 res.status(400).send(`${req.body.item} ${req.body.amount} Check Input!`);
             }
         }

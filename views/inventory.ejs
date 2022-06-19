@@ -45,7 +45,18 @@
             }
 
             try {
-                await $.post("/inventory", change, (data, status) => {
+                let data = null;
+                let status = null;
+
+                await $.post("/inventory", change, (d, s) => {
+                    data = d;
+                    status = s;
+                });
+
+                if (status === "notmodified") {
+                    return false;
+                }
+                else {
                     let holding = false;
 
                     for (let i = 0; i < this.items.length; i++) {
@@ -53,7 +64,7 @@
                             this.items[i].amount = data.amount;
                             holding = true;
 
-                            if (this.items[i].amount === 0) this.items.splice(i, 1);
+                            if (data.amount <= 0) this.items.splice(i, 1);
                         }
                     }
                     
@@ -62,9 +73,8 @@
                     }
 
                     this.render();
-                });
-
-                return true;
+                    return true;
+                }
             }
             catch(err) {
                 console.log(err);
@@ -86,6 +96,7 @@
         }
         
         render() {
+            console.log(this.items);
             this.$list.empty();
             
             for (let i = 0; i < this.items.length; i++) {
