@@ -42,7 +42,8 @@ const explorer = async function explorer(worldPath, voidPath) {
         try {
             let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
 
-            if (await db.poi.exists({ route: currentRoute, user: req.session.currentUser }) === false) {
+            let exists = await db.poi.exists({ route: currentRoute, user: req.session.currentUser });
+            if (!exists) {
                 await db.poi.create({
                     route: currentRoute,
                     name: req.params.detail,
@@ -54,8 +55,7 @@ const explorer = async function explorer(worldPath, voidPath) {
 
             let found = await db.poi.findOne({ route: currentRoute, user: req.session.currentUser });
     
-            if (found) res.send(found.data);
-            else res.send("Found nothing.");
+            res.send(found.data);
         }
         catch(err) {
             console.log(err);
@@ -67,15 +67,14 @@ const explorer = async function explorer(worldPath, voidPath) {
         try {
             let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
 
-            if (await db.poi.exists({ route: currentRoute, user: req.session.currentUser }) === false) {
-                await db.poi.create({
-                    route: currentRoute,
-                    name: req.params.detail,
-                    type: "user",
-                    user: req.session.currentUser,
-                    data: {}
-                });
-            }
+            let exists = await db.poi.exists({ route: currentRoute, user: req.session.currentUser });
+            if (!exists) await db.poi.create({
+                route: currentRoute,
+                name: req.params.detail,
+                type: "user",
+                user: req.session.currentUser,
+                data: {}
+            });
 
             await db.poi.updateOne({ route: currentRoute, user: req.session.currentUser }, { data: req.body });
     
