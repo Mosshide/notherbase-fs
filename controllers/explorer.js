@@ -23,7 +23,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                 await db.poi.create({
                     route: currentRoute,
                     name: req.params.detail,
-                    type: "local",
+                    type: "user",
                     user: req.session.currentUser,
                     data: {}
                 });
@@ -31,6 +31,55 @@ const explorer = async function explorer(worldPath, voidPath) {
     
             let scriptResult = await require(`${worldPath}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, req.session.currentUser, req.body);
             res.send({ scriptResult: scriptResult });
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
+        }
+    });
+
+    router.get(`/:region/:area/:poi/:detail/load`, async function(req, res) {
+        try {
+            let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
+
+            if (await db.poi.exists({ route: currentRoute, user: req.session.currentUser }) === false) {
+                await db.poi.create({
+                    route: currentRoute,
+                    name: req.params.detail,
+                    type: "user",
+                    user: req.session.currentUser,
+                    data: {}
+                });
+            }
+
+            let found = await db.poi.findOne({ route: currentRoute, user: req.session.currentUser });
+    
+            if (found) res.send(found.data);
+            else res.send("Found nothing.");
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
+        }
+    });
+
+    router.post(`/:region/:area/:poi/:detail/save`, async function(req, res) {
+        try {
+            let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
+
+            if (await db.poi.exists({ route: currentRoute, user: req.session.currentUser }) === false) {
+                await db.poi.create({
+                    route: currentRoute,
+                    name: req.params.detail,
+                    type: "user",
+                    user: req.session.currentUser,
+                    data: {}
+                });
+            }
+
+            await db.poi.updateOne({ route: currentRoute, user: req.session.currentUser }, { data: req.body });
+    
+            res.send("Update successful!");
         }
         catch(err) {
             console.log(err);
