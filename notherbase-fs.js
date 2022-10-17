@@ -52,6 +52,10 @@ class NotherBaseFS {
         
             this.io.on('connection', (socket) => {
                 socket.join(socket.handshake.query.room);
+
+                console.log(socket.rooms);
+
+                socket.to(socket.handshake.query.room).emit(`${socket.handshake.query.name} has joined the room`);
         
                 socket.on('disconnect', () => {});
             });

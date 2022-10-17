@@ -7,5 +7,6 @@ module.exports = {
     inventory: require("./inventory"),
     game: require("./game"),
     sendMail: require("./send-mail"),
-    poi: require("./poi")
+    poi: require("./poi"),
+    page: require("./page")
 }

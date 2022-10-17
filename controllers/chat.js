@@ -4,8 +4,6 @@ const router = express.Router();
 const getRouterWithIO = function getRouterWithIO(io) {
     router.post("/", async function(req, res) {
         try {
-            //const foundAccount = await User.findOne({ _id: req.session.currentUser });
-            
             if (req.session.currentUser) {
                 io.to(req.body.room).emit('chat message', {
                     name: req.session.currentUser,
