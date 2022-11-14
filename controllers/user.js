@@ -61,6 +61,8 @@ router.get("/logout", authCheck, async function(req, res) {
 router.post("/logout", authCheck, async function(req, res) {
     try {
         await req.session.destroy();
+
+        res.send("done");
     }
     catch {
         console.log(err);
