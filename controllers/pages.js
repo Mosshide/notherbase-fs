@@ -22,8 +22,13 @@ module.exports = function name(path)
     files.forEach(file => {
         file = file.slice(0, -4);
 
-        router.get(`/${file}`, function(req, res) {
-            res.render(`${path}/${file}.ejs`);
+        router.get(`/${file}`, async function(req, res) {
+            const foundUser = await db.user.findById(req.session.currentUser);
+
+            res.render(`${path}/${file}.ejs`, {
+                user: foundUser,
+                query: req.query
+            });
         });
     });
 
