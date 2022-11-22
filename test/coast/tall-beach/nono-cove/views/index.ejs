@@ -17,9 +17,9 @@
 
 <hr>
 
-<h3>Game Test</h3>
+<h3>memories Test</h3>
 
-<button onclick="addToTime()">Add</button>
+<button onclick="setTime()">Add</button>
 <p id="timer">0:00</p>
 
 <hr>
@@ -105,44 +105,34 @@
 
     let time = 0;
 
-    let addToTime = async function addToTime() {
-        try {
-            time += 10;
+    (async () => {
+        let load = await memories.load("time", "/void/test");
+        console.log(load);
+        time = load.time;
+    })();
 
-            await $.post(`/coast/tall-beach/nono-cove/index/save`, { timer: time, lastTime: Date.now() }, function () {
-                $("#timer").text(Math.floor(time));
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    let getTime = async function getTime() {
-        try {
-            await $.get(`/coast/tall-beach/nono-cove/index/load`, function (data) {
-                console.log(data);
-                data.timer = parseFloat(data.timer);
-                data.lastTime = parseFloat(data.lastTime);
-                console.log(data);
-                console.log(Date.now());
-                time = data.timer - ((Date.now() - data.lastTime) / 1000);
-                if (time < 0) time = 0;
-                $("#timer").text(Math.floor(time));
-            });
-        } catch (error) {
-            console.log(error);
-        }
+    let setTime = async function setTime() {
+        time = Date.now();
+        
+        await memories.save("time", {
+            time: time,
+            a: "dabfb",
+            bln: false,
+            numba: 4236,
+            arrray: [32, "sg", 45],
+            check: {
+                time: time,
+                a: "dabfb",
+                bln: false,
+                numba: 4236,
+                arrray: [32, "sg", 45]
+            }
+        }, "/void/test");
     }
     
     let updateTime = function updateTime() {
-        if (time > 0) {
-            time--;
-            if (time < 0) time = 0;
-            $("#timer").text(Math.floor(time));
-        }
-        
+        $("#timer").text(Math.floor((Date.now() - time) / 1000));
     }
 
     setInterval(updateTime, 1000);
-    getTime();
 </script>

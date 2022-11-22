@@ -43,7 +43,7 @@ const front = async function front(dir) {
                 inventory: foundInventory,
                 query: req.query,
                 dir: dir,
-                path: path
+                route: `/the-front/${req.params.detail}`
             }
     
             await res.render(`explorer`, context);
@@ -69,7 +69,7 @@ const front = async function front(dir) {
                 inventory: foundInventory,
                 query: req.query,
                 dir: dir,
-                path: path
+                route: `/the-front/${req.params.detail}`
             }
     
             await res.render(`explorer`, context);
