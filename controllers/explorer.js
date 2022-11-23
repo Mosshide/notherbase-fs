@@ -84,7 +84,6 @@ const explorer = async function explorer(worldPath, voidPath) {
 
     router.post(`/commit`, async function(req, res) {
         try {
-            console.log(req.body);
             await db.detail.updateOne({ 
                 route: req.body.route,
                 service: req.body.service,
