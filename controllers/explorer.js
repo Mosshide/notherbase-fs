@@ -38,24 +38,43 @@ const explorer = async function explorer(worldPath, voidPath) {
         }
     });
 
-    router.get(`/:region/:area/:poi/:detail/load`, async function(req, res) {
+    router.get(`/recall`, async function(req, res) {
         try {
-            let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
+            let exists = await db.detail.exists({ 
+                route: req.query.route,
+                service: req.query.service,
+                scope: "local",
+                user: req.session.currentUser
+            });
 
-            let exists = await db.poi.exists({ route: currentRoute, user: req.session.currentUser });
             if (!exists) {
-                await db.poi.create({
-                    route: currentRoute,
-                    name: req.params.detail,
-                    type: "user",
+                await db.detail.create({
+                    _lastUpdate: Date.now(),
+                    route: req.query.route,
+                    service: req.query.service,
+                    scope: "local",
                     user: req.session.currentUser,
                     data: {}
                 });
             }
 
-            let found = await db.poi.findOne({ route: currentRoute, user: req.session.currentUser });
-    
-            res.send(found.data);
+            let found = await db.detail.findOne({ 
+                route: req.query.route,
+                service: req.query.service,
+                scope: "local",
+                user: req.session.currentUser
+            });
+
+            if (new Date(found._lastUpdate) > new Date(req.query._lastUpdate)) {
+                res.send({
+                    isUpToDate: false,
+                    data: found.data
+                });
+            }
+            else res.send({
+                isUpToDate: true,
+                data: null
+            });
         }
         catch(err) {
             console.log(err);
@@ -63,21 +82,24 @@ const explorer = async function explorer(worldPath, voidPath) {
         }
     });
 
-    router.post(`/:region/:area/:poi/:detail/save`, async function(req, res) {
+    router.post(`/commit`, async function(req, res) {
         try {
-            let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
-
-            let exists = await db.poi.exists({ route: currentRoute, user: req.session.currentUser });
-            if (!exists) await db.poi.create({
-                route: currentRoute,
-                name: req.params.detail,
-                type: "user",
+            await db.detail.updateOne({ 
+                route: req.body.route,
+                service: req.body.service,
+                scope: "local",
+                user: req.session.currentUser
+            }, { 
+                route: req.body.route,
+                service: req.body.service,
+                scope: "local",
                 user: req.session.currentUser,
-                data: {}
+                _lastUpdate: req.body.time,
+                data: req.body.data
+            }, {
+                upsert: true
             });
 
-            await db.poi.updateOne({ route: currentRoute, user: req.session.currentUser }, { data: req.body });
-    
             res.send("Update successful!");
         }
         catch(err) {
@@ -102,7 +124,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                     inventory: foundInventory,
                     query: req.query,
                     dir: worldPath,
-                    path: path
+                    route: `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`
                 }
         
                 await res.render(`explorer`, context);
@@ -113,7 +135,8 @@ const explorer = async function explorer(worldPath, voidPath) {
                     siteTitle: "NotherBase | The Void",
                     user: null,
                     inventory: null,
-                    main: `${voidPath}/index`
+                    main: `${voidPath}/index`,
+                    route: `/void/index`
                 });
             }
         }
@@ -139,7 +162,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                     inventory: foundInventory,
                     query: req.query,
                     dir: worldPath,
-                    path: path
+                    route: `/${req.params.region}/${req.params.area}/${req.params.poi}/index`
                 }
         
                 await res.render(`explorer`, context);
@@ -150,7 +173,8 @@ const explorer = async function explorer(worldPath, voidPath) {
                     siteTitle: "NotherBase | The Void",
                     user: null,
                     inventory: null,
-                    main: `${voidPath}/index`
+                    main: `${voidPath}/index`,
+                    route: `/void/index`
                 });
             }
         }
@@ -172,7 +196,8 @@ const explorer = async function explorer(worldPath, voidPath) {
             siteTitle: "NotherBase | The Void",
             user: null,
             inventory: null,
-            main: `${voidPath}/index`
+            main: `${voidPath}/index`,
+            route: `/void/index`
         });
     });
     
