@@ -136,7 +136,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                     user: null,
                     inventory: null,
                     main: `${voidPath}/index`,
-                    route: `/void/index`
+                    route: `/void`
                 });
             }
         }
@@ -162,7 +162,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                     inventory: foundInventory,
                     query: req.query,
                     dir: worldPath,
-                    route: `/${req.params.region}/${req.params.area}/${req.params.poi}/index`
+                    route: `/${req.params.region}/${req.params.area}/${req.params.poi}`
                 }
         
                 await res.render(`explorer`, context);
@@ -174,7 +174,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                     user: null,
                     inventory: null,
                     main: `${voidPath}/index`,
-                    route: `/void/index`
+                    route: `/void`
                 });
             }
         }
@@ -197,7 +197,7 @@ const explorer = async function explorer(worldPath, voidPath) {
             user: null,
             inventory: null,
             main: `${voidPath}/index`,
-            route: `/void/index`
+            route: `/void`
         });
     });
     

@@ -12,7 +12,7 @@
     $("#send").on("click", (e) => {
         $.post("/contact", 
         {
-            location: "Test",
+            location: currentRoute,
             content: $("#content").val(),
         }, 
         function () {

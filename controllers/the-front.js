@@ -5,21 +5,8 @@ const front = async function front(dir) {
     let router = require("express").Router();
     
     router.post(`/serve/:script`, async function(req, res) {
-        try {
-            let currentRoute = `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
-
-            let foundPoi = await db.poi.findOne({ route: currentRoute, type: "global" });
-
-            if (foundPoi === null) {
-                db.poi.create({
-                    route: currentRoute,
-                    name: req.params.detail,
-                    type: "global",
-                    global: {}
-                });
-            }
-    
-            let scriptResult = await require(`${worldPath}/${currentRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, req.session.currentUser, req.body);
+        try {  
+            let scriptResult = await require(`${worldPath}/${currentRoute}/server-scripts/${req.params.script}.js`)(db, "/the-front", req.session.currentUser, req.body);
             res.send(scriptResult);
         }
         catch(err) {
@@ -39,7 +26,6 @@ const front = async function front(dir) {
                 siteTitle: `NotherBase - ${req.params.detail}`,
                 user: foundUser,
                 main: main,
-                pov: req.query.pov,
                 inventory: foundInventory,
                 query: req.query,
                 dir: dir,
@@ -65,11 +51,10 @@ const front = async function front(dir) {
                 siteTitle: `NotherBase - The Front`,
                 user: foundUser,
                 main: main,
-                pov: req.query.pov,
                 inventory: foundInventory,
                 query: req.query,
                 dir: dir,
-                route: `/the-front/${req.params.detail}`
+                route: `/the-front`
             }
     
             await res.render(`explorer`, context);
