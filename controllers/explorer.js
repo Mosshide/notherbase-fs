@@ -9,8 +9,9 @@ const explorer = async function explorer(worldPath, voidPath) {
         try {
             let currentAreaRoute = `${req.params.region}/${req.params.area}/${req.params.poi}`;
             let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
+            const foundUser = await db.user.findById(req.session.currentUser);
     
-            let scriptResult = await require(`${worldPath}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, req.session.currentUser, req.body);
+            let scriptResult = await require(`${worldPath}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, foundUser, req.body);
             res.send({ scriptResult: scriptResult });
         }
         catch(err) {

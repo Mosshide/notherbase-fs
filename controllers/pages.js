@@ -10,7 +10,9 @@ module.exports = function name(path)
 
     router.post(`/serve/:script`, async function(req, res) {
         try {
-            let scriptResult = await require(`${path}/scripts/${req.params.script}.js`)(db, req.session.currentUser, req.body);
+            const foundUser = await db.user.findById(req.session.currentUser);
+
+            let scriptResult = await require(`${path}/scripts/${req.params.script}.js`)(db, foundUser, req.body);
             res.send(scriptResult);
         }
         catch(err) {
