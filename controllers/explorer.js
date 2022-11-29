@@ -9,25 +9,6 @@ const explorer = async function explorer(worldPath, voidPath) {
         try {
             let currentAreaRoute = `${req.params.region}/${req.params.area}/${req.params.poi}`;
             let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
-
-            if (await db.poi.exists({ route: currentRoute, type: "global" }) === false) {
-                await db.poi.create({
-                    route: currentRoute,
-                    name: req.params.detail,
-                    type: "global",
-                    data: {}
-                });
-            }
-
-            if (await db.poi.exists({ route: currentRoute, user: req.session.currentUser }) === false) {
-                await db.poi.create({
-                    route: currentRoute,
-                    name: req.params.detail,
-                    type: "user",
-                    user: req.session.currentUser,
-                    data: {}
-                });
-            }
     
             let scriptResult = await require(`${worldPath}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, req.session.currentUser, req.body);
             res.send({ scriptResult: scriptResult });
