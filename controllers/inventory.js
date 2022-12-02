@@ -35,6 +35,7 @@ router.post("/", async function(req, res) {
                 if (foundItem) {
                     let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
         
+                    console.log(foundInventory.items);
                     let holding = false;
         
                     for (let j = 0; j < foundInventory.items.length; j++) {
