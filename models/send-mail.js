@@ -21,6 +21,28 @@ const passwordReset = async (toEmail, resetToken) => {
     });
 };
 
+const send = async (toEmail, subject, html) => {
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.NOREPLY,
+          pass: process.env.NOREPLYPW
+        }
+    });
+      
+    var mailOptions = {
+        from: process.env.NOREPLY,
+        to: toEmail,
+        subject: subject,
+        html: html
+    };
+    
+    return await transporter.sendMail(mailOptions, function(error, info){
+        if (error) console.log(error);
+    });
+}
+
 module.exports = {
-    passwordReset: passwordReset
+    passwordReset: passwordReset,
+    send: send
 };

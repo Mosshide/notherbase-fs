@@ -21,6 +21,7 @@
 
 <button onclick="setTime()">Add</button>
 <p id="timer">0:00</p>
+<button onclick="emailTime()">email</button>
 
 <hr>
 
@@ -132,6 +133,16 @@
     
     let updateTime = function updateTime() {
         $("#timer").text(Math.floor((Date.now() - time) / 1000));
+    }
+
+    let emailTime = async () => {
+        $.post("/coast/tall-beach/nono-cove/index/serve/emailTime", {
+            toEmail: "wyattsushi@gmail.com",
+            subject: "New Time Update!",
+            html: `New Time: ${time}`
+        }, (res) => {
+            console.log(res);
+        })
     }
 
     setInterval(updateTime, 1000);

@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 const item = new mongoose.Schema({
 	name: String,
 	shortDescription: String,
-	fullDescription: String
+	fullDescription: String,
+	icon: String,
+	tags: [ String ],
+	image: String
 });
 
 // This tells Mongoose to use the exampleSchema to access the examples collection
