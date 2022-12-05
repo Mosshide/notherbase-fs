@@ -1,4 +1,4 @@
-const { connectionSuccess } = require("../models");
+import { connectionSuccess } from "../models/index.js";
 
 const authCheck = async function authCheck(req, res, next){
     if (connectionSuccess) {
@@ -15,4 +15,4 @@ const authCheck = async function authCheck(req, res, next){
     }
 }
 
-module.exports = authCheck;
+export default authCheck;

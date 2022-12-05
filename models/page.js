@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const page = new mongoose.Schema({
+const page = mongoose.model('pages', new mongoose.Schema({
 	name: String,
 	type: String,
     user: { 
@@ -9,6 +9,6 @@ const page = new mongoose.Schema({
         required: false
     },
     data: {}
-});
+}));
 
-module.exports = mongoose.model('pages', page);
+export default page;

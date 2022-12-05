@@ -4,15 +4,16 @@
 
 <hr>
 
-<div class="chat-box" id="test-box">
-    <div class="chat-name">Chatting using the name <%= user.username %>:</div>
+<div class="chat-box" id="test-chat">
 
-    <div class="chat-log">
-        
-    </div>
+</div>
 
-    <input autocomplete="off" type="text" name="text" class="chat-entry">
-    <div value="Send" class="chat-send">Send</div>
+<div class="chat-box" id="test-chat-2">
+
+</div>
+
+<div class="chat-box" id="test-chat-3">
+
 </div>
 
 <hr>
@@ -84,7 +85,9 @@
 
 <script src="/js/chat-box.js"></script>
 <script>
-    let chatTest = new ChatBox("<%= user.username %>", "test-box", "testRoom");
+    let chatTest = new ChatBox("<%= user.username %>", "test-chat");
+    let chatTest2 = new ChatBox("<%= user.username %>", "test-chat-2");
+    let chatTest3 = new ChatBox("<%= user.username %>", "test-chat-3");
 
     let bought = false;
 

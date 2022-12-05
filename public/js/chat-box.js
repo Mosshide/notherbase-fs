@@ -1,25 +1,21 @@
 class ChatBox {
-    constructor(name, box, room) {
+    constructor(username, room) {
         this.socket = null;
-        import("/socket.io/socket.io.js").then(() => {
-            this.socket = io({
-                query: {
-                    room: room,
-                    name: name
-                }
-            });
+        this.username = username;
+        this.room = room;
+        this.$div = $(`.chat-box#${room}`);
+        this.$chatLog = null;
+        this.$entry = null;
 
-            this.socket.on('chat message', this.newMessage);
-            $(".chat-send").on("click", this.sendMessage);
-            this.$entry.on("keyup", function(e) {
-                if (e.keyCode == 13) sendMessage();
-            });
+        this.socket = io({
+            query: {
+                room: this.room,
+                name: this.username
+            }
         });
 
-        this.room = room;
-        this.$div = $(`.chat-box #${box}`)
-        this.$chatLog = this.$div.find(".chat-log");
-        this.$entry = this.$div.find(".chat-entry");
+        this.socket.on('chat message', this.newMessage);
+        this.render();
     }
 
     newMessage = (msg) => {
@@ -32,19 +28,29 @@ class ChatBox {
             let val = this.$entry.val();
             this.$entry.val("");
 
-            // $.post("/chat", {
-            //     room: "<%= room %>",
-            //     text: val
-            // }, function () {
-            //     $chatLog.scrollTop($chatLog[0].scrollHeight);
-            // });
-
             this.socket.emit('chat message', {
-                name: name,
+                name: this.username,
                 time: Date.now(),
                 text: val
             });
         }
+    }
+
+    render() {
+        this.$div.empty();
+
+        this.$div.append(`<h4>Chatting with the name ${this.username}:`);
+        this.$div.append(`<div class="chat-log"> </div>`);
+        this.$div.append(`<input autocomplete="off" type="text" class="chat-entry">`);
+        this.$div.append(`<button class="chat-send">Send</button>`);
+
+        this.$chatLog = this.$div.find(".chat-log");
+        this.$entry = this.$div.find(".chat-entry");
+
+        this.$div.find("button").on("click", this.sendMessage);
+        this.$entry.on("keyup", (e) => {
+            if (e.keyCode == 13) this.sendMessage();
+        });
     }
 }
 

@@ -1,8 +1,7 @@
-const front = async function front(dir) {
-    const db = require("../models");
-    const path = require('path');
-    
-    let router = require("express").Router();
+import express from "express";
+
+const front = function front(dir) {
+    let router = express.Router();
     
     router.post(`/serve/:script`, async function(req, res) {
         try {  
@@ -17,8 +16,8 @@ const front = async function front(dir) {
     
     router.get(`/:detail`, async function(req, res) {
         try {
-            const foundUser = await db.user.findById(req.session.currentUser);
-            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            const foundUser = await req.db.user.findById(req.session.currentUser);
+            const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let main = `${dir}/views/${req.params.detail}`;
     
@@ -42,8 +41,8 @@ const front = async function front(dir) {
     
     router.get(`/`, async function(req, res) {
         try {
-            const foundUser = await db.user.findById(req.session.currentUser);
-            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            const foundUser = await req.db.user.findById(req.session.currentUser);
+            const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let main = `${dir}/views/index`;
     
@@ -68,4 +67,4 @@ const front = async function front(dir) {
     return router;
 }
 
-module.exports = front;
+export default front;

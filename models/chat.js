@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const chatSchema = new mongoose.Schema({
+const chat = mongoose.model('chats', new mongoose.Schema({
     name: String,
 	text: String,
     date: Number
-});
+}));
 
-module.exports = mongoose.model('chat', chatSchema);
+export default chat;

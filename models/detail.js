@@ -1,7 +1,6 @@
-// This allows us to use Mongoose to connect to MongoDB
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const detail = new mongoose.Schema({
+const detail = mongoose.model('details', new mongoose.Schema({
     _lastUpdate: Number,
     route: String,
 	service: String,
@@ -12,8 +11,6 @@ const detail = new mongoose.Schema({
         required: false
     },
     data: {}
-});
+}));
 
-// This tells Mongoose to use the exampleSchema to access the examples collection
-// in our db and then exports the model so we can use it.
-module.exports = mongoose.model('details', detail);
+export default detail;

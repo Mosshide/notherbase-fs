@@ -1,15 +1,15 @@
-const db = require("../models");
-const path = require('path');
-const fs = require("fs");
+import express from "express";
+import path from 'node:path';
+import fs from 'fs';
 
-let router = require("express").Router();
-
-const explorer = async function explorer(worldPath, voidPath) {
+const explorer = function explorer(worldPath, voidPath) {
+    let router = express.Router();
+    
     router.post(`/:region/:area/:poi/:detail/serve/:script`, async function(req, res) {
         try {
             let currentAreaRoute = `${req.params.region}/${req.params.area}/${req.params.poi}`;
             let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
-            const foundUser = await db.user.findById(req.session.currentUser);
+            const foundUser = await req.db.user.findById(req.session.currentUser);
     
             let scriptResult = await require(`${worldPath}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, foundUser, req.body);
             res.send({ scriptResult: scriptResult });
@@ -22,7 +22,7 @@ const explorer = async function explorer(worldPath, voidPath) {
 
     router.get(`/recall`, async function(req, res) {
         try {
-            let exists = await db.detail.exists({ 
+            let exists = await req.db.detail.exists({ 
                 route: req.query.route,
                 service: req.query.service,
                 scope: "local",
@@ -30,7 +30,7 @@ const explorer = async function explorer(worldPath, voidPath) {
             });
 
             if (!exists) {
-                await db.detail.create({
+                await req.db.detail.create({
                     _lastUpdate: Date.now(),
                     route: req.query.route,
                     service: req.query.service,
@@ -40,7 +40,7 @@ const explorer = async function explorer(worldPath, voidPath) {
                 });
             }
 
-            let found = await db.detail.findOne({ 
+            let found = await req.db.detail.findOne({ 
                 route: req.query.route,
                 service: req.query.service,
                 scope: "local",
@@ -66,7 +66,7 @@ const explorer = async function explorer(worldPath, voidPath) {
 
     router.post(`/commit`, async function(req, res) {
         try {
-            await db.detail.updateOne({ 
+            await req.db.detail.updateOne({ 
                 route: req.body.route,
                 service: req.body.service,
                 scope: "local",
@@ -92,8 +92,8 @@ const explorer = async function explorer(worldPath, voidPath) {
     
     router.get(`/:region/:area/:poi/:detail`, async function(req, res) {
         try {
-            const foundUser = await db.user.findById(req.session.currentUser);
-            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            const foundUser = await req.db.user.findById(req.session.currentUser);
+            const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
 
@@ -130,8 +130,8 @@ const explorer = async function explorer(worldPath, voidPath) {
     
     router.get(`/:region/:area/:poi`, async function(req, res) {
         try {
-            const foundUser = await db.user.findById(req.session.currentUser);
-            const foundInventory = await db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            const foundUser = await req.db.user.findById(req.session.currentUser);
+            const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let main = `${worldPath}/${req.params.region}/${req.params.area}/${req.params.poi}/views/index`;
     
@@ -186,4 +186,4 @@ const explorer = async function explorer(worldPath, voidPath) {
     return router;
 }
 
-module.exports = explorer;
+export default explorer;

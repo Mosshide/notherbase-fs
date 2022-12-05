@@ -1,8 +1,7 @@
-// This allows us to use Mongoose to connect to MongoDB
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // This shows the kind of documents we're interacting with in the db
-const inventory = new mongoose.Schema({
+const inventory = mongoose.model('inventories', new mongoose.Schema({
 	user: { 
 		type: mongoose.Schema.Types.ObjectId, 
 		ref: "users",
@@ -15,8 +14,6 @@ const inventory = new mongoose.Schema({
 		},
 		amount: Number
 	}]
-});
+}));
 
-// This tells Mongoose to use the exampleSchema to access the examples collection
-// in our db and then exports the model so we can use it.
-module.exports = mongoose.model('inventories', inventory);
+export default inventory;

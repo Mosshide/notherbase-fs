@@ -1,8 +1,8 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
 // Import my Data
-const { inventory, item, connectionSuccess } = require("../models");
+import { inventory, item, connectionSuccess } from "../models/index.js";
 
 router.get("/", async function(req, res) {
     if (connectionSuccess) {
@@ -34,8 +34,7 @@ router.post("/", async function(req, res) {
 
                 if (foundItem) {
                     let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
-        
-                    console.log(foundInventory.items);
+
                     let holding = false;
         
                     for (let j = 0; j < foundInventory.items.length; j++) {
@@ -114,4 +113,4 @@ router.post("/", async function(req, res) {
 });
 
 
-module.exports = router;
+export default router;

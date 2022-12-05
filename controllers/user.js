@@ -1,11 +1,11 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 
 // Import my Data
-const { user, inventory, sendMail } = require("../models");
+import { user, inventory, sendMail } from "../models/index.js";
 
-const authCheck = require("./authCheck");
+import authCheck from "./authCheck.js";
 
 let getAttributes = async function getAttributes(userID) {
     try {
@@ -410,5 +410,4 @@ router.delete("/", authCheck, async function(req, res) {
     }
 });
 
-module.exports = router;
-
+export default router;

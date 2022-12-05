@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 const passwordReset = async (toEmail, resetToken) => {
     var transporter = nodemailer.createTransport({
@@ -42,7 +42,5 @@ const send = async (toEmail, subject, html) => {
     });
 }
 
-module.exports = {
-    passwordReset: passwordReset,
-    send: send
-};
+
+export default { passwordReset, send };

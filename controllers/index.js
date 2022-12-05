@@ -1,12 +1,9 @@
-module.exports = {
-    chat: require("./chat"),
-    item: require("./item"),
-    pages: require("./pages.js"),
-    user: require("./user"),
-    authCheck: require("./authCheck"),
-    contact: require("./contact"),
-    explorer: require("./explorer"),
-    front: require("./the-front"),
-    inventory: require("./inventory"),
-    game: require("./game")
-}
+export {default as item} from "./item.js";
+export {default as pages} from "./pages.js";
+export {default as user} from "./user.js";
+export {default as authCheck} from "./authCheck.js";
+export {default as contact} from "./contact.js";
+export {default as explorer} from "./explorer.js";
+export {default as front} from "./the-front.js";
+export {default as inventory} from "./inventory.js";
+export {default as game} from "./game.js";

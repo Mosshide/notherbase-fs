@@ -1,10 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const fs = require('fs');
+import fs from "fs";
+import * as db from "../models/index.js";
 
-const db = require("../models");
-
-module.exports = function name(path)
+export default function pages(path)
 {
     let files = fs.readdirSync(path);
 
