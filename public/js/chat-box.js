@@ -6,6 +6,7 @@ class ChatBox {
         this.$div = $(`.chat-box#${room}`);
         this.$chatLog = null;
         this.$entry = null;
+        this.maxMessages = 100;
 
         this.socket = io({
             query: {
@@ -21,6 +22,13 @@ class ChatBox {
     newMessage = (msg) => {
         let time = new Date(msg.time);
         this.$chatLog.append(`<p>[${time.toLocaleTimeString('en-US')}] ${msg.name}: ${msg.text}</p>`);
+        this.$chatLog.scrollTop(this.$chatLog.prop("scrollHeight"));
+        let msgs = this.$chatLog.find("p");
+        if (msgs.length > this.maxMessages) {
+            for (let i = 0; i < msgs.length - this.maxMessages; i++) {
+                msgs[i].remove();
+            }
+        }
     }
 
     sendMessage = () => {

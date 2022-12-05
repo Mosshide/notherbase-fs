@@ -71,7 +71,7 @@ router.post("/logout", authCheck, async function(req, res) {
 
 router.get("/all", async function(req, res) {
     try {
-        let foundUsers = await user.find({}, 'username coin home authLevels location attributes');
+        let foundUsers = await user.find({}, 'username coin home authLevels location attributes email');
 
         res.status(200).send({ foundUsers: foundUsers });
     }
