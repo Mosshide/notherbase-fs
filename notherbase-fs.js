@@ -78,8 +78,12 @@ class NotherBaseFS {
             });
         });
 
-        this.app.use("/", (req, res, next) => {
+        this.app.use((req, res, next) => {
             req.db = this.db;
+            req.worldDir = worldPath;
+            req.frontDir = frontPath;
+            req.pagesDir = pagesPath;
+            req.voidDir = voidPath;
 
             next();
         });
@@ -94,11 +98,13 @@ class NotherBaseFS {
     
         this.app.use("/item", controllers.item);
     
-        this.app.use("/the-front", controllers.front(frontPath));
+        this.app.use("/the-front", controllers.front);
     
-        this.app.use("/", controllers.pages(pagesPath));
-    
-        this.app.use("/", controllers.authCheck, controllers.explorer(worldPath, voidPath));
+        this.app.use("/", controllers.authCheck, controllers.explorer);
+        
+        this.app.use("/", controllers.pages);
+
+        this.app.use(controllers.void);
     
         this.server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);

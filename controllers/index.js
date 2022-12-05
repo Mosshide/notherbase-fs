@@ -7,3 +7,4 @@ export {default as explorer} from "./explorer.js";
 export {default as front} from "./the-front.js";
 export {default as inventory} from "./inventory.js";
 export {default as game} from "./game.js";
+export {default as void} from "./void.js";
