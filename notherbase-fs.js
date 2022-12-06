@@ -104,6 +104,11 @@ class NotherBaseFS {
         
         this.app.use("/", controllers.pages);
 
+        // start location
+        this.app.get("/", function(req, res) {
+            res.redirect("/the-front");
+        });
+
         this.app.use(controllers.void);
     
         this.server.listen(process.env.PORT, function () {

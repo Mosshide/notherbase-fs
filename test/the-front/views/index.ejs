@@ -4,6 +4,8 @@
 
 <button onclick="addGold()">Gold</button>
 
+<button onclick="emailTime()">email</button>
+
 <hr>
 
 <h3>Register Account</h3>
@@ -153,5 +155,17 @@
 
     let addGold = function addGold(params) {
         playerInventory.change(itemIDs[0], 2);
+    }
+
+    let time = 0;
+
+    let emailTime = async () => {
+        $.post("/coast/tall-beach/nono-cove/index/serve/emailTime", {
+            toEmail: "wyattsushi@gmail.com",
+            subject: "New Time Update!",
+            html: `New Time: ${time}`
+        }, (res) => {
+            console.log(res);
+        })
     }
 </script>

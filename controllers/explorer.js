@@ -1,7 +1,5 @@
 import express from "express";
-import path from 'node:path';
 import fs from 'fs';
-import { nextTick } from "node:process";
 
 let router = express.Router();
 
@@ -11,7 +9,8 @@ router.post(`/:region/:area/:poi/:detail/serve/:script`, async function(req, res
         let currentRoute = `${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`;
         const foundUser = await req.db.user.findById(req.session.currentUser);
 
-        let scriptResult = await require(`${req.worldDir}/${currentAreaRoute}/server-scripts/${req.params.script}.js`)(db, currentRoute, foundUser, req.body);
+        let script = await import(`${req.worldDir}/${currentAreaRoute}/server-scripts/${req.params.script}.js`);
+        let scriptResult = await script.default(req.db, currentRoute, foundUser, req.body);
         res.send({ scriptResult: scriptResult });
     }
     catch(err) {
@@ -146,11 +145,6 @@ router.get(`/:region/:area/:poi`, async function(req, res, next) {
         console.log(err);
         res.status(500).end();
     }
-});
-
-// start location
-router.get("/", function(req, res) {
-    res.redirect("/the-front");
 });
 
 export default router;
