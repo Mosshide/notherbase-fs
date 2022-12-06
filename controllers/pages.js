@@ -24,7 +24,6 @@ router.get(`/:page`, async function(req, res, next) {
             user: foundUser,
             query: req.query
         });
-
     } 
     else {
         next();

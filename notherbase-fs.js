@@ -100,9 +100,9 @@ class NotherBaseFS {
     
         this.app.use("/the-front", controllers.front);
     
-        this.app.use("/", controllers.authCheck, controllers.explorer);
-        
         this.app.use("/", controllers.pages);
+        
+        this.app.use("/", controllers.authCheck, controllers.explorer);
 
         // start location
         this.app.get("/", function(req, res) {
