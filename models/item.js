@@ -1,15 +1,12 @@
-// This allows us to use Mongoose to connect to MongoDB
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const item = new mongoose.Schema({
+const item = mongoose.model('items', new mongoose.Schema({
 	name: String,
 	shortDescription: String,
 	fullDescription: String,
 	icon: String,
 	tags: [ String ],
 	image: String
-});
+}));
 
-// This tells Mongoose to use the exampleSchema to access the examples collection
-// in our db and then exports the model so we can use it.
-module.exports = mongoose.model('items', item);
+export default item;

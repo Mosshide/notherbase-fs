@@ -30,7 +30,7 @@ class Memories {
             await $.post('/commit', {
                 route: route,
                 service: service,
-                time: this._lastUpdate,
+                _lastUpdate: this._lastUpdate,
                 data: JSON.stringify(dataToSave)
             }, (data) => {
                 this.data[service] = dataToSave;

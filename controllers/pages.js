@@ -1,38 +1,33 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const fs = require('fs');
+import fs from "fs";
 
-const db = require("../models");
+router.post(`/serve/:script`, async function(req, res) {
+    try {
+        const foundUser = await req.db.user.findById(req.session.currentUser);
 
-module.exports = function name(path)
-{
-    let files = fs.readdirSync(path);
+        let script = await import(`${req.pagesDir}/scripts/${req.params.script}.js`);
+        let scriptResult = await script.default(req.db, foundUser, req.body);
+        res.send(scriptResult);
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).end();
+    }
+});
 
-    router.post(`/serve/:script`, async function(req, res) {
-        try {
-            const foundUser = await db.user.findById(req.session.currentUser);
+router.get(`/:page`, async function(req, res, next) {
+    if (fs.existsSync(`${req.pagesDir}/${req.params.page}.ejs`)) {
+        const foundUser = await req.db.user.findById(req.session.currentUser);
 
-            let scriptResult = await require(`${path}/scripts/${req.params.script}.js`)(db, foundUser, req.body);
-            res.send(scriptResult);
-        }
-        catch(err) {
-            console.log(err);
-            res.status(500).end();
-        }
-    });
-
-    files.forEach(file => {
-        file = file.slice(0, -4);
-
-        router.get(`/${file}`, async function(req, res) {
-            const foundUser = await db.user.findById(req.session.currentUser);
-
-            res.render(`${path}/${file}.ejs`, {
-                user: foundUser,
-                query: req.query
-            });
+        res.render(`${req.pagesDir}/${req.params.page}.ejs`, {
+            user: foundUser,
+            query: req.query
         });
-    });
+    } 
+    else {
+        next();
+    }
+});
 
-    return router;
-}
+export default router;

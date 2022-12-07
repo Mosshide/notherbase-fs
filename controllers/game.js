@@ -1,8 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
 
-// Import my Data
-const { game } = require("../models");
+import { game } from "../models/index.js";
 
 router.get("/all", async function(req, res) {
     try {
@@ -57,4 +56,4 @@ router.post("/", async function(req, res) {
     }
 });
 
-module.exports = router;
+export default router;

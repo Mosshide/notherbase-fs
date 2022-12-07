@@ -1,8 +1,7 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 //convert schema to model
-const user = mongoose.model('users',
-    new mongoose.Schema({
+const user = mongoose.model('users', new mongoose.Schema({
         username: String,
         password: String,
         email: String,
@@ -23,4 +22,4 @@ const user = mongoose.model('users',
     })
 );
 
-module.exports = user;
+export default user;

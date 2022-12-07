@@ -1,8 +1,8 @@
 {
   "name": "notherbase-fs",
-  "version": "1.4.3",
+  "version": "1.5.3",
   "description": "Functions to help make developing for NotherBase easier.",
-  "main": "notherbase-fs.js",
+  "exports": "./notherbase-fs.js",
   "scripts": {
     "test": "nodemon test/test-index.js",
     "gmail-auth": "node gmail-auth.js",
@@ -30,6 +30,11 @@
     "mongoose": "^6.1.7",
     "nodemailer": "^6.7.5",
     "serve-favicon": "^2.5.0",
-    "socket.io": "^4.4.1"
+    "socket.io": "^4.4.1",
+    "string-strip-html": "^13.0.0"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=14.16"
   }
 }

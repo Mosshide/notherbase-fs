@@ -1,4 +1,4 @@
-module.exports = async function getTimer(db, route, user, params) {
+export default async function getTimer(db, route, user, params) {
     try {
         let poi = await db.poi.findOne({ route: route, user: user });
 
