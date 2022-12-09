@@ -10,7 +10,9 @@ export default class Spirit {
         if (!this.body._lastUpdate) this.body._lastUpdate = 0;
         if (!this.body.token) this.body.token = -1;
         if (!this.body.data) this.body.data = {};
-        this.memory = null;
+        this.memory = {
+            data: {}
+        };
         this.time = Date.now();
     }
 
@@ -27,7 +29,7 @@ export default class Spirit {
         data: {}
     }));
 
-    commit = async (data) => {
+    commit = async (data = this.memory.data) => {
         this.time = Date.now();
 
         await Spirit.db.updateOne({ 
@@ -46,7 +48,7 @@ export default class Spirit {
             upsert: true
         });
 
-        this.memory = data;
+        this.memory.data = data;
 
         return "Update successful!";
     }
@@ -66,6 +68,33 @@ export default class Spirit {
             return {
                 isUpToDate: false,
                 data: found.data
+            };
+        }
+        else return {
+            isUpToDate: true,
+            data: null
+        };
+    }
+
+    getAll = async () => {
+        let found = await Spirit.db.find({ 
+            route: this.body.route,
+            service: this.body.service,
+            scope: this.body.scope
+        });
+
+        if (found && new Date(found._lastUpdate) > new Date(this.body._lastUpdate)) {
+            this.memory = found;
+            this.time = found._lastUpdate;
+
+            let takeout = [];
+            for (let i = 0; i < found.length; i++) {
+                takeout.push(found[i].data)
+            }
+            
+            return {
+                isUpToDate: false,
+                data: takeout
             };
         }
         else return {
@@ -95,12 +124,12 @@ export default class Spirit {
         };
     }
 
-    delete = async () => {
+    delete = async (which, query) => {
         await Spirit.db.findOneAndDelete({ 
             route: this.body.route,
             service: this.body.service,
             scope: this.body.scope,
             parent: this.body.parent
-        });
+        }).where(`data.${which}`).equals(query);
     }
 };

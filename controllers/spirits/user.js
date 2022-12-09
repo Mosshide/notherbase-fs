@@ -1,54 +1,5 @@
 import bcrypt from "bcrypt";
-
-let getAttributes = async function getAttributes(userID) {
-    try {
-        let foundUser = await user.findById(userID, 'attributes');
-    
-        if (!foundUser.attributes || foundUser.attributes == {}) {
-            foundUser.attributes = {
-                translation: 0,
-                strength: 0,
-                agility: 0,
-                defense: 0
-            }
-    
-            await foundUser.save();
-        }
-    
-        return foundUser;
-    } 
-    catch (err) {
-        console.log(err);
-        return null;
-    }
-}
-
-let loginCheck = (req) => {
-    check(req.session.currentUser, "Please login first.");
-}
-
-let findUser = async (req) => {
-    let db = new req.db.User(req.body, req.session.currentUser);
-    let foundUser = await db.recall().data;
-
-    checkUser(foundUser);
-}
-
-let check = (checkee, failMsg) => {
-    if (!checkee) throw {
-        status: "failed",
-        message: failMsg,
-        data: null
-    };
-}
-
-let success = (msg, data = null) => {
-    return {
-        status: "success",
-        message: msg,
-        data: data
-    };
-}
+import {loginCheck, check, findUser, fail, success} from "./util.js";
 
 export default {
     logout: async (req) => {
@@ -58,7 +9,7 @@ export default {
 
         return success("Logged out.");
     },
-    resetPassword: async (req) => {
+    sendPasswordReset: async (req) => {
         let reset = new req.db.User("reset");
 
         let token = Math.floor(Math.random() * 9999);
@@ -73,7 +24,7 @@ export default {
 
         return success("Password reset.", {});
     },
-    newPassword: async (req) => {
+    changePassword: async (req) => {
         let reset = new req.db.User("reset");
         let resetData = (await db.recallFromData("token", req.body.data.token)).data;
 
@@ -94,110 +45,11 @@ export default {
 
         return success("Password changed successfully!");
     },
-    attributes: async (req) => {
-        loginCheck(req);
-
-        let foundUser = await getAttributes(req.session.currentUser);
-
-        return {
-            status: "success",
-            message: "Got user attributes.",
-            data: foundUser.attributes
-        };
-    },
-    checkAttribute: async (req) => {
-        // if (req.session.currentUser) {
-        //     let foundUser = await getAttributes(req.session.currentUser);
-
-        //     if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
-        //         return {
-        //             status: "success",
-        //             message: "Passed check.",
-        //             data: null
-        //         }
-        //     }
-        //     else return {
-        //         status: "failed",
-        //         message: "Failed check.",
-        //         data: null
-        //     };
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
-    },
-    setAttributes: async (req) => {
-        // if (req.session.currentUser) {
-        //     let foundUser = await getAttributes(req.session.currentUser);
-
-        //     if (foundUser) {
-        //         foundUser.attributes[req.body.change] = parseInt(req.body.to);
-        //         await foundUser.save();
-
-        //         return {
-        //             status: "success",
-        //             message: "Attributes set.",
-        //             data: null
-        //         }
-        //     }
-        //     else {
-        //         return {
-        //             status: "failed",
-        //             message: "User not found.",
-        //             data: null
-        //         }
-        //     }
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
-    },
-    incrementAttribute: async (req) => {
-        // if (req.session.currentUser) {
-        //     let foundUser = await getAttributes(req.session.currentUser);
-
-        //     if (foundUser) {
-        //         if (foundUser.attributes[req.body.change] < req.body.max) {
-        //             foundUser.attributes[req.body.change]++;
-        //             await foundUser.save();
-
-        //             return {
-        //                 status: "success",
-        //                 message: "Attribute incremented.",
-        //                 data: foundUser.attributes[req.body.change]
-        //             }
-        //         } 
-        //         else {
-        //             return {
-        //                 status: "failed",
-        //                 message: "Attribute maxed.",
-        //                 data: foundUser.attributes[req.body.change]
-        //             }
-        //         }
-        //     }
-        //     else {
-        //         return {
-        //             status: "failed",
-        //             message: "User not found!",
-        //             data: null
-        //         }
-        //     }
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
-    },
     register: async (req) => {
         let user = new req.db.User("user", req.body.data.email);
         let userData = (await user.recall()).data;
 
-        check(!userData, "Email already in use!")
+        check(!userData, "Email already in use!");
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.data.password, salt);
@@ -222,111 +74,51 @@ export default {
         return success("Registration successful!");
     },
     login: async (req) => {
-        let user = new req.db.User("user", req.body.data.email);
-        let userData = (await user.recall()).data;
+        let user = await findUser(req, req.body.data.email);
 
-        check(userData, "User not found.");
-        let passResult = await bcrypt.compare(req.body.data.password, userData.password);
+        let passResult = await bcrypt.compare(req.body.data.password, user.memory.data.password);
         check(passResult, "Password doesn't match.");
 
         req.session.currentUser = req.body.data.email;
 
         return success("Logged in.");
     },
-    email: async (req) => {
-        // if (req.session.currentUser) {
-        //     let foundAccount = await user.findOne({ email: req.body.email });
+    changeUserEmail: async (req) => {
+        loginCheck(req);
 
-        //     if (!foundAccount) {
-        //         let foundUser = await user.findById(req.session.currentUser);
+        let user = new req.db.User("user", req.body.data.email);
+        let userData = (await user.recall()).data;
 
-        //         if (foundUser) {
-        //             foundUser.email = req.body.email;
-        //             await foundUser.save();
+        check(!userData, "Email already in use!");
 
-        //             return {
-        //                 status: "success",
-        //                 message: "Update successful!",
-        //                 data: null
-        //             }
-        //         }
-        //         else {
-        //             return {
-        //                 status: "failed",
-        //                 message: "User not found.",
-        //                 data: null
-        //             }
-        //         }
-        //     }
-        //     else {
-        //         return {
-        //             status: "failed",
-        //             message: "Email already in use.",
-        //             data: null
-        //         }
-        //     }
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
+        user = await findUser();
+
+        user.memory.data.email = req.body.email;
+        await user.commit();
+
+        return success();
     },
-    username: async (req) => {
-        // if (req.session.currentUser) {
-        //     let foundAccount = await user.findOne({ username: req.body.username });
+    changeUsername: async (req) => {
+        loginCheck(req);
+       
+        let user = new req.db.User("user");
+        let userData = (await user.recallFromData("username", req.body.data.username)).data;
+        check(!userData, "Username already in use!");
 
-        //     if (!foundAccount) {
-        //         let foundUser = await user.findById(req.session.currentUser);
-        
-        //         if (foundUser) {
-        //             foundUser.username = req.body.username;
-        //             await foundUser.save();
-        
-        //             return {
-        //                 status: "success",
-        //                 message: "Update successful!",
-        //                 data: null
-        //             }
-        //         }
-        //         else {
-        //             return {
-        //                 status: "failed",
-        //                 message: "User not found.",
-        //                 data: null
-        //             }
-        //         }
-        //     }
-        //     else {
-        //         return {
-        //             status: "failed",
-        //             message: "Username already taken.",
-        //             data: null
-        //         }
-        //     }
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
+        user = await findUser();
+
+        user.memory.data.username = req.body.username;
+        await user.commit();
+
+        return success();
     },
-    delete: async (req) => {
-        // if (req.session.currentUser) {
-        //     await user.findByIdAndDelete(req.session.currentUser);
-        //     await req.session.destroy();
+    deleteUserPermanently: async (req) => {
+        loginCheck(req);
+        
+        await user.findOneAndDelete().where("data.email").equals(req.session.currentUser);
+        await req.session.destroy();
 
-        //     return {
-        //         status: "success",
-        //         message: "Account deleted!",
-        //         data: null
-        //     };
-        // }
-        // else return {
-        //     status: "failed",
-        //     message: "Please login first!",
-        //     data: null
-        // }
+        return success("Account deleted.");
     }
 }
 

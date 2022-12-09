@@ -1,70 +1,34 @@
-import express from "express";
-const router = express.Router();
+import { success, check } from "./util.js";
 
-import items from "../models/item.js";
+export default {
+    getAllItems: async (req) => {
+        let items = new req.db.Item();
+        let all = items.getAll();
 
-router.get("/all", async function(req, res) {
-    try {
-        let foundItems = await items.find({});
+        check(itemData, "Items not found.");
 
-        res.status(200).send({ foundItems: foundItems });
+        return success("Found items.", all);
+    },
+    getItem: async (req) => {
+        let item = new req.db.Item(req.body.data.name);
+
+        let itemData = await item.recall();
+
+        check(itemData, `Item not found: ${req.body.data.name}`);
+
+        return success("Found item.", itemData);
+    },
+    setItem: async (req) => {
+        let item = new req.db.Item(req.body.data.name);
+
+        await item.commit(req.body.data);
+
+        return success();
+    },
+    deleteItem: async (req) => {
+        let item = new req.db.Item(req.body.data.name);
+        item.delete();
+
+        return success("Item deleted.");
     }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-router.get("/", async function(req, res) {
-    try {
-        let foundItem = await items.findOne({ name: req.query.name });
-
-        res.status(200).send({ foundItem: foundItem });
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-router.post("/", async function(req, res) {
-    try {
-        if (!req.body.id) {
-            await items.create({
-                name: req.body.name,
-                shortDescription: req.body.shortDescription,
-                fullDescription: req.body.fullDescription
-            });
-        }
-        else {
-            let foundItem = await items.findById(req.body.id);
-
-            if (foundItem) {
-                foundItem.name = req.body.name;
-                foundItem.shortDescription = req.body.shortDescription;
-                foundItem.fullDescription = req.body.fullDescription;
-                await foundItem.save();
-            }
-        }
-
-        res.status(200).end();
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-router.post("/delete", async function(req, res) {
-    try {
-        await items.findByIdAndDelete(req.body.id);
-
-        res.status(200).end();
-    }
-    catch(err) {
-        res.status(500).end();
-        console.log(err);
-    }
-});
-
-export default router;
+}

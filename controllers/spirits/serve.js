@@ -1,16 +1,17 @@
+import { findUser, success } from "./util";
+
 export default {
-    serve: async (req, res) => {
+    serve: async (req) => {
         let script, result = null;
-        let scriptPath = `${req.contentPath}${req.body.data.path}/${req.body.data.script}.js`;
+        let scriptPath = `${req.contentPath}${req.path}/${req.body.data.script}.js`;
 
         if (fs.existsSync(scriptPath)) {
-            let spirit = new req.Spirit("/user", req.session.currentUser);
-            let foundUser = await spirit.recall().data;
+            let user = findUser(req);
     
             script = await import(scriptPath);
-            scriptResult = await script.default(req, foundUser);
+            result = await script.default(req, user);
         }
 
-        return result;
+        return success("Served.", result);
     }
 }

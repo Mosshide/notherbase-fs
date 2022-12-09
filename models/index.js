@@ -34,7 +34,7 @@ export default {
     User: class User extends Spirit {
         constructor(service, email = null) {
             super({});
-            this.body.route = "/user";
+            this.body.route = "/";
             this.body.service = service;
             this.email = email;
         }
@@ -45,17 +45,21 @@ export default {
         }
     },
     Item: class Item extends Spirit {
-        constructor(service) {
+        constructor(name = "") {
             super({});
-            this.body.route = "/item";
-            this.body.service = service;
+            this.body.route = "/";
+            this.body.service = "item";
+
+            this.memory = {
+                data: {
+                    name: name
+                }
+            }
         }
 
-        // name: String,
-        // shortDescription: String,
-        // fullDescription: String,
-        // icon: String,
-        // tags: [ String ],
-        // image: String
+        recall = async () => {
+            let result = await this.recallFromData("name", this.name);
+            return result;
+        }        
     }
 }

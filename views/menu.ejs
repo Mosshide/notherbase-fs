@@ -78,7 +78,7 @@
     let logout = () => {
         $.post("/s", {
             action: "logout"
-        }, location.reload());
+        }, () => {location.reload();});
     }
 
     switchTab("inventory");

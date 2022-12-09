@@ -5,6 +5,7 @@ import { stripHtml } from "string-strip-html";
 // import inventory from "./spirits/inventory.js";
 // import item from "./spirits/item.js";
 // import serve from "./spirits/serve.js";
+// import attribute from "./spirits/attribute.js";
 import user from "./spirits/user.js";
 
 export default class Spirits {
@@ -43,12 +44,12 @@ export default class Spirits {
                 message: `No function with the name ${req.body.action}`,
                 data: {}
             }
+
+            res.send(result);
         } catch (error) {
             console.log(error);
             res.send(error);
         }
-        
-        res.send(result);
     }
 
     setupChat = (socket) => {
