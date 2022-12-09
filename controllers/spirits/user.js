@@ -23,384 +23,310 @@ let getAttributes = async function getAttributes(userID) {
     }
 }
 
-export default {
-    basic: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundUser = await user.findById(req.session.currentUser, 'username email');
-    
-            return {
-                status: "success",
-                message: "Found user details.",
-                data: foundUser
-            };
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    logout: async (req, res) => {
-        if (req.session.currentUser) {
-            await req.session.destroy();
+let loginCheck = (req) => {
+    check(req.session.currentUser, "Please login first.");
+}
 
-            return {
-                status: "success",
-                message: "Logged out.",
-                data: null
-            };
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
+let findUser = async (req) => {
+    let db = new req.db.User(req.body, req.session.currentUser);
+    let foundUser = await db.recall().data;
+
+    checkUser(foundUser);
+}
+
+let check = (checkee, failMsg) => {
+    if (!checkee) throw {
+        status: "failed",
+        message: failMsg,
+        data: null
+    };
+}
+
+let success = (msg, data = null) => {
+    return {
+        status: "success",
+        message: msg,
+        data: data
+    };
+}
+
+export default {
+    logout: async (req) => {
+        loginCheck(req);
+
+        await req.session.destroy();
+
+        return success("Logged out.");
     },
-    all: async (req, res) => {
-        let foundUsers = await user.find({}, 'username coin home authLevels location attributes email');
+    resetPassword: async (req) => {
+        let reset = new req.db.User("reset");
+
+        let token = Math.floor(Math.random() * 9999);
+
+        reset.commit({
+            email: req.body.data.email, 
+            token: token, 
+            tokenExp: Date.now() + (1000 * 60 * 30)
+        });
+
+        req.SendMail.passwordReset(req.query.email, token);
+
+        return success("Password reset.", {});
+    },
+    newPassword: async (req) => {
+        let reset = new req.db.User("reset");
+        let resetData = (await db.recallFromData("token", req.body.data.token)).data;
+
+        check(resetData, "Reset token not valid!");
+        check(resetData.tokenExp < Date.now(), "Reset token expired!");
+        check(req.body.data.password !== req.body.data.confirmation, "Passwords must match!");
+
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(req.body.data.password, salt);
+
+        let user = new req.db.User("user");
+        let userData = (await user.recallFromData("email", resetData.email)).data;
+
+        userData.password = hash;
+        await user.commit(userData);
+
+        await reset.delete();
+
+        return success("Password changed successfully!");
+    },
+    attributes: async (req) => {
+        loginCheck(req);
+
+        let foundUser = await getAttributes(req.session.currentUser);
 
         return {
             status: "success",
-            message: "Found user details.",
-            data: foundUsers
-        }
+            message: "Got user attributes.",
+            data: foundUser.attributes
+        };
     },
-    resetPassword: async (req, res) => {
-        let foundUser = await user.findOne({ email: req.query.email });
+    checkAttribute: async (req) => {
+        // if (req.session.currentUser) {
+        //     let foundUser = await getAttributes(req.session.currentUser);
+
+        //     if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
+        //         return {
+        //             status: "success",
+        //             message: "Passed check.",
+        //             data: null
+        //         }
+        //     }
+        //     else return {
+        //         status: "failed",
+        //         message: "Failed check.",
+        //         data: null
+        //     };
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
+    },
+    setAttributes: async (req) => {
+        // if (req.session.currentUser) {
+        //     let foundUser = await getAttributes(req.session.currentUser);
+
+        //     if (foundUser) {
+        //         foundUser.attributes[req.body.change] = parseInt(req.body.to);
+        //         await foundUser.save();
+
+        //         return {
+        //             status: "success",
+        //             message: "Attributes set.",
+        //             data: null
+        //         }
+        //     }
+        //     else {
+        //         return {
+        //             status: "failed",
+        //             message: "User not found.",
+        //             data: null
+        //         }
+        //     }
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
+    },
+    incrementAttribute: async (req) => {
+        // if (req.session.currentUser) {
+        //     let foundUser = await getAttributes(req.session.currentUser);
+
+        //     if (foundUser) {
+        //         if (foundUser.attributes[req.body.change] < req.body.max) {
+        //             foundUser.attributes[req.body.change]++;
+        //             await foundUser.save();
+
+        //             return {
+        //                 status: "success",
+        //                 message: "Attribute incremented.",
+        //                 data: foundUser.attributes[req.body.change]
+        //             }
+        //         } 
+        //         else {
+        //             return {
+        //                 status: "failed",
+        //                 message: "Attribute maxed.",
+        //                 data: foundUser.attributes[req.body.change]
+        //             }
+        //         }
+        //     }
+        //     else {
+        //         return {
+        //             status: "failed",
+        //             message: "User not found!",
+        //             data: null
+        //         }
+        //     }
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
+    },
+    register: async (req) => {
+        let user = new req.db.User("user", req.body.data.email);
+        let userData = (await user.recall()).data;
+
+        check(!userData, "Email already in use!")
+
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(req.body.data.password, salt);
+
+        await user.commit({
+            username: req.body.data.username,
+            password: hash,
+            email: req.body.data.email,
+            coin: 0,
+            home: "/",
+            authLevels: [ "Basic" ],
+            location: "/the-front",
+            attributes: {
+                translation: 0,
+                strength: 0,
+                agility: 0,
+                defense: 0
+            },
+            inventory: []
+        });
+
+        return success("Registration successful!");
+    },
+    login: async (req) => {
+        let user = new req.db.User("user", req.body.data.email);
+        let userData = (await user.recall()).data;
+
+        check(userData, "User not found.");
+        let passResult = await bcrypt.compare(req.body.data.password, userData.password);
+        check(passResult, "Password doesn't match.");
+
+        req.session.currentUser = req.body.data.email;
+
+        return success("Logged in.");
+    },
+    email: async (req) => {
+        // if (req.session.currentUser) {
+        //     let foundAccount = await user.findOne({ email: req.body.email });
+
+        //     if (!foundAccount) {
+        //         let foundUser = await user.findById(req.session.currentUser);
+
+        //         if (foundUser) {
+        //             foundUser.email = req.body.email;
+        //             await foundUser.save();
+
+        //             return {
+        //                 status: "success",
+        //                 message: "Update successful!",
+        //                 data: null
+        //             }
+        //         }
+        //         else {
+        //             return {
+        //                 status: "failed",
+        //                 message: "User not found.",
+        //                 data: null
+        //             }
+        //         }
+        //     }
+        //     else {
+        //         return {
+        //             status: "failed",
+        //             message: "Email already in use.",
+        //             data: null
+        //         }
+        //     }
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
+    },
+    username: async (req) => {
+        // if (req.session.currentUser) {
+        //     let foundAccount = await user.findOne({ username: req.body.username });
+
+        //     if (!foundAccount) {
+        //         let foundUser = await user.findById(req.session.currentUser);
         
-        if (foundUser) {
-            foundUser.reset.token = Math.floor(Math.random() * 9999);
-            foundUser.reset.exp = Date.now() + (1000 * 60 * 30);
-            
-            await foundUser.save();
-
-            sendMail.passwordReset(req.query.email, foundUser.reset.token);
-
-            return {
-                status: "success",
-                message: "Reset link sent.",
-                data: null
-            };
-        }
-        else {
-            return {
-                status: "failed",
-                message: "User not found.",
-                data: null
-            };
-        }
-    },
-    newPassword: async (req, res) => {
-        const foundUser = await user.findOne({ "reset.token": req.body.token });
-
-        if (foundUser) {
-            if (foundUser.reset.exp > Date.now()) {
-                if (req.body.password !== req.body.confirmation) {
-                    return {
-                        status: "failed",
-                        message: "Passwords must match!",
-                        data: null
-                    }
-                }
-                else {
-                    foundUser.reset = {};
-
-                    const salt = await bcrypt.genSalt(10);
-                    const hash = await bcrypt.hash(req.body.password, salt);
+        //         if (foundUser) {
+        //             foundUser.username = req.body.username;
+        //             await foundUser.save();
         
-                    foundUser.password = hash;
-                    await foundUser.save();
-
-                    return {
-                        status: "success",
-                        message: "Password changed successfully!",
-                        data: null
-                    }
-                }
-            }
-            else return {
-                status: "failed",
-                message: "Reset token expired!",
-                data: null
-            };
-        }
-        else {
-            return {
-                status: "failed",
-                message: "Reset token not valid!",
-                data: null
-            };
-        }
+        //             return {
+        //                 status: "success",
+        //                 message: "Update successful!",
+        //                 data: null
+        //             }
+        //         }
+        //         else {
+        //             return {
+        //                 status: "failed",
+        //                 message: "User not found.",
+        //                 data: null
+        //             }
+        //         }
+        //     }
+        //     else {
+        //         return {
+        //             status: "failed",
+        //             message: "Username already taken.",
+        //             data: null
+        //         }
+        //     }
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
     },
-    attributes: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundUser = await getAttributes(req.session.currentUser);
+    delete: async (req) => {
+        // if (req.session.currentUser) {
+        //     await user.findByIdAndDelete(req.session.currentUser);
+        //     await req.session.destroy();
 
-            return {
-                status: "success",
-                message: "Got user attributes.",
-                data: foundUser.attributes
-            };
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    checkAttribute: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundUser = await getAttributes(req.session.currentUser);
-
-            if (foundUser.attributes[req.query.check] >= parseInt(req.query.against)) {
-                return {
-                    status: "success",
-                    message: "Passed check.",
-                    data: null
-                }
-            }
-            else return {
-                status: "failed",
-                message: "Failed check.",
-                data: null
-            };
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    setAttributes: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundUser = await getAttributes(req.session.currentUser);
-
-            if (foundUser) {
-                foundUser.attributes[req.body.change] = parseInt(req.body.to);
-                await foundUser.save();
-
-                return {
-                    status: "success",
-                    message: "Attributes set.",
-                    data: null
-                }
-            }
-            else {
-                return {
-                    status: "failed",
-                    message: "User not found.",
-                    data: null
-                }
-            }
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    incrementAttribute: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundUser = await getAttributes(req.session.currentUser);
-
-            if (foundUser) {
-                if (foundUser.attributes[req.body.change] < req.body.max) {
-                    foundUser.attributes[req.body.change]++;
-                    await foundUser.save();
-
-                    return {
-                        status: "success",
-                        message: "Attribute incremented.",
-                        data: foundUser.attributes[req.body.change]
-                    }
-                } 
-                else {
-                    return {
-                        status: "failed",
-                        message: "Attribute maxed.",
-                        data: foundUser.attributes[req.body.change]
-                    }
-                }
-            }
-            else {
-                return {
-                    status: "failed",
-                    message: "User not found!",
-                    data: null
-                }
-            }
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    register: async (req, res) => {
-        let foundAccount = await user.findOne({ username: req.body.username });
-
-        if (!foundAccount) {
-            const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(req.body.password, salt);
-
-            let qAuth = await user.create({
-                username: req.body.username,
-                password: hash,
-                email: req.body.email,
-                coin: 0,
-                home: "/",
-                authLevels: [ "Basic" ],
-                location: "/the-front",
-                attributes: {
-                    translation: 0,
-                    strength: 0,
-                    agility: 0,
-                    defense: 0
-                }
-            });
-
-            await inventory.create({
-                user: qAuth._id,
-                items: []
-            });
-
-            return {
-                status: "success",
-                message: "Registration successful!",
-                data: null
-            };
-        }
-        else {
-            return {
-                status: "failed",
-                message: "Registration Failed: username taken!",
-                data: null
-            };
-        }
-    },
-    login: async (req, res) => {
-        const foundAccount = await user.findOne({ email: req.body.email });
-
-        if (foundAccount) {
-            if (await bcrypt.compare(req.body.password, foundAccount.password)) {
-                req.session.currentUser = foundAccount._id;
-
-                return {
-                    status: "success",
-                    message: "Logged in.",
-                    data: null
-                }
-            }
-            else {
-                return {
-                    status: "failed",
-                    message: "Failed to login",
-                    data: null
-                }
-            }
-        }
-        else {
-            return {
-                status: "failed",
-                message: "User not found.",
-                data: null
-            };
-        }
-    },
-    email: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundAccount = await user.findOne({ email: req.body.email });
-
-            if (!foundAccount) {
-                let foundUser = await user.findById(req.session.currentUser);
-
-                if (foundUser) {
-                    foundUser.email = req.body.email;
-                    await foundUser.save();
-
-                    return {
-                        status: "success",
-                        message: "Update successful!",
-                        data: null
-                    }
-                }
-                else {
-                    return {
-                        status: "failed",
-                        message: "User not found.",
-                        data: null
-                    }
-                }
-            }
-            else {
-                return {
-                    status: "failed",
-                    message: "Email already in use.",
-                    data: null
-                }
-            }
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    username: async (req, res) => {
-        if (req.session.currentUser) {
-            let foundAccount = await user.findOne({ username: req.body.username });
-
-            if (!foundAccount) {
-                let foundUser = await user.findById(req.session.currentUser);
-        
-                if (foundUser) {
-                    foundUser.username = req.body.username;
-                    await foundUser.save();
-        
-                    return {
-                        status: "success",
-                        message: "Update successful!",
-                        data: null
-                    }
-                }
-                else {
-                    return {
-                        status: "failed",
-                        message: "User not found.",
-                        data: null
-                    }
-                }
-            }
-            else {
-                return {
-                    status: "failed",
-                    message: "Username already taken.",
-                    data: null
-                }
-            }
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
-    },
-    delete: async (req, res) => {
-        if (req.session.currentUser) {
-            await user.findByIdAndDelete(req.session.currentUser);
-            await req.session.destroy();
-
-            return {
-                status: "success",
-                message: "Account deleted!",
-                data: null
-            };
-        }
-        else return {
-            status: "failed",
-            message: "Please login first!",
-            data: null
-        }
+        //     return {
+        //         status: "success",
+        //         message: "Account deleted!",
+        //         data: null
+        //     };
+        // }
+        // else return {
+        //     status: "failed",
+        //     message: "Please login first!",
+        //     data: null
+        // }
     }
 }
 

@@ -15,6 +15,7 @@ export default class Creation {
     }
 
     authCheck = (req, res, next) => {
+        console.log(req.session.currentUser);
         if (req.session.currentUser) next();
         else res.redirect("/the-front");
     }
@@ -36,14 +37,15 @@ export default class Creation {
     front = async (req, res) => {
         try {
             let main = `${req.contentPath}/the-front/views/index`;
-            const foundUser = await req.db.user.findById(req.session.currentUser);
-            const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+            let user = new req.db.User("user", req.session.currentUser);
+            let userData = (await user.recall()).data;
+            //const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
             let context = {
                 siteTitle: `NotherBase - The Front`,
-                user: foundUser,
+                user: userData,
                 main: main,
-                inventory: foundInventory,
+                inventory: null,
                 query: req.query,
                 dir: req.frontDir,
                 route: `/the-front`
@@ -62,15 +64,16 @@ export default class Creation {
             let main = `${req.contentPath}/the-front/views/${req.params.detail}`;
     
             if (fs.existsSync(main + ".ejs")) {
-                const foundUser = await req.db.user.findById(req.session.currentUser);
-                const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+                let user = new req.db.User("user", req.session.currentUser);
+                let userData = (await user.recall()).data;
+                //const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
         
         
                 let context = {
                     siteTitle: `NotherBase - ${req.params.detail}`,
-                    user: foundUser,
+                    user: userData,
                     main: main,
-                    inventory: foundInventory,
+                    inventory: null,
                     query: req.query,
                     dir: req.frontDir,
                     route: `/the-front/${req.params.detail}`
@@ -88,18 +91,20 @@ export default class Creation {
 
     poi = async (req, res, next) => {
         try {
-            let main = `${req.contentPath}/views${req.path}/index`;
+            let main = `${req.contentPath}/explorer${req.path}/views/index`;
+            console.log(main);
     
             if (fs.existsSync(main + ".ejs")) {
-                const foundUser = await req.db.user.findById(req.session.currentUser);
-                const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+                let user = new req.db.User("user", req.session.currentUser);
+                let userData = (await user.recall()).data;
+                //const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
                 let context = {
                     siteTitle: `NotherBase - ${req.params.poi}`,
-                    user: foundUser,
+                    user: userData,
                     main: main,
                     pov: req.query.pov,
-                    inventory: foundInventory,
+                    inventory: null,
                     query: req.query,
                     dir: req.worldDir,
                     route: `/${req.params.region}/${req.params.area}/${req.params.poi}`
@@ -117,18 +122,19 @@ export default class Creation {
 
     detail = async (req, res, next) => {
         try {
-            let main = `${req.contentPath}/views${req.path}`;
+            let main = `${req.contentPath}/explorer/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
     
             if (fs.existsSync(main + ".ejs")) {
-                const foundUser = await req.db.user.findById(req.session.currentUser);
-                const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
+                let user = new req.db.User("user", req.session.currentUser);
+                let userData = (await user.recall()).data;
+                //const foundInventory = await req.db.inventory.findOne({ user: req.session.currentUser }).populate("items.item");
     
                 let context = {
                     siteTitle: `NotherBase - ${req.params.detail}`,
-                    user: foundUser,
+                    user: userData,
                     main: main,
                     pov: req.query.pov,
-                    inventory: foundInventory,
+                    inventory: null,
                     query: req.query,
                     dir: req.worldDir,
                     route: `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}`

@@ -1,11 +1,11 @@
 import express from "express";
 import fs from 'fs';
 import { stripHtml } from "string-strip-html";
-import contact from "./spirits/contact.js";
-import inventory from "./spirits/inventory.js";
-import item from "./spirits/item.js";
-import memory from "./spirits/memory.js";
-import serve from "./spirits/serve.js";
+// import contact from "./spirits/contact.js";
+// import inventory from "./spirits/inventory.js";
+// import item from "./spirits/item.js";
+// import memory from "./spirits/memory.js";
+// import serve from "./spirits/serve.js";
 import user from "./spirits/user.js";
 
 export default class Spirits {
@@ -17,30 +17,38 @@ export default class Spirits {
 
         this.io.on('connection', this.setupChat);
 
-        Object.assign(this, contact);
-        Object.assign(this, inventory);
-        Object.assign(this, item);
-        Object.assign(this, memory);
-        Object.assign(this, serve);
+        // Object.assign(this, contact);
+        // Object.assign(this, inventory);
+        // Object.assign(this, item);
+        // Object.assign(this, memory);
+        // Object.assign(this, serve);
         Object.assign(this, user);
     }
 
     do = async (req, res) => {
         let result = null;
+
+        /* req.body {
+            action: "getUserBasic",
+            route: "/something" (opt),
+            service: "something" (opt),
+            scope: "local" (opt),
+            parent: id (opt),
+            token: "qwerty" (opt),
+            data: {} (opt)
+        } */
         
         try {
-            result = await this[req.body.action](req);
+            if (this[req.body.action]) result = await this[req.body.action](req);
+            else result = {
+                status: "failed",
+                message: `No function with the name ${req.body.action}`,
+                data: {}
+            }
         } catch (error) {
-            console.log(err);
-            res.status(500).end();
+            console.log(error);
+            res.send(error);
         }
-
-        /* return {
-            status: "success",
-            message: "Successful!",
-            data: {}
-        } */
-        // update spirits for compatibility, proper return, req.body.data, etc.
         
         res.send(result);
     }

@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
+import Spirit from "./spirit.js";
+import SendMail from "./send-mail.js";
 
 mongoose.connection.on('connected', (err) => {
     console.log(`Mongoose connected to db`);
@@ -25,12 +27,21 @@ catch (err) {
 }
 
 
-export {default as chat} from "./chat.js";
-export {default as item} from "./item.js";
-export {default as user} from "./user.js";
-export {default as contact} from "./contact.js";
-export {default as inventory} from "./inventory.js";
-export {default as game} from "./game.js";
-export {default as sendMail} from "./send-mail.js";
-export {default as detail} from "./detail.js";
-export {default as page} from "./page.js";
+
+export default {
+    SendMail: SendMail,
+    Spirit: Spirit,
+    User: class User extends Spirit {
+        constructor(service, email = null) {
+            super({});
+            this.body.route = "/user";
+            this.body.service = service;
+            this.email = email;
+        }
+
+        recall = async () => {
+            let result = await this.recallFromData("email", this.email);
+            return result;
+        }
+    },
+}

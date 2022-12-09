@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import * as db from "./models/index.js";
+import Models from "./models/index.js";
 import { Server } from "socket.io";
 import express from "express";
 import session from 'express-session';
@@ -18,7 +18,6 @@ class NotherBaseFS {
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
-        this.db = db;
         this.creation = new Creation();
         this.spirits = new Spirits(this.io);
         
@@ -48,7 +47,7 @@ class NotherBaseFS {
         }));
 
         this.app.use((req, res, next) => {
-            req.db = this.db;
+            req.db = Models;
             req.contentPath = contentPath;
 
             next();

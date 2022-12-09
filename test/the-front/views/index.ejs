@@ -68,47 +68,38 @@
     <% } %>
 
     $loginButton.on("click", async function () {
-        try {
-            await $.post("/user/login", {
-                email: $("#login-email").val(),
-                password: $("#login-pass").val()
+        await $.post("/s", {
+                action: "login",
+                data: {
+                    email: $("#login-email").val(),
+                    password: $("#login-pass").val()
+                }
             }, (data) => {
-                $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
-                $toNonoButton.addClass("invisible");
-                $toNonoLink.removeClass("invisible");
-                
-                playerInventory.refresh();
-                playerAttributes.refresh();
-                accountServices.refresh();
+                if (data.status === "success") {
+                    $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
+                    $toNonoButton.addClass("invisible");
+                    $toNonoLink.removeClass("invisible");
+                    
+                    playerInventory.refresh();
+                    playerAttributes.refresh();
+                    accountServices.refresh();
+                }
+                else console.log(data);
             });
-        } catch (error) {
-            if (error.status === 401) {
-                $loginInfo.text("Login Error: Email or password incorrect!");
-            }
-            else if (error.status === 500) {
-                $loginInfo.text("Server Error: Try again later!");
-            }
-        }
     });
 
     $registerButton.on("click", async function () {
-        try {
-            await $.post("/user/register", {
+        await $.post("/s", {
+            action: "register",
+            data: {
                 username: $("#register-user").val(),
                 password: $("#register-pass").val(),
                 email: $("#register-email").val()
-            }, (data) => {
-                $registerInfo.text("Account registered.");
-            });
-        } catch (error) {
-            //console.log(error);
-            if (error.status === 400) {
-                $registerInfo.text("Login Error: Username already taken!");
             }
-            else if (error.status === 500) {
-                $registerInfo.text("Server Error: Try again later!");
-            }
-        }
+        }, (data) => {
+            if (data.status === "success") $registerInfo.text("Account registered.");
+            else console.log(data);
+        });
     });
 
     $resetPassword.on("click", async function () {

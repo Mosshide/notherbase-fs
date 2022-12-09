@@ -4,10 +4,11 @@ export default {
         let scriptPath = `${req.contentPath}${req.body.data.path}/${req.body.data.script}.js`;
 
         if (fs.existsSync(scriptPath)) {
-            const foundUser = await req.db.user.findById(req.session.currentUser);
+            let spirit = new req.Spirit("/user", req.session.currentUser);
+            let foundUser = await spirit.recall().data;
     
             script = await import(scriptPath);
-            scriptResult = await script.default(req.db, foundUser, req.body);
+            scriptResult = await script.default(req, foundUser);
         }
 
         return result;

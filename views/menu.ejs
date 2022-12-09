@@ -29,7 +29,7 @@
         <%- include("./more.ejs"); %>
     </div>
 
-    <a href="/user/logout" id="logout">Logout</a>
+    <button onclick="logout()">Logout</button>
 </div>
 
 <button id="menu"><i class="fas fa-cog"></i></button>
@@ -73,6 +73,12 @@
         $(".menu .tabs button").removeClass("selected");
         $(`#content-window #${id}`).removeClass("invisible");
         $(`.menu .tabs #${id}`).addClass("selected");
+    }
+
+    let logout = () => {
+        $.post("/s", {
+            action: "logout"
+        }, location.reload());
     }
 
     switchTab("inventory");
