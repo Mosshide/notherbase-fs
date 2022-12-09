@@ -1,116 +1,72 @@
-import express from "express";
-const router = express.Router();
+import { success, check, loginCheck, findUser } from "./util.js";
 
-// Import my Data
-import { inventory, item, connectionSuccess } from "../models/index.js";
+export default {
+    getUserInventory: async (req) => {
+        loginCheck(req);
 
-router.get("/", async function(req, res) {
-    if (connectionSuccess) {
-        try {
-            if (req.session.currentUser) {
-                let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
+        let user = findUser(req);
+        let inv = user.memory.data.inventory;
+
+        check(inv, "User inventory not found.");
     
-                res.status(200).send({ foundInventory: foundInventory });
-            }
-            else {
-                res.status(401).end();
-            }
-        }
-        catch(err) {
-            console.log(err);
-            res.status(500).end();
-        }
-    }
-    else {
-        res.status(500).end();
-    }
-});
+        return success("User inventory found.", inv);
+    },
+    updateItemInInventory: async (req) => {
+        check(req.body.data.item && req.body.data.amount, `${req.body.item} ${req.body.amount} Check Input!`);
 
-router.post("/", async function(req, res) {
-    if (connectionSuccess) {
-        try {
-            if (req.body.item && req.body.amount) {
-                let foundItem = await item.findOne({name: req.body.item});
+        let item = new req.db.Item(req.body.data.item);
+        let itemData = (await item.recall()).data;
 
-                if (foundItem) {
-                    let foundInventory = await inventory.findOne({user: req.session.currentUser}).populate("items.item");
+        check(itemData, "Item not found in database.");
 
-                    let holding = false;
-        
-                    for (let j = 0; j < foundInventory.items.length; j++) {
-                        if (foundInventory.items[j].item.name === req.body.item) {
-                            holding = true;
-        
-                            if (foundInventory.items[j].amount >= -Math.floor(req.body.amount)) {
-                                foundInventory.items[j].amount += Math.floor(req.body.amount);
-        
-                                if (foundInventory.items[j].amount === 0) {
-                                    let itemToEmpty = foundInventory.items[j].item._id;
-        
-                                    foundInventory.items.splice(j, 1);
-                                    await foundInventory.save();
-            
-                                    res.status(200).send({
-                                        item: {
-                                            _id: itemToEmpty
-                                        },
-                                        amount: 0
-                                    });
-                                }
-                                else {
-                                    await foundInventory.save();
-                                    res.status(200).send(foundInventory.items[j]);
-                                }
-                            }
-                            else {
-                                res.status(304).send(
-                                    `Unable to remove ${req.body.amount} ${req.body.item} 
-                                    from inventory because the inventory has only ${foundInventory.items[j].amount}.`
-                                );
-                            }
-        
-                            break;
-                        }
+        let user = findUser(req);
+        let inv = user.memory.data.inventory;
+
+        let holding = false;
+
+        for (let j = 0; j < inv.length; j++) {
+            if (inv[j].item === req.body.data.item) {
+                holding = true;
+
+                if (inv[j].amount >= -Math.floor(req.body.data.amount)) {
+                    inv[j].amount += Math.floor(req.body.data.amount);
+
+                    if (inv[j].amount === 0) {
+                        let empty = inv[j];
+
+                        inv.splice(j, 1);
+                        await user.commit();
+
+                        return success("Item emptied.", empty);
                     }
-                    
-                    if (!holding) {
-                        if (req.body.amount > 0) {
-                            foundInventory.items.push({
-                                item: foundItem._id,
-                                amount: req.body.amount
-                            });
-        
-                            await foundInventory.save();
-        
-                            await inventory.populate(foundInventory, "items.item");
-        
-                            res.status(200).send(foundInventory.items[foundInventory.items.length - 1]);
-                        }
-                        else {
-                            res.status(304).send(
-                                `Unable to remove ${req.body.amount} ${req.body.item} 
-                                from inventory because the inventory has none.`
-                            );
-                        }
-                    };
+                    else {
+                        await user.commit();
+
+                        return success("Item offset.", inv[j]);
+                    }
                 }
                 else {
-                    res.status(400).send(`${req.body.item} doesn't exist!`);
+                    return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.item} 
+                        from inventory because the inventory has only ${inv[j].amount}.` );
                 }
             }
-            else {
-                res.status(400).send(`${req.body.item} ${req.body.amount} Check Input!`);
+        }
+        
+        if (!holding) {
+            if (req.body.data.amount > 0) {
+                inv.push({
+                    item: req.body.data.item,
+                    amount: req.body.data.amount
+                });
+
+                await user.commit();
+
+                return success("Item offset.", inv[inv.length - 1]);
             }
-        }
-        catch(err) {
-            res.status(500).end();
-            console.log(err);
-        }
+            else {
+                return fail(`Unable to remove ${req.body.amount} ${req.body.item} 
+                    from inventory because the inventory has none.`);
+            }
+        };
     }
-    else {
-        res.status(500).end();
-    }
-});
-
-
-export default router;
+}
