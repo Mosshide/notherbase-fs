@@ -14,15 +14,11 @@ mongoose.connection.on('disconnected', () => {
     console.log('Mongoose disconnected');
 });
 
-let connectionSuccess = false;
-
 try {
     mongoose.connect(process.env.MONGODB_URI, { 
         useNewUrlParser: true,
         useUnifiedTopology: true
     });
-
-    connectionSuccess = true;
 }
 catch (err) {
     console.log(`Mongoose on connect: ${err}`);
@@ -38,4 +34,3 @@ export {default as game} from "./game.js";
 export {default as sendMail} from "./send-mail.js";
 export {default as detail} from "./detail.js";
 export {default as page} from "./page.js";
-export { connectionSuccess };
