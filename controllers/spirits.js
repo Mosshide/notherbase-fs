@@ -4,7 +4,6 @@ import { stripHtml } from "string-strip-html";
 // import contact from "./spirits/contact.js";
 // import inventory from "./spirits/inventory.js";
 // import item from "./spirits/item.js";
-// import memory from "./spirits/memory.js";
 // import serve from "./spirits/serve.js";
 import user from "./spirits/user.js";
 
@@ -20,7 +19,6 @@ export default class Spirits {
         // Object.assign(this, contact);
         // Object.assign(this, inventory);
         // Object.assign(this, item);
-        // Object.assign(this, memory);
         // Object.assign(this, serve);
         Object.assign(this, user);
     }

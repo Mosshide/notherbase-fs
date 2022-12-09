@@ -44,4 +44,18 @@ export default {
             return result;
         }
     },
+    Item: class Item extends Spirit {
+        constructor(service) {
+            super({});
+            this.body.route = "/item";
+            this.body.service = service;
+        }
+
+        // name: String,
+        // shortDescription: String,
+        // fullDescription: String,
+        // icon: String,
+        // tags: [ String ],
+        // image: String
+    }
 }
