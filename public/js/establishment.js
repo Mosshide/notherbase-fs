@@ -1,10 +1,10 @@
-class Memories {
+class Establishment {
     constructor() {
         this._lastUpdate = 0;
         this.data = {};
     }
     
-    load = async (service, route = currentRoute, parent = null) => {
+    load = async (service, route = currentRoute) => {
         try {
             if (!this.data[service]) this.data[service] = { _lastUpdate: 0 };
 
@@ -13,8 +13,8 @@ class Memories {
                 service: service,
                 _lastUpdate: this.data[service]._lastUpdate,
                 route: route,
-                scope: "local",
-                parent: parent
+                scope: "global",
+                parent: null
             }), (res) => {
                 if (!res.isUpToDate) {
                     this.data[service] = res.data;
@@ -28,7 +28,7 @@ class Memories {
         }
     }
     
-    save = async (service, dataToSave, route = currentRoute, parent = null) => {
+    save = async (service, dataToSave, route = currentRoute) => {
         try {
             this._lastUpdate = Date.now();
 
@@ -37,8 +37,8 @@ class Memories {
                 service: service,
                 _lastUpdate: this._lastUpdate,
                 route: route,
-                scope: "local",
-                parent: parent,
+                scope: "global",
+                parent: null,
                 data: dataToSave
             }), (res) => {
                 this.data[service] = dataToSave;
@@ -50,4 +50,4 @@ class Memories {
     }
 }
 
-const memories = new Memories();
+const establishment = new Establishment();

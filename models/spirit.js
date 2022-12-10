@@ -8,12 +8,10 @@ export default class Spirit {
         if (!this.body.scope) this.body.scope = "global";
         if (!this.body.parent) this.body.parent = null;
         if (!this.body._lastUpdate) this.body._lastUpdate = 0;
-        if (!this.body.token) this.body.token = -1;
         if (!this.body.data) this.body.data = {};
         this.memory = {
             data: {}
         };
-        this.time = Date.now();
     }
 
     static db = mongoose.model('spirits', new mongoose.Schema({
@@ -28,6 +26,23 @@ export default class Spirit {
         },
         data: {}
     }));
+
+    create = async (data = this.memory.data) => {
+        this.time = Date.now();
+
+        await Spirit.db.create({ 
+            route: this.body.route,
+            service: this.body.service,
+            scope: this.body.scope,
+            parent: this.body.parent,
+            _lastUpdate: this.time,
+            data: data
+        });
+
+        this.memory.data = data;
+
+        return true;
+    }
 
     commit = async (data = this.memory.data) => {
         this.time = Date.now();
@@ -50,7 +65,7 @@ export default class Spirit {
 
         this.memory.data = data;
 
-        return "Update successful!";
+        return true;
     }
     
     recall = async () => {
@@ -65,15 +80,9 @@ export default class Spirit {
             this.memory = found;
             this.time = found._lastUpdate;
             
-            return {
-                isUpToDate: false,
-                data: found.data
-            };
+            return found.data;
         }
-        else return {
-            isUpToDate: true,
-            data: null
-        };
+        else return false;
     }
 
     getAll = async () => {
@@ -92,36 +101,27 @@ export default class Spirit {
                 takeout.push(found[i].data)
             }
             
-            return {
-                isUpToDate: false,
-                data: takeout
-            };
+            return takeout;
         }
-        else return {
-            isUpToDate: true,
-            data: null
-        };
+        else return false;
     }
 
     recallFromData = async (which, query) => {
+        console.log(this.body);
         let found = await Spirit.db.findOne({ 
             route: this.body.route,
             service: this.body.service
         }).where(`data.${which}`).equals(query);
 
+        console.log(found);
+
         if (found && new Date(found._lastUpdate) > new Date(this.body._lastUpdate)) {
             this.memory = found;
             this.time = found._lastUpdate;
             
-            return {
-                isUpToDate: false,
-                data: found.data
-            };
+            return found.data;
         }
-        else return {
-            isUpToDate: true,
-            data: null
-        };
+        else return false;
     }
 
     delete = async (which, query) => {

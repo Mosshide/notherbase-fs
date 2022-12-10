@@ -4,7 +4,7 @@ export let loginCheck = (req) => {
 
 export let findUser = async (req, email = req.session.currentUser) => {
     let user = new req.db.User("user", email);
-    let userData = (await user.recall()).data;
+    let userData = await user.recall();
 
     check(userData, "User not found.");
 

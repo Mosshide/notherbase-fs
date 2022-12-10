@@ -37,9 +37,6 @@ export default class SpiritWorld {
             _lastUpdate: 0 (opt),
             data: {} (opt)
         } */
-
-        if (req.body.data) req.body.data = JSON.parse(req.body.data);
-        else req.body.data = {}
         
         try {
             if (this[req.body.action]) result = await this[req.body.action](req);
@@ -49,9 +46,7 @@ export default class SpiritWorld {
                 isUpToDate: true,
                 data: {}
             }
-
-            result.data = JSON.stringify(result.data);
-
+            
             res.send(result);
         } catch (error) {
             console.log(error);
@@ -88,7 +83,7 @@ export default class SpiritWorld {
     recall =  async (req) => {
         loginCheck(req);
         let user = await findUser(req);
-        req.body.parent = user.memory._id;
+        if (req.body.scope === "local") req.body.parent = user.memory._id;
 
         let spirit = new req.db.Spirit(req.body);
         let spiritData = await spirit.recall();
@@ -101,10 +96,10 @@ export default class SpiritWorld {
     commit =  async (req) => {
         loginCheck(req);
         let user = await findUser(req);
-        req.body.parent = user.memory._id;
+        if (req.body.scope === "local") req.body.parent = user.memory._id;
 
         let spirit = new req.db.Spirit(req.body);
-        await spirit.commit(JSON.parse(req.body.data));
+        await spirit.commit(req.body.data);
 
         console.log(spirit);
 

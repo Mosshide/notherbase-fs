@@ -68,13 +68,13 @@
     <% } %>
 
     $loginButton.on("click", async function () {
-        await $.post("/s", {
+        await $.post("/s", JSON.stringify({
                 action: "login",
                 data: {
                     email: $("#login-email").val(),
                     password: $("#login-pass").val()
                 }
-            }, (data) => {
+            }), (data) => {
                 if (data.status === "success") {
                     $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
                     $toNonoButton.addClass("invisible");
@@ -89,78 +89,48 @@
     });
 
     $registerButton.on("click", async function () {
-        await $.post("/s", {
+        await $.post("/s", JSON.stringify({
             action: "register",
             data: {
                 username: $("#register-user").val(),
                 password: $("#register-pass").val(),
                 email: $("#register-email").val()
             }
-        }, (data) => {
+        }), (data) => {
             if (data.status === "success") $registerInfo.text("Account registered.");
             else console.log(data);
         });
     });
 
     $resetPassword.on("click", async function () {
-        try {
-            await $.get("/user/password-reset", { email: $("#login-email").val() });
-            $loginInfo.text("Reset link sent to your email.");
-        } 
-        catch(err) {
-            if (error.status === 401) {
-                $loginInfo.text("Reset Error: Email not found!");
+        await $.post("/s", JSON.stringify({
+            action: "sendPasswordReset",
+            data: { 
+                email: $("#login-email").val()
             }
-            else if (error.status === 500) {
-                $loginInfo.text("Server Error: Try again later!");
-            }
-        }
+        }), (data) => {
+            if (data.status === "success") $registerInfo.text("Account registered.");
+            else console.log(data);
+        });
     });
 
     $changePasswordButton.on("click", async function () {
-        try {
-            let token = $("#reset-form #token").val();
+        let token = $("#reset-form #token").val();
 
-            await $.post(`/user/password-reset/${token}`, {
+        await $.post("/s", JSON.stringify({
+            action: "changePassword",
+            data: { 
                 token: token,
                 password: $("#reset-form #password").val(),
                 confirmation: $("#reset-form #confirmation").val()
-            }, (data) => {
-                $changeInfo.text("Password changed.");
-            });
-        } catch (error) {
-            if (error.status === 498) {
-                $changeInfo.text("Change Error: Your reset code expired! Please request a new one.");
             }
-            else if (error.status === 400) {
-                $changeInfo.text("Change Error: Passwords must match!");
-            }
-            else if (error.status === 404) {
-                $changeInfo.text("Change Error: Reset code not valid!");
-            }
-            else if (error.status === 500) {
-                $changeInfo.text("Server Error: Try again later!");
-            }
-        }
+        }), (data) => {
+            if (data.status === "success") $changeInfo.text("Password changed.");
+            else console.log(data);
+        });
     });
 
     let addGold = function addGold(params) {
         playerInventory.change(itemIDs[0], 2);
-    }
-
-    let time = 0;
-
-    let emailTime = async () => {
-        $.post("/s", {
-            action: "serve",
-            data: {
-                script: "emailTime",
-                toEmail: "wyattsushi@gmail.com",
-                subject: "New Time Update!",
-                html: `New Time: ${time}`
-            }
-        }, (res) => {
-            console.log(res);
-        })
     }
 </script>

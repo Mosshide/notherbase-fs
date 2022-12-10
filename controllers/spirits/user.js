@@ -14,19 +14,19 @@ export default {
 
         let token = Math.floor(Math.random() * 9999);
 
-        reset.commit({
+        await reset.create({
             email: req.body.data.email, 
             token: token, 
             tokenExp: Date.now() + (1000 * 60 * 30)
         });
 
-        req.SendMail.passwordReset(req.query.email, token);
+        req.db.SendMail.passwordReset(req.body.data.email, token);
 
         return success("Password reset.", {});
     },
     changePassword: async (req) => {
         let reset = new req.db.User("reset");
-        let resetData = (await db.recallFromData("token", req.body.data.token)).data;
+        let resetData = await reset.recallFromData("token", req.body.data.token);
 
         check(resetData, "Reset token not valid!");
         check(resetData.tokenExp < Date.now(), "Reset token expired!");
@@ -47,14 +47,14 @@ export default {
     },
     register: async (req) => {
         let user = new req.db.User("user", req.body.data.email);
-        let userData = (await user.recall()).data;
+        let userData = await user.recall();
 
         check(!userData, "Email already in use!");
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.data.password, salt);
 
-        await user.commit({
+        await user.create({
             username: req.body.data.username,
             password: hash,
             email: req.body.data.email,
@@ -87,7 +87,7 @@ export default {
         loginCheck(req);
 
         let user = new req.db.User("user", req.body.data.email);
-        let userData = (await user.recall()).data;
+        let userData = await user.recall();
 
         check(!userData, "Email already in use!");
 
@@ -102,7 +102,7 @@ export default {
         loginCheck(req);
        
         let user = new req.db.User("user");
-        let userData = (await user.recallFromData("username", req.body.data.username)).data;
+        let userData = await user.recallFromData("username", req.body.data.username);
         check(!userData, "Username already in use!");
 
         user = await findUser();

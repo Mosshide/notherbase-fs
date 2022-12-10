@@ -76,9 +76,9 @@
     }
 
     let logout = () => {
-        $.post("/s", {
+        $.post("/s", JSON.stringify({
             action: "logout"
-        }, () => {location.reload();});
+        }), () => {location.reload();});
     }
 
     switchTab("inventory");

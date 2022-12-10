@@ -22,6 +22,8 @@
 
 <button onclick="setTime()">Add</button>
 <p id="timer">0:00</p>
+<p id="timer-g">0:00</p>
+<p id="u">N</p>
 <button onclick="emailTime()">email</button>
 
 <hr>
@@ -108,15 +110,20 @@
     }
 
     let time = 0;
+    let gtime = 0;
 
     (async () => {
         let load = await memories.load("time", "/void/test");
-        console.log(load);
+        let loadg = await establishment.load("time", "/void/test");
+        console.log(loadg);
         time = load.time;
+        $("p#u").text(`Last: ${loadg.u}`);
+        gtime = loadg.time;
     })();
 
     let setTime = async function setTime() {
         time = Date.now();
+        gtime = time;
         
         await memories.save("time", {
             time: time,
@@ -132,24 +139,48 @@
                 arrray: [32, "sg", 45]
             }
         }, "/void/test");
+
+        await establishment.save("time", {
+            time: time,
+            u: "<%= user.username %>",
+            a: "dabfb",
+            bln: false,
+            numba: 4236,
+            arrray: [32, "sg", 45],
+            check: {
+                time: time,
+                a: "dabfb",
+                bln: false,
+                numba: 4236,
+                arrray: [32, "sg", 45]
+            }
+        }, "/void/test");
+
+        $("p#u").text("Last: <%= user.username %>");
     }
     
     let updateTime = function updateTime() {
-        $("#timer").text(Math.floor((Date.now() - time) / 1000));
+        $("#timer").text(`Local: ${Math.floor((Date.now() - time) / 1000)}`);
+        $("#timer-g").text(`Global: ${Math.floor((Date.now() - gtime) / 1000)}`);
     }
 
     let emailTime = async () => {
-        $.post("/s", {
-            action: "serve",
-            data: {
-                script: "emailTime",
-                toEmail: "wyattsushi@gmail.com",
-                subject: "New Time Update!",
-                html: `New Time: ${time}`
-            }
-        }, (res) => {
-            console.log(res);
-        })
+        try {
+            $.post("/s", JSON.stringify({
+                action: "serveExplorer",
+                route: currentRoute,
+                data: {
+                    script: "emailTime",
+                    toEmail: "wyattsushi@gmail.com",
+                    subject: "New Time Update!",
+                    html: `New Time: ${time}`
+                }
+            }), (res) => {
+                console.log(res);
+            });
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     setInterval(updateTime, 1000);

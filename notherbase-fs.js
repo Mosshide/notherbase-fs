@@ -29,7 +29,12 @@ class NotherBaseFS {
         this.app.use(methodOverride('_method'));
     
         // allows us to use post body data
-        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(express.json({
+            extended: true,
+            inflate: true,
+            type: 'application/x-www-form-urlencoded'
+          }));
+        //this.app.use(express.urlencoded({ extended: true }));
     
         // allows us to get static files like css
         this.app.use(express.static('public'));

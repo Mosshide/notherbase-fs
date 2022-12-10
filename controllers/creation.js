@@ -24,7 +24,7 @@ export default class Creation {
         try {
             if (fs.existsSync(main + ".ejs")) {
                 let user = new req.db.User("user", req.session.currentUser);
-                let userData = (await user.recall()).data;
+                let userData = await user.recall();
 
                 let context = {
                     siteTitle: siteTitle,
@@ -47,11 +47,11 @@ export default class Creation {
     }
 
     page = async (req, res, next) => {
-        if (fs.existsSync(`${req.contentPath}/${req.params.page}.ejs`)) {
+        if (fs.existsSync(`${req.contentPath}/pages/${req.params.page}.ejs`)) {
             let user = new req.db.User("user", req.session.currentUser);
-            let userData = (await user.recall()).data;
+            let userData = await user.recall();
     
-            res.render(`${req.contentPath}/${req.params.page}.ejs`, {
+            res.render(`${req.contentPath}/pages/${req.params.page}.ejs`, {
                 user: userData,
                 query: req.query
             });
