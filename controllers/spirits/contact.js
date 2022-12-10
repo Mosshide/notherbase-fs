@@ -1,4 +1,4 @@
-import { success } from "./util";
+import { success } from "./util.js";
 
 export default {
     contactNother: async function(req) {

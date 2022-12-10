@@ -1,9 +1,10 @@
-import { findUser, success } from "./util";
+import { findUser, success } from "./util.js";
 
 export default {
     serve: async (req) => {
         let script, result = null;
-        let scriptPath = `${req.contentPath}${req.path}/${req.body.data.script}.js`;
+        if (!req.body.route) req.body.route = req.path;
+        let scriptPath = `${req.contentPath}${req.body.route}/${req.body.data.script}.js`;
 
         if (fs.existsSync(scriptPath)) {
             let user = findUser(req);

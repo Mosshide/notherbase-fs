@@ -139,10 +139,14 @@
     }
 
     let emailTime = async () => {
-        $.post("/coast/tall-beach/nono-cove/index/serve/emailTime", {
-            toEmail: "wyattsushi@gmail.com",
-            subject: "New Time Update!",
-            html: `New Time: ${time}`
+        $.post("/s", {
+            action: "serve",
+            data: {
+                script: "emailTime",
+                toEmail: "wyattsushi@gmail.com",
+                subject: "New Time Update!",
+                html: `New Time: ${time}`
+            }
         }, (res) => {
             console.log(res);
         })

@@ -28,6 +28,7 @@ export default class Creation {
 
                 let context = {
                     siteTitle: siteTitle,
+                    userID: user._ID,
                     user: userData,
                     main: main,
                     query: req.query,

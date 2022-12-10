@@ -11,7 +11,7 @@ import http from 'http';
 import { fileURLToPath } from 'node:url';
 const __dirname = fileURLToPath(new URL('./', import.meta.url));
 import Creation from "./controllers/creation.js";
-import Spirits from "./controllers/spirits.js";
+import SpiritWorld from "./controllers/spirit-world.js";
 
 class NotherBaseFS {
     constructor(contentPath) {
@@ -19,7 +19,7 @@ class NotherBaseFS {
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
         this.creation = new Creation();
-        this.spirits = new Spirits(this.io);
+        this.spiritWorld = new SpiritWorld(this.io);
         
         //set views path
         this.app.set("view engine", "ejs");
@@ -53,7 +53,7 @@ class NotherBaseFS {
             next();
         });
 
-        this.app.use("/s", this.spirits.router);
+        this.app.use("/s", this.spiritWorld.router);
         
         this.app.use("/", this.creation.router);
     

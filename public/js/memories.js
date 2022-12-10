@@ -4,17 +4,24 @@ class Memories {
         this.data = {};
     }
     
-    load = async (service, route = currentRoute) => {
+    load = async (service, route = currentRoute, parent = null) => {
         try {
-            await $.get(`/recall`, {
-                route: route,
+            if (!this.data[service]) this.data[service] = { _lastUpdate: 0 };
+
+            await $.post(`/s`, {
+                action: "recall",
                 service: service,
-                _lastUpdate: this._lastUpdate
+                _lastUpdate: this.data[service]._lastUpdate,
+                route: route,
+                scope: "local",
+                parent: parent
             }, (res) => {
-                if (!res.isUpToDate && res.data) {
+                console.log(res);
+                if (!res.isUpToDate) {
                     this.data[service] = JSON.parse(res.data);
                     this._lastUpdate = this.data[service]._lastUpdate;
                 }
+                console.log(JSON.parse(res.data));
             });
 
             return this.data[service];
@@ -23,16 +30,19 @@ class Memories {
         }
     }
     
-    save = async (service, dataToSave, route = currentRoute) => {
+    save = async (service, dataToSave, route = currentRoute, parent = null) => {
         try {
             this._lastUpdate = Date.now();
 
-            await $.post('/commit', {
-                route: route,
+            await $.post('/s', {
+                action: "commit",
                 service: service,
                 _lastUpdate: this._lastUpdate,
+                route: route,
+                scope: "local",
+                parent: parent,
                 data: JSON.stringify(dataToSave)
-            }, (data) => {
+            }, (res) => {
                 this.data[service] = dataToSave;
                 return "saved";
             });
