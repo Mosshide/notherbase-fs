@@ -6,6 +6,13 @@
 
 <button onclick="emailTime()">email</button>
 
+<input type="text" id="general">
+
+<button onclick="newItem()">newItem</button>
+<button onclick="deleteItem()">deleteItem</button>
+<button onclick="playerInventory.change($('#general').val(), 3)">add Item to inv</button>
+<button onclick="emailTime()">email time</button>
+
 <hr>
 
 <h3>Register Account</h3>
@@ -17,19 +24,9 @@
 
 <hr>
 
-<div class="auth-form" id="login-form">
-    <h1>NotherBase</h1>
-    <h3>Login to Your Account</h3>
-    <input type="email" name="email" placeholder="user@email.com" id="login-email">
-    <input type="password" name="password" placeholder="password" id="login-pass">
-    <button id="login-button">Login</button>
-    <button id="reset-password">Reset Password</button>
-    <p id="login-info"></p>
-</div>
-
 <div class="auth-form" id="reset-form">
     <h1>NotherBase</h1>
-    <h3>Login to Your Account</h3>
+    <h3>Reset your Password</h3>
     <input type="number" name="token" placeholder="Your Reset Code" id="token">
     <input type="password" name="password" placeholder="Type Your New Password Here" minlength="8" required id="password">
     <input type="password" name="confirmation" placeholder="Type Your New Password Here Again" minlength="8" required id="confirmation">
@@ -39,11 +36,7 @@
 
 <hr>
 
-<div class="locked to nother-base">
-    Go to Nono Cove
-</div>
-
-<a href="/coast/tall-beach/nono-cove" class="invisible to nother-base">
+<a href="/coast/tall-beach/nono-cove" class="to nother-base">
     Go inside
 </a>
 
@@ -53,40 +46,12 @@
 
 <script>
     let $resetPassword = $("#reset-password");
-    let $loginButton = $("#login-button");
-    let $loginInfo = $("#login-info");
     let $registerButton = $("#register-button");
     let $registerInfo = $("#register-info");
     let $changePasswordButton = $("button#change-password");
     let $changeInfo = $("#change-info");
     let $toNonoButton = $(".locked.to.nother-base");
     let $toNonoLink = $(".invisible.to.nother-base");
-
-    <% if (user) { %>
-        $toNonoButton.addClass("invisible");
-        $toNonoLink.removeClass("invisible");
-    <% } %>
-
-    $loginButton.on("click", async function () {
-        await $.post("/s", JSON.stringify({
-                action: "login",
-                data: {
-                    email: $("#login-email").val(),
-                    password: $("#login-pass").val()
-                }
-            }), (data) => {
-                if (data.status === "success") {
-                    $loginInfo.text("To your right you hear the sound of a bang against a chain-link fence. You've logged in.");
-                    $toNonoButton.addClass("invisible");
-                    $toNonoLink.removeClass("invisible");
-                    
-                    playerInventory.refresh();
-                    playerAttributes.refresh();
-                    accountServices.refresh();
-                }
-                else console.log(data);
-            });
-    });
 
     $registerButton.on("click", async function () {
         await $.post("/s", JSON.stringify({
@@ -95,18 +60,6 @@
                 username: $("#register-user").val(),
                 password: $("#register-pass").val(),
                 email: $("#register-email").val()
-            }
-        }), (data) => {
-            if (data.status === "success") $registerInfo.text("Account registered.");
-            else console.log(data);
-        });
-    });
-
-    $resetPassword.on("click", async function () {
-        await $.post("/s", JSON.stringify({
-            action: "sendPasswordReset",
-            data: { 
-                email: $("#login-email").val()
             }
         }), (data) => {
             if (data.status === "success") $registerInfo.text("Account registered.");
@@ -131,6 +84,30 @@
     });
 
     let addGold = function addGold(params) {
-        playerInventory.change(itemIDs[0], 2);
+        playerInventory.change("Gold Coin", 23);
+    }
+
+    let newItem = async () => {
+        await commune("newItem", {
+            name: $("#general").val()
+        });
+
+        let items = await commune("getAllItems");
+        console.log(items);
+    }
+
+    let deleteItem = async () => {
+        await commune("deleteItem", {
+            name: $("#general").val()
+        });
+    }
+
+    let emailTime = async () => {
+        await commune("serveFront", {
+            script: "emailTime",
+            toEmail: "wyattsushi@gmail.com",
+            subject: "New Time Update!",
+            html: `New Time: 3       0976`
+        }, { route: currentRoute });
     }
 </script>

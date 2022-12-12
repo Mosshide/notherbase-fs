@@ -14,20 +14,20 @@ export default {
         let user = await findUser(req);
         let att = user.memory.data.attributes;
 
-        if (att[req.body.data.check] >= parseInt(req.body.data.against)) {
+        if (att[req.body.data.check] >= req.body.data.against) {
             return success("Passed check.")
         }
         else return fail("Failed check.");
     },
-    setAttributes: async (req) => {
+    setAttribute: async (req) => {
         loginCheck(req);
 
         let user = await findUser(req);
 
-        user.memory.data.attributes[req.body.change] = parseInt(req.body.data.to);
+        user.memory.data.attributes[req.body.data.change] = req.body.data.to;
         await user.commit();
 
-        return success("Attributes set.");
+        return success("Attributes set.", user.memory.data.attributes);
     },
     incrementAttribute: async (req) => {
         loginCheck(req);
@@ -39,9 +39,9 @@ export default {
             att[req.body.data.change]++;
             await user.commit();
 
-            return success("Attribute incremented.", att[req.body.change]);
+            return success("Attribute incremented.", att[req.body.data.change]);
         } 
-        else return fail("Attribute maxed.", att[req.body.change]);
+        else return fail("Attribute maxed.", att[req.body.data.change]);
     }
 }
 

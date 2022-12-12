@@ -3,13 +3,6 @@
         Please login to view your inventory.
     </div>
 
-    <div class="item-spawner invisible">
-        <input type="text" class="search">
-        <div class="search-results">
-            
-        </div>
-    </div>
-
     <div class="item-list">
     </div>
 </div>
@@ -25,74 +18,44 @@
             this.$error = $("#inventory #error");
             this.items = [];
 
-            this.$search.on("keyup", () => {
-                let searchString = this.$search.val();
-
-                $.get(`/item`, { name: searchString }, (data) => {
-                    this.renderSearchResults(data.foundItems);
-                });
-            });
-
             this.refresh();
-
-            setInterval(this.update, this.updateCooldown);
         }
 
         async change(itemName, amount) {
             let change = {
-                item: itemName,
+                name: itemName,
                 amount: amount
             }
 
-            try {
-                let data = null;
-                let status = null;
+            let response = await commune("updateItemInInventory", change);
 
-                await $.post("/inventory", change, (d, s) => {
-                    data = d;
-                    status = s;
-                });
+            let holding = false;
 
-                if (status === "notmodified") {
-                    return false;
-                }
-                else {
-                    let holding = false;
+            for (let i = 0; i < this.items.length; i++) {
+                if (this.items[i].name === response.data.name) {
+                    this.items[i].amount = response.data.amount;
+                    holding = true;
 
-                    for (let i = 0; i < this.items.length; i++) {
-                        if (this.items[i].item._id === data.item._id) {
-                            this.items[i].amount = data.amount;
-                            holding = true;
-
-                            if (data.amount <= 0) this.items.splice(i, 1);
-                        }
-                    }
-                    
-                    if (!holding && data.amount > 0 && data.item) {
-                        this.items.push(data);
-                    }
-
-                    this.render();
-                    return true;
+                    if (response.data.amount <= 0) this.items.splice(i, 1);
                 }
             }
-            catch(err) {
-                console.log(err);
-                return false;
+            
+            if (!holding && response.data.amount > 0 && response.data.name) {
+                this.items.push(response.data);
             }
+
+            this.render();
         }
 
         async getData() {
-            try {
-                await $.get("/inventory", (data) => {
-                    if (data.foundInventory) this.items = data.foundInventory.items;
+            await $.post("/s", JSON.stringify({ action: "getUserInventory" }), (res) => {
+                if (res.status === "success") {
+                    this.items = res.data;
     
                     this.clearError();
-                });
-            } 
-            catch(err) {
-                
-            }
+                }
+                else console.log(res);
+            });
         }
         
         render() {
@@ -101,34 +64,28 @@
             for (let i = 0; i < this.items.length; i++) {
                 let $new = this.$list.append(
                     `<div class="item-card">
-                        <h5>${this.items[i].item.name}</h5>
+                        <h5>${this.items[i].name}</h5>
                         <button id="${i}">X</button>
                         <hr>
                         <p>${this.items[i].amount}</p>
-                        </div>`
-                        ).children().last();
+                    </div>`
+                ).children().last();
 
-                    $new.find("button").on("click", (e) => {
-                        let which = parseInt(e.currentTarget.id);
-                        
-                        this.change({
-                            item: this.items[which].item._id,
-                            amount: -1
-                        });
-
-                        this.clearError();
-                    });
-                }
+                $new.find("button").on("click", this.reduceItem);
             }
+        }
+
+        reduceItem = (e) => {
+            let which = parseInt(e.currentTarget.id);
+                    
+            this.change(this.items[which].name, -1);
+
+            this.clearError();
+        }
         
         async refresh() {
-            try {
-                await this.getData();
-                this.render();
-            } 
-            catch(err) {
-                
-            }
+            await this.getData();
+            this.render();
         }
         
         clearError() {
@@ -138,26 +95,6 @@
         setError(text) {
             this.$error.text(text);
             this.$error.removeClass("invisible");
-        }
-
-        renderSearchResults(results) {
-            this.$searchResults.empty();
-            this.searchResults = results;
-
-            for (let i = 0; i < this.searchResults.length; i++) {
-                let $new = this.$searchResults.append(
-                                                        `<p id="${i}">${this.searchResults[i].name}</p>`
-                                                    ).children().last();
-
-                $new.on("click", (e) => {
-                    let which = parseInt(e.currentTarget.id);
-
-                    this.change({
-                        item: this.searchResults[which]._id,
-                        amount: 1
-                    });
-                });
-            }
         }
 
         hasItem(itemName, minAmount = 1) {

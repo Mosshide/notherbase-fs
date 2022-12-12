@@ -3,9 +3,9 @@ import { success, check } from "./util.js";
 export default {
     getAllItems: async (req) => {
         let items = new req.db.Item();
-        let all = items.getAll();
+        let all = await items.getAll();
 
-        check(itemData, "Items not found.");
+        check(all, "Items not found.");
 
         return success("Found items.", all);
     },
@@ -22,6 +22,13 @@ export default {
         let item = new req.db.Item(req.body.data.name);
 
         await item.commit(req.body.data);
+
+        return success();
+    },
+    newItem: async (req) => {
+        let item = new req.db.Item(req.body.data.name);
+
+        await item.create(req.body.data);
 
         return success();
     },

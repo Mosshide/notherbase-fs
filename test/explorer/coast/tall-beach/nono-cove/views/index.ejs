@@ -4,21 +4,15 @@
 
 <hr>
 
-<div class="chat-box" id="test-chat">
+<h3>chat</h3>
 
-</div>
-
-<div class="chat-box" id="test-chat-2">
-
-</div>
-
-<div class="chat-box" id="test-chat-3">
-
-</div>
+<div class="chat-box" id="test-chat"></div>
+<div class="chat-box" id="test-chat-2"></div>
+<div class="chat-box" id="test-chat-3"></div>
 
 <hr>
 
-<h3>memories Test</h3>
+<h3>serve, memories and institution Test</h3>
 
 <button onclick="setTime()">Add</button>
 <p id="timer">0:00</p>
@@ -30,49 +24,7 @@
 
 <button onclick="tradeForDoll()" id="trade">Trade 5g for a doll</button>
 
-<hr>
 
-<section class="floor" id="items">
-    <h2>Items</h2>
-    <button id="toggle">Toggle</button>
-
-    <div class="content invisible">
-        <ul class="items">
-
-        </ul>
-    
-        <div class="editor">
-            <div class="edit invisible">
-                <h5>Item Name:</h5>
-                <input type="text" id="name">
-            
-                <h5>Short Item Description:</h5>
-                <textarea id="short" name="short" cols="30" rows="3"></textarea>
-            
-                <h5>Full Item Description:</h5>
-                <textarea id="full" name="full" cols="30" rows="10"></textarea>
-
-                <button id="cancel" onclick="itemFloor.cancelEdit()">Cancel</button>
-                <button id="save" onclick="itemFloor.saveSelectedItem()">Save</button>
-            </div>
-
-            <div class="read">
-                <h5 id="name">Item Name</h5>
-            
-                <h5>Short Item Description:</h5>
-                <p id="short"></p>
-            
-                <h5>Full Item Description:</h5>
-                <p id="full"></p>
-
-                <button id="new" onclick="itemFloor.createNewItem()">Create New</button>
-                <button id="edit" onclick="itemFloor.editSelectedItem()">Edit</button>
-                <button id="delete" onclick="itemFloor.deleteSelectedItem()">Delete</button>
-                <button id="refresh" onclick="itemFloor.updateItems()">Refresh List</button>
-            </div>
-        </div>
-    </div>
-</section>
 
 <hr>
 
@@ -115,7 +67,6 @@
     (async () => {
         let load = await memories.load("time", "/void/test");
         let loadg = await establishment.load("time", "/void/test");
-        console.log(loadg);
         time = load.time;
         $("p#u").text(`Last: ${loadg.u}`);
         gtime = loadg.time;
@@ -165,22 +116,12 @@
     }
 
     let emailTime = async () => {
-        try {
-            $.post("/s", JSON.stringify({
-                action: "serveExplorer",
-                route: currentRoute,
-                data: {
-                    script: "emailTime",
-                    toEmail: "wyattsushi@gmail.com",
-                    subject: "New Time Update!",
-                    html: `New Time: ${time}`
-                }
-            }), (res) => {
-                console.log(res);
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        await commune("serveExplorer", {
+            script: "emailTime",
+            toEmail: "wyattsushi@gmail.com",
+            subject: "New Time Update!",
+            html: `New Time: ${time}`
+        }, { route: currentRoute });
     }
 
     setInterval(updateTime, 1000);

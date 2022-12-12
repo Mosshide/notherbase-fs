@@ -67,6 +67,30 @@ export default class Spirit {
 
         return true;
     }
+
+    commitByData = async (which, query, data = this.memory.data) => {
+        this.time = Date.now();
+
+        await Spirit.db.updateOne({ 
+            route: this.body.route,
+            service: this.body.service,
+            scope: this.body.scope,
+            parent: this.body.parent
+        }, { 
+            route: this.body.route,
+            service: this.body.service,
+            scope: this.body.scope,
+            parent: this.body.parent,
+            _lastUpdate: this.time,
+            data: data
+        }, {
+            upsert: true
+        }).where(`data.${which}`).equals(query);
+
+        this.memory.data = data;
+
+        return true;
+    }
     
     recall = async () => {
         let found = await Spirit.db.findOne({ 
@@ -92,7 +116,7 @@ export default class Spirit {
             scope: this.body.scope
         });
 
-        if (found && new Date(found._lastUpdate) > new Date(this.body._lastUpdate)) {
+        if (found) {
             this.memory = found;
             this.time = found._lastUpdate;
 
@@ -107,13 +131,10 @@ export default class Spirit {
     }
 
     recallFromData = async (which, query) => {
-        console.log(this.body);
         let found = await Spirit.db.findOne({ 
             route: this.body.route,
             service: this.body.service
         }).where(`data.${which}`).equals(query);
-
-        console.log(found);
 
         if (found && new Date(found._lastUpdate) > new Date(this.body._lastUpdate)) {
             this.memory = found;
@@ -124,7 +145,16 @@ export default class Spirit {
         else return false;
     }
 
-    delete = async (which, query) => {
+    delete = async () => {
+        await Spirit.db.findOneAndDelete({ 
+            route: this.body.route,
+            service: this.body.service,
+            scope: this.body.scope,
+            parent: this.body.parent
+        });
+    }
+
+    deleteByData = async (which, query) => {
         await Spirit.db.findOneAndDelete({ 
             route: this.body.route,
             service: this.body.service,

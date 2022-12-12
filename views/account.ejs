@@ -56,27 +56,23 @@
             this.$passwordInput = this.$passwordEdit.find("input");
 
             this.$info = $(".content#account #info");
-
+            
             <% if (user) { %>
+                this.username = "<%= user.username %>";
+                this.email = "<%= user.email %>";
+
                 this.refresh();
             <% } %>
         }
 
         async refresh() {
-            try {
-                $.get("/user/basic", (data) => {
-                    this.$email.text(data.email);
-                    this.$emailInput.val(data.email);
-                    this.$username.text(data.username);
-                    this.$usernameInput.val(data.username);
+            this.$email.text(this.email);
+            this.$emailInput.val(this.email);
+            this.$username.text(this.username);
+            this.$usernameInput.val(this.username);
 
-                    $(".content#account .settings").removeClass("invisible");
-                    $(".content#account #please-login").addClass("invisible");
-                });
-            } 
-            catch(err) {
-                this.$info.text(err);
-            }
+            $(".content#account .settings").removeClass("invisible");
+            $(".content#account #please-login").addClass("invisible");
         }
 
         editEmail() {
@@ -91,16 +87,13 @@
         }
 
         async updateEmail() {
-            try {
-                await $.post("/user/email", { email: this.$emailInput.val() }, (data) => {
-                    this.$email.text(this.$emailInput.val());
-                    this.cancelEmail();
-                    this.$info.text("Email Updated!");
-                });
-            } 
-            catch(err) {
-                this.$info.text(err);
-            }
+            let response = await commune("changeUserEmail", { email: this.$emailInput.val() });
+
+            this.$email.text(this.$emailInput.val());
+            this.cancelEmail();
+            this.$info.text("Email Updated!");
+
+            location.reload();
         }
 
         editUsername() {
@@ -115,17 +108,13 @@
         }
 
         async updateUsername() {
-            try {
-                await $.post("/user/username", { username: this.$usernameInput.val() }, (data) => {
-                    this.$username.text(this.$usernameInput.val());
-                    this.cancelUsername();
-                    this.$info.text("Username Updated!");
-                });
-            } 
-            catch(err) {
-                if (err.status === 401) this.$info.text("Username already taken!");
-                else this.$info.text("Server Error");
-            }
+            let response = await commune("changeUsername", { username: this.$usernameInput.val() });
+
+            this.$username.text(this.$usernameInput.val());
+            this.cancelUsername();
+            this.$info.text("Username Updated!");
+
+            location.reload();
         }
     }
 

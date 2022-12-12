@@ -91,10 +91,12 @@ export default {
 
         check(!userData, "Email already in use!");
 
-        user = await findUser();
+        user = await findUser(req);
 
-        user.memory.data.email = req.body.email;
+        user.memory.data.email = req.body.data.email;
         await user.commit();
+
+        req.session.currentUser = req.body.data.email;
 
         return success();
     },
@@ -105,9 +107,9 @@ export default {
         let userData = await user.recallFromData("username", req.body.data.username);
         check(!userData, "Username already in use!");
 
-        user = await findUser();
+        user = await findUser(req);
 
-        user.memory.data.username = req.body.username;
+        user.memory.data.username = req.body.data.username;
         await user.commit();
 
         return success();

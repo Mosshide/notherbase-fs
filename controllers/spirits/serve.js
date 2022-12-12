@@ -16,14 +16,17 @@ let serve = async (req, scriptPath) => {
 
 export default {
     serveExplorer: async (req) => {
-        if (!req.body.route) req.body.route = req.path;
         let scriptPath = `${req.contentPath}/explorer${req.body.route}/server-scripts/${req.body.data.script}.js`;
         
         return serve(req, scriptPath);
     },
     serveFront: async (req) => {
-        if (!req.body.route) req.body.route = req.path;
-        let scriptPath = `${req.contentPath}${req.body.route}/server-scripts/${req.body.data.script}.js`;
+        let scriptPath = `${req.contentPath}/the-front/server-scripts/${req.body.data.script}.js`;
+        
+        return serve(req, scriptPath);
+    },
+    servePages: async (req) => {
+        let scriptPath = `${req.contentPath}/pages/server-scripts/${req.body.data.script}.js`;
         
         return serve(req, scriptPath);
     }

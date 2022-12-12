@@ -33,7 +33,7 @@ export default {
     Spirit: Spirit,
     User: class User extends Spirit {
         constructor(service, email = null) {
-            super({});
+            super();
             this.body.route = "/";
             this.body.service = service;
             this.email = email;
@@ -46,7 +46,7 @@ export default {
     },
     Item: class Item extends Spirit {
         constructor(name = "") {
-            super({});
+            super();
             this.body.route = "/";
             this.body.service = "item";
 
@@ -58,8 +58,18 @@ export default {
         }
 
         recall = async () => {
-            let result = await this.recallFromData("name", this.name);
+            let result = await this.recallFromData("name", this.memory.data.name);
             return result;
-        }        
+        }
+        
+        commit = async (data = this.memory.data) => {
+            let result = await this.commitByData("name", this.memory.data.name, data);
+            return result;
+        }
+
+        delete = async () => {
+            let result = await this.deleteByData("name", this.memory.data.name);
+            return result;
+        }
     }
 }

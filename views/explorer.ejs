@@ -3,12 +3,58 @@
 <script>
     const currentRoute = "<%- route %>";
 </script>
+<script src="/js/commune.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/memories.js"></script>
 <script src="/js/establishment.js"></script>
 
 <main class="override">
-    <%- include(`${main}.ejs`); %>
+    <% if (requireUser && !user) { %>
+        <div class="login-cover">
+            <a href="/">
+                <h1>NotherBase</h1>
+            </a>
+            <h3>Login to Your Account</h3>
+            <input type="email" placeholder="user@email.com" id="email">
+            <input type="password" placeholder="password" id="pass">
+            <button id="login" onclick="attemptLogin()">Login</button>
+            <button id="reset" onclick="resetPassword()">Reset Password</button>
+            <p class="info"></p>
+        </div>
+        <script>
+            const $loginEmail = $(".login-cover #email");
+            const $loginPassword = $(".login-cover #pass");
+            const $loginInfo = $(".login-cover .info");
+
+            const attemptLogin = async () => {
+                return $.post("/s", JSON.stringify({
+                    action: "login",
+                    data: {
+                        email: $loginEmail.val(),
+                        password: $loginPassword.val()
+                    }
+                }), (data) => {
+                    if (data.status === "success") {
+                        $loginInfo.text("You've logged in.");
+                        location.reload();
+                    }
+                    else $loginInfo.text(data.message);
+                });
+            };
+
+            const resetPassword = async () => {
+                return $.post("/s", JSON.stringify({
+                    action: "sendPasswordReset",
+                    data: { email: $loginEmail.val() }
+                }), (data) => {
+                    if (data.status === "success") $loginInfo.text("A reset code has been sent to your email.");
+                    else $loginInfo.text(data.message);
+                });
+            }
+        </script>
+    <% } else { %>
+        <%- include(`${main}.ejs`); %>
+    <% } %>
 </main>
 
 <div class="ui">

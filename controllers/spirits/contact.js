@@ -7,7 +7,7 @@ export default {
 
         await contact.commit({
             user: req.session.currentUser,
-            location: req.path,
+            location: req.body.data.route,
             content: req.body.data.content
         });
 

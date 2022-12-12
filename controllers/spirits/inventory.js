@@ -3,8 +3,7 @@ import { success, check, loginCheck, findUser } from "./util.js";
 export default {
     getUserInventory: async (req) => {
         loginCheck(req);
-
-        let user = findUser(req);
+        let user = await findUser(req);
         let inv = user.memory.data.inventory;
 
         check(inv, "User inventory not found.");
@@ -12,20 +11,20 @@ export default {
         return success("User inventory found.", inv);
     },
     updateItemInInventory: async (req) => {
-        check(req.body.data.item && req.body.data.amount, `${req.body.item} ${req.body.amount} Check Input!`);
+        check(req.body.data.name && req.body.data.amount, `${req.body.data.name} ${req.body.data.amount} Check Input!`);
 
-        let item = new req.db.Item(req.body.data.item);
-        let itemData = (await item.recall()).data;
+        let item = new req.db.Item(req.body.data.name);
+        let itemData = await item.recall();
 
         check(itemData, "Item not found in database.");
 
-        let user = findUser(req);
+        let user = await findUser(req);
         let inv = user.memory.data.inventory;
 
         let holding = false;
 
         for (let j = 0; j < inv.length; j++) {
-            if (inv[j].item === req.body.data.item) {
+            if (inv[j].name === req.body.data.name) {
                 holding = true;
 
                 if (inv[j].amount >= -Math.floor(req.body.data.amount)) {
@@ -46,7 +45,7 @@ export default {
                     }
                 }
                 else {
-                    return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.item} 
+                    return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.name} 
                         from inventory because the inventory has only ${inv[j].amount}.` );
                 }
             }
@@ -55,7 +54,7 @@ export default {
         if (!holding) {
             if (req.body.data.amount > 0) {
                 inv.push({
-                    item: req.body.data.item,
+                    name: req.body.data.name,
                     amount: req.body.data.amount
                 });
 
@@ -64,7 +63,7 @@ export default {
                 return success("Item offset.", inv[inv.length - 1]);
             }
             else {
-                return fail(`Unable to remove ${req.body.amount} ${req.body.item} 
+                return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.name} 
                     from inventory because the inventory has none.`);
             }
         };

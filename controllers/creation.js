@@ -9,18 +9,12 @@ export default class Creation {
         this.router.get(`/the-front`, this.front);
         this.router.get(`/the-front/:detail`, this.frontDetail);
         this.router.get(`/:page`, this.page);
-        this.router.get(`/:region/:area/:poi`, this.authCheck, this.poi);
-        this.router.get(`/:region/:area/:poi/:detail`, this.authCheck, this.detail);
+        this.router.get(`/:region/:area/:poi`, this.poi);
+        this.router.get(`/:region/:area/:poi/:detail`, this.detail);
         this.router.use(this.void);
     }
 
-    authCheck = (req, res, next) => {
-        console.log(req.session.currentUser);
-        if (req.session.currentUser) next();
-        else res.redirect("/the-front");
-    }
-
-    explore = async (main, siteTitle, req, res, next) => {
+    explore = async (main, siteTitle, reqUser, req, res, next) => {
         try {
             if (fs.existsSync(main + ".ejs")) {
                 let user = new req.db.User("user", req.session.currentUser);
@@ -33,7 +27,8 @@ export default class Creation {
                     main: main,
                     query: req.query,
                     dir: req.frontDir,
-                    route: req.path
+                    route: req.path,
+                    requireUser: reqUser
                 }
 
                 res.render(`explorer`, context);
@@ -63,22 +58,22 @@ export default class Creation {
 
     front = async (req, res, next) => {
         let main = `${req.contentPath}/the-front/views/index`;
-        this.explore(main, `NotherBase - The Front`, req, res, next);
+        this.explore(main, `NotherBase - The Front`, false, req, res, next);
     }
 
     frontDetail = async (req, res, next) => {
         let main = `${req.contentPath}/the-front/views/${req.params.detail}`;
-        this.explore(main, `NotherBase - ${req.params.detail}`, req, res, next);
+        this.explore(main, `NotherBase - ${req.params.detail}`, false, req, res, next);
     }
 
     poi = async (req, res, next) => {
         let main = `${req.contentPath}/explorer${req.path}/views/index`;
-        this.explore(main, `NotherBase - ${req.params.poi}`, req, res, next);
+        this.explore(main, `NotherBase - ${req.params.poi}`, true, req, res, next);
     }
 
     detail = async (req, res, next) => {
         let main = `${req.contentPath}/explorer/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
-        this.explore(main, `NotherBase - ${req.params.detail}`, req, res, next);
+        this.explore(main, `NotherBase - ${req.params.detail}`, true, req, res, next);
     }
 
     void = async (req, res) => {
@@ -88,7 +83,8 @@ export default class Creation {
             user: null,
             inventory: null,
             main: `${req.contentPath}/void/index`,
-            route: `/void`
+            route: `/void`,
+            requireUser: false
         });
     }
 }

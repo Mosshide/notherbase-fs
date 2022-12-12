@@ -33,7 +33,7 @@ export default class SpiritWorld {
             route: "/something" (opt),
             service: "something" (opt),
             scope: "local" (opt),
-            parent: id (opt),
+            parent: "id" (opt),
             _lastUpdate: 0 (opt),
             data: {} (opt)
         } */
@@ -100,8 +100,6 @@ export default class SpiritWorld {
 
         let spirit = new req.db.Spirit(req.body);
         await spirit.commit(req.body.data);
-
-        console.log(spirit);
 
         return success("Spirit updated.");
     }

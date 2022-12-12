@@ -1,22 +1,16 @@
 <div class="content invisible" id="more">
     <h4>Message Nother</h4>
     <textarea id="content"></textarea>
-    <button id="send">Send Message</button>
+    <button id="send" onclick="sendMessageToNother()">Send Message</button>
 </div>
 
 <script>
-    $("#contact").on("click", (e) => {
-        $("#contact-form").toggleClass("invisible");
-    });
-
-    $("#send").on("click", (e) => {
-        $.post("/contact", 
-        {
-            location: currentRoute,
-            content: $("#content").val(),
-        }, 
-        function () {
-            $("#content").val("");
+    let sendMessageToNother = async () => {
+        await commune("contactNother", {
+            content: $(".menu .content#more #content").val(),
+            route: currentRoute
         });
-    });
+
+        $(".menu .content#more #content").val("");
+    }
 </script>

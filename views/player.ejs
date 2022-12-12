@@ -6,39 +6,52 @@
     class PlayerAttributes {
         constructor() {
             this.$content = $(".content#player");
+            this.attributes = [];
 
             <% if (user) { %>
                 this.refresh();
             <% } %>
         }
 
-        async setAtt(change, to) {
-            await $.post("/user/attributes", { change: change, to: to }, async (data) => {
-                await this.refresh();
-            });
+        async set(change, to) {
+            let response = await commune("setAttribute", { change: change, to: to });
+            this.attributes = response.data;
+            await this.render();
+        }
+
+        async increment(which) {
+            let response = await commune("incrementAttribute", { change: which, max: 20 });
+            this.attributes[which] = response.data;
+            await this.render();
+        }
+
+        async check(which, against) {
+            let response = await commune("checkAttribute", { check: which, against: against });
+            await this.render();
         }
 
         async refresh() {
-            try {
-                await $.get("/user/attributes", (data) => {
-                    this.$content.empty();
-                    for (const [key, value] of Object.entries(data)) {
-                        <% if (user) { 
-                             if (user.authLevels.includes("Creator")) { %>
-                                this.$content.append(`<h3 id="${key}">
-                                    ${key}: ${value}
-                                    <input type="number"></input>
-                                    <button onclick="playerAttributes.setAtt('${key}', $('.content#player h3#${key} input').val())">Set</button>
-                                </h3>`);
-                            <% } 
-                        } else { %>
-                            this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
-                        <% } %>
-                    }
-                });
-            } 
-            catch(err) {
-                console.log(err);
+            let response = await commune("attributes");
+            this.attributes = response.data;
+
+            this.render();
+        }
+
+        render() {
+            this.$content.empty();
+
+            for (const [key, value] of Object.entries(this.attributes)) {
+                <% if (user && user.authLevels.includes("Creator")) { %>
+                    this.$content.append(`<h3 id="${key}">
+                        ${key}: ${value}
+                        <input type="number"></input>
+                        <button onclick="playerAttributes.set('${key}', $('.content#player h3#${key} input').val())">Set</button>
+                        <button onclick="playerAttributes.increment('${key}')">+</button>
+                        <button onclick="playerAttributes.check('${key}', $('.content#player h3#${key} input').val())">Check</button>
+                    </h3>`);
+                <% } else { %>
+                    this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+                <% } %>
             }
         }
     }
