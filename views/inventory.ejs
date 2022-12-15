@@ -29,22 +29,27 @@
 
             let response = await commune("updateItemInInventory", change);
 
-            let holding = false;
-
-            for (let i = 0; i < this.items.length; i++) {
-                if (this.items[i].name === response.data.name) {
-                    this.items[i].amount = response.data.amount;
-                    holding = true;
-
-                    if (response.data.amount <= 0) this.items.splice(i, 1);
+            if (response.status === "success") {
+                let holding = false;
+    
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items[i].name === response.data.name) {
+                        this.items[i].amount = response.data.amount;
+                        holding = true;
+    
+                        if (response.data.amount <= 0) this.items.splice(i, 1);
+                    }
                 }
-            }
-            
-            if (!holding && response.data.amount > 0 && response.data.name) {
-                this.items.push(response.data);
-            }
+                
+                if (!holding && response.data.amount > 0 && response.data.name) {
+                    this.items.push(response.data);
+                }
+    
+                this.render();
 
-            this.render();
+                return true;
+            }
+            else return false;
         }
 
         async getData() {

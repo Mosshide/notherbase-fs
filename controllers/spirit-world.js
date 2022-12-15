@@ -81,9 +81,11 @@ export default class SpiritWorld {
     }
 
     recall =  async (req) => {
-        loginCheck(req);
-        let user = await findUser(req);
-        if (req.body.scope === "local") req.body.parent = user.memory._id;
+        if (req.body.scope === "local") {
+            loginCheck(req);
+            let user = await findUser(req);
+            req.body.parent = user.memory._id;
+        } 
 
         let spirit = new req.db.Spirit(req.body);
         let spiritData = await spirit.recall();
@@ -94,9 +96,11 @@ export default class SpiritWorld {
     }
 
     commit =  async (req) => {
-        loginCheck(req);
-        let user = await findUser(req);
-        if (req.body.scope === "local") req.body.parent = user.memory._id;
+        if (req.body.scope === "local") {
+            loginCheck(req);
+            let user = await findUser(req);
+            req.body.parent = user.memory._id;
+        } 
 
         let spirit = new req.db.Spirit(req.body);
         await spirit.commit(req.body.data);

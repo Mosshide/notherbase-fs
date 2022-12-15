@@ -1,7 +1,93 @@
-<p>Hello</p>
+<h1>The Big Check</h1>
+
+<hr>
+
+<h4>Creation</h4>
+
+<p>Page Loaded: True</p>
+<% if (user) { %>
+    <p>User: <%= user.username %></p>
+<% } else { %>
+    <p>User: not logged in</p>
+<% } %>
+
+<hr>
+
+<h4>Spirit World</h4>
+
+<p class="info" id="spirit-world"></p>
+
+<h5>Establishment</h5>
+
+<p id="establish">not loaded</p>
+<input type="text" id="establish" onkeyup="saveEstablishment(event)">
+
+<h5>Memories</h5>
+
+<p id="memory">not loaded</p>
+<input type="text" id="memory" onkeyup="saveMemories(event)">
+
+<h5>Serve Scripts</h5>
+
+<button onclick="emailTime()">Email Wyatt</button>
 
 <hr>
 
 <a href="/the-front">
     Go to The Front
 </a>
+
+<script>
+    let saveEstablishment = async (e) => {
+        let $send = $("input#establish");
+
+        if (e.key === "Enter") {
+            await establishment.save("test", {
+                line: $send.val()
+            });
+            
+            $("p#establish").text($send.val());
+            $send.val("");
+        }
+    }
+
+    let loadEstablishment = async () => {
+        let load = await establishment.load("test");
+
+        $("p#establish").text(load.line);
+    }
+
+    loadEstablishment();
+
+    let saveMemories = async (e) => {
+        let $send = $("input#memory");
+
+        if (e.key === "Enter") {
+            let response = await memories.save("test", {
+                line: $send.val()
+            });
+            
+            if (response.status === "success") {
+                $("p#memory").text($send.val());
+                $send.val("");
+            }
+        }
+    }
+
+    let loadMemories = async () => {
+        let load = await memories.load("test");
+
+        $("p#memory").text(load.line);
+    }
+
+    loadMemories();
+
+    let emailTime = async () => {
+        await commune("serveFront", {
+            script: "emailTime",
+            toEmail: "wyattsushi@gmail.com",
+            subject: "New Time Update!",
+            html: `New Time: From the Big Check!`
+        }, { route: currentRoute });
+    }
+</script>

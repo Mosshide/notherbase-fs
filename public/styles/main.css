@@ -82,6 +82,10 @@ footer a {
     height: 100%;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    width: 100%;
+}
+
 hr {
     border: none;
     border-bottom: 1px solid var(--textColor);
@@ -129,109 +133,6 @@ input[type=submit]:hover, button:hover, a:hover {
     top: 0;
     width: 100%;
     height: 100%;
-}
-
-.locked {
-    background-color: var(--bgColor);
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid var(--textColor);
-    color: var(--textColor);
-    margin: 5px;
-    margin-top: 20px;
-    text-decoration: none;
-    text-align: center;
-    filter: brightness(.5);
-    user-select: none;
-}
-
-.to {
-    width: 100%;
-    height: 200px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    padding: 20px;
-}
-
-.return {
-    width: 100%;
-    height: 75px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    padding: 20px;
-}
-
-.do {
-    width: 100%;
-    height: 200px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-    padding: 20px;
-}
-
-h2, h3 {
-    color: var(--textColor);
-    width: 100%;
-}
-
-ul {
-    margin: 10px;
-}
-
-.door {
-    border: 1px solid var(--darkWoodColor);
-    width: 100px;
-    height: 150px;
-    background-color: var(--woodColor);
-    position: relative;
-}
-
-.knob {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    right: 5px;
-    top: 50%;
-    background-color: var(--darkWoodColor);
-}
-
-iframe {
-    border: none;
-}
-
-.auth-form {
-    height: 100%;
-    width: 100%;
-    padding: 40px 5px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.auth-form h3 {
-    width: calc(100% - 20px);
-    text-align: center;
-    margin: 10px;
-    font-size: 15px;
-}
-
-.auth-form h1 {
-    width: calc(100% - 20px);
-    text-align: center;
-    margin: 10px;
-    font-size: 20px;
-}
-
-.auth-form p {
-    width: calc(100% - 20px);
-    text-align: center;
-    margin: 10px;
-    font-size: 12px;
 }
 
 @media only screen and (max-width: 1000px) {

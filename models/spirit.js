@@ -30,7 +30,7 @@ export default class Spirit {
     create = async (data = this.memory.data) => {
         this.time = Date.now();
 
-        await Spirit.db.create({ 
+        this.memory = await Spirit.db.create({ 
             route: this.body.route,
             service: this.body.service,
             scope: this.body.scope,
@@ -39,15 +39,13 @@ export default class Spirit {
             data: data
         });
 
-        this.memory.data = data;
-
         return true;
     }
 
     commit = async (data = this.memory.data) => {
         this.time = Date.now();
 
-        await Spirit.db.updateOne({ 
+        this.memory = await Spirit.db.updateOne({ 
             route: this.body.route,
             service: this.body.service,
             scope: this.body.scope,
@@ -63,15 +61,13 @@ export default class Spirit {
             upsert: true
         });
 
-        this.memory.data = data;
-
         return true;
     }
 
     commitByData = async (which, query, data = this.memory.data) => {
         this.time = Date.now();
 
-        await Spirit.db.updateOne({ 
+        this.memory = await Spirit.db.updateOne({ 
             route: this.body.route,
             service: this.body.service,
             scope: this.body.scope,
@@ -86,8 +82,6 @@ export default class Spirit {
         }, {
             upsert: true
         }).where(`data.${which}`).equals(query);
-
-        this.memory.data = data;
 
         return true;
     }

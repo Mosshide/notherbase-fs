@@ -53,7 +53,8 @@
             
             if (paid) {
                 bought = true;
-                await playerInventory.change("Rag Doll", 1);
+                let received = await playerInventory.change("Rag Doll", 1);
+                if (!received) playerInventory.change("Gold Coin", 5);
             }
             else {
                 $("#trade").removeClass("invisible");
@@ -67,6 +68,7 @@
     (async () => {
         let load = await memories.load("time", "/void/test");
         let loadg = await establishment.load("time", "/void/test");
+        console.log(load, loadg);
         time = load.time;
         $("p#u").text(`Last: ${loadg.u}`);
         gtime = loadg.time;
