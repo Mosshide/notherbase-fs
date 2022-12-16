@@ -5,7 +5,7 @@ let serve = async (req, scriptPath) => {
     let script, result = null;
 
     if (fs.existsSync(scriptPath)) {
-        let user = findUser(req);
+        let user = await findUser(req);
 
         script = await import(scriptPath);
         result = await script.default(req, user);
