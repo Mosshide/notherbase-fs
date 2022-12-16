@@ -187,15 +187,13 @@ class Base {
     #accountServices = new this.#AccountServices();
     #$menu = $(".ui .menu");
     #$fade = $(".ui .fade");
-    #menuClosing = false;
+    menuClosing = false;
     #$loginEmail = $(".login-cover #email");
     #$loginPassword = $(".login-cover #pass");
     #$loginInfo = $(".login-cover .info");
 
     constructor() {
-        this.#$menu = $(".ui .menu");
-        this.#$fade = $(".ui .fade");
-        console.log(this.#$menu);
+       
     }
 
     #commune = async (action, data = null, options) => {
@@ -222,17 +220,19 @@ class Base {
     }
 
     closeMenu = function closeMenu() {
-        menuClosing = true;
-        this.#$fade.addClass("camo");
-        
-        setTimeout(() => { 
-            this.#$menu.addClass("invisible");
-            this.#$fade.addClass("invisible");
-            menuClosing = false;
-        }, 100);
+        if (!this.menuClosing) {
+            this.menuClosing = true;
+            this.#$fade.addClass("camo");
+            
+            setTimeout(() => { 
+                this.#$menu.addClass("invisible");
+                this.#$fade.addClass("invisible");
+                this.menuClosing = false;
+            }, 100);
+        }
     }
 
-    openMenu = function openMenu() {
+    openMenu = () => {
         this.#$menu.removeClass("invisible");
         this.#$fade.removeClass("camo");
         this.#$fade.removeClass("invisible");

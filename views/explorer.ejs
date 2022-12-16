@@ -22,12 +22,12 @@
     <% } %>
 </main>
 
-<script>
-    <%- include("./menu/scripts/base.js", {user: user}); %>
-</script>
-
 <div class="ui">
     <%- include("./menu.ejs", {user: user}); %>
 </div>
+
+<script>
+    <%- include("./menu/scripts/base.js", {user: user}); %>
+</script>
 
 <%- include("./footer.ejs"); %>
