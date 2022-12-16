@@ -48,7 +48,7 @@ export default {
     register: async (req) => {
         check(req.body.data.password.length > 7, "Password too short.");
         check(req.body.data.email.length > 7, "Email too short.");
-        check(req.body.data.email.username > 2, "Username too short.");
+        check(req.body.data.username.length > 2, "Username too short.");
 
         let user = new req.db.User("user", req.body.data.email);
         let userData = await user.recall();
