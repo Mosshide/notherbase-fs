@@ -28,6 +28,8 @@ export default class SpiritWorld {
     do = async (req, res) => {
         let result = null;
 
+        console.log(req.body);
+
         /* req.body {
             action: "getUserBasic",
             route: "/something" (opt),
