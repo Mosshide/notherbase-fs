@@ -286,8 +286,9 @@ class Base {
 
     do = async (what, data = null) => {
         let response = await this.#commune("serve", {
-            script: what
-        })
+            script: what,
+            ...data
+        });
     }
 }
 

@@ -1,14 +1,52 @@
 import mongoose from "mongoose";
 
 export default class Spirit {
-    constructor(body = {}) {
-        this.body = body;
-        if (!this.body.route) this.body.route = "/";
-        if (!this.body.service) this.body.service = "default"; 
-        if (!this.body.scope) this.body.scope = "global";
-        if (!this.body.parent) this.body.parent = null;
-        if (!this.body._lastUpdate) this.body._lastUpdate = 0;
-        if (!this.body.data) this.body.data = {};
+    static check = (checkee, failMsg) => {
+        if (!checkee) throw {
+            status: "failed",
+            message: failMsg,
+            isUpToDate: true,
+            data: null
+        };
+    }
+    
+    static success = (msg = "Update successful.", data = null, isUpToDate = false) => {
+        return {
+            status: "success",
+            message: msg,
+            isUpToDate: isUpToDate,
+            data: data
+        };
+    }
+    
+    static fail = (msg, data = null, isUpToDate = true) => {
+        return {
+            status: "failed",
+            message: msg,
+            isUpToDate: isUpToDate,
+            data: data
+        }
+    }
+
+    constructor(req, options) {
+        let defaultBody = {
+            route: req.path,
+            service: "default",
+            scope: "global",
+            parent: null,
+            _lastUpdate: 0,
+            data: {}
+        }
+
+        defaultBody = {
+            ...defaultBody,
+            ...req.body,
+            ...options
+        }
+
+        this.req = req;
+        this.req.body = defaultBody;
+        
         this.memory = {
             data: {}
         };
@@ -27,10 +65,12 @@ export default class Spirit {
         data: {}
     }));
 
-    create = async (data = this.memory.data) => {
+    static create = async (req) => {
+        let spirit = new Spirit(req);
+
         this.time = Date.now();
 
-        this.memory = await Spirit.db.create({ 
+        spirit.memory = await Spirit.db.create({ 
             route: this.body.route,
             service: this.body.service,
             scope: this.body.scope,
@@ -39,8 +79,28 @@ export default class Spirit {
             data: data
         });
 
-        return true;
+        return spirit;
     }
+
+    static recall = async (req, query) => {
+        let spirit = new Spirit(req);
+
+        let found = await Spirit.db.find(query);
+
+        if (found && new Date(found._lastUpdate) > new Date(req.body._lastUpdate)) {
+            this.memory = found;
+            this.time = found._lastUpdate;
+            
+            return found.data;
+        }
+        else return false;
+    }
+
+
+    static delete = null;
+    static commit = null;
+
+    
 
     commit = async (data = this.memory.data) => {
         this.time = Date.now();
@@ -86,22 +146,7 @@ export default class Spirit {
         return true;
     }
     
-    recall = async () => {
-        let found = await Spirit.db.findOne({ 
-            route: this.body.route,
-            service: this.body.service,
-            scope: this.body.scope,
-            parent: this.body.parent
-        });
-
-        if (found && new Date(found._lastUpdate) > new Date(this.body._lastUpdate)) {
-            this.memory = found;
-            this.time = found._lastUpdate;
-            
-            return found.data;
-        }
-        else return false;
-    }
+    
 
     getAll = async () => {
         let found = await Spirit.db.find({ 

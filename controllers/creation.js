@@ -5,16 +5,48 @@ export default class Creation {
     constructor() {
         this.router = express.Router();
 
+        //home
         this.router.get("/", function(req, res) { res.redirect("/the-front"); });
-        this.router.get(`/the-front`, this.front);
-        this.router.get(`/the-front/:detail`, this.frontDetail);
-        this.router.get(`/:page`, this.page);
-        this.router.get(`/:region/:area/:poi`, this.poi);
-        this.router.get(`/:region/:area/:poi/:detail`, this.detail);
-        this.router.use(this.void);
+        //the-front
+        this.router.get(`/the-front`, this.explore);
+        this.router.get(`/the-front/:frontDetail`, this.explore);
+        //pages
+        this.router.get(`/:page`, this.explore);
+        //explorer
+        this.router.get(`/:region/:area/:poi`, this.explore);
+        this.router.get(`/:region/:area/:poi/:detail`, this.explore);
+        //void
+        this.router.use(function(req, res) { res.redirect("/void"); });
     }
 
-    explore = async (main, siteTitle, reqUser, req, res, next) => {
+    explore = async (req, res, next) => {
+        let reqUser = false;
+        let main = `${req.contentPath}`;
+        let siteTitle = `NotherBase - `;
+
+        if (req.params.frontDetail) {
+            main += `/the-front/${req.params.frontDetail}/index`;
+            siteTitle += req.params.frontDetail;
+        }
+        else if (req.params.detail) {
+            main += `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
+            siteTitle += req.params.detail;
+            reqUser = true;
+        }
+        else if (req.params.poi) {
+            main += `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
+            siteTitle += req.params.poi;
+            reqUser = true;
+        }
+        else if (req.params.page) {
+            main += `/${req.params.page}/index`;
+            siteTitle = req.params.page;
+        }
+        else {
+            main += `/the-front/index`;
+            siteTitle += "the-front";
+        }
+
         try {
             if (fs.existsSync(main + ".ejs")) {
                 let user = new req.db.User("user", req.session.currentUser);
@@ -39,52 +71,5 @@ export default class Creation {
             console.log(err);
             res.status(500).end();
         }
-    }
-
-    page = async (req, res, next) => {
-        if (fs.existsSync(`${req.contentPath}/pages/${req.params.page}.ejs`)) {
-            let user = new req.db.User("user", req.session.currentUser);
-            let userData = await user.recall();
-    
-            res.render(`${req.contentPath}/pages/${req.params.page}.ejs`, {
-                user: userData,
-                query: req.query
-            });
-        } 
-        else {
-            next();
-        }
-    }
-
-    front = async (req, res, next) => {
-        let main = `${req.contentPath}/the-front/views/index`;
-        this.explore(main, `NotherBase - The Front`, false, req, res, next);
-    }
-
-    frontDetail = async (req, res, next) => {
-        let main = `${req.contentPath}/the-front/views/${req.params.detail}`;
-        this.explore(main, `NotherBase - ${req.params.detail}`, false, req, res, next);
-    }
-
-    poi = async (req, res, next) => {
-        let main = `${req.contentPath}/explorer${req.path}/views/index`;
-        this.explore(main, `NotherBase - ${req.params.poi}`, true, req, res, next);
-    }
-
-    detail = async (req, res, next) => {
-        let main = `${req.contentPath}/explorer/${req.params.region}/${req.params.area}/${req.params.poi}/views/${req.params.detail}`;
-        this.explore(main, `NotherBase - ${req.params.detail}`, true, req, res, next);
-    }
-
-    void = async (req, res) => {
-        res.render(`explorer`, 
-        {
-            siteTitle: "NotherBase | The Void",
-            user: null,
-            inventory: null,
-            main: `${req.contentPath}/void/index`,
-            route: `/void`,
-            requireUser: false
-        });
     }
 }

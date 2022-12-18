@@ -1,62 +1,9 @@
 import express from "express";
 import { stripHtml } from "string-strip-html";
-import contact from "./spirits/contact.js";
-import inventory from "./spirits/inventory.js";
-import item from "./spirits/item.js";
-import serve from "./spirits/serve.js";
-import attribute from "./spirits/attribute.js";
-import user from "./spirits/user.js";
 import { check, findUser, loginCheck, success } from "./spirits/util.js";
 
 export default class SpiritWorld {
-    constructor(io) {
-        this.io = io;
-        this.router = express.Router();
-
-        this.router.post(`/`, this.do);
-
-        this.io.on('connection', this.setupChat);
-
-        Object.assign(this, contact);
-        Object.assign(this, inventory);
-        Object.assign(this, item);
-        Object.assign(this, serve);
-        Object.assign(this, attribute);
-        Object.assign(this, user);
-    }
-
-    do = async (req, res) => {
-        let result = null;
-
-        console.log(req.body);
-
-        /* req.body {
-            action: "getUserBasic",
-            route: "/something" (opt),
-            service: "something" (opt),
-            scope: "local" (opt),
-            parent: "id" (opt),
-            _lastUpdate: 0 (opt),
-            data: {} (opt)
-        } */
-        
-        try {
-            if (this[req.body.action]) result = await this[req.body.action](req);
-            else result = {
-                status: "failed",
-                message: `No function with the name ${req.body.action}`,
-                isUpToDate: true,
-                data: {}
-            }
-            
-            res.send(result);
-        } catch (error) {
-            console.log(error);
-            res.send(error);
-        }
-    }
-
-    setupChat = (socket) => {
+    #setupChat = (socket) => {
         socket.join(socket.handshake.query.room);
     
         this.io.to(socket.handshake.query.room).emit("chat message", {
@@ -82,31 +29,63 @@ export default class SpiritWorld {
         });
     }
 
-    recall =  async (req) => {
-        if (req.body.scope === "local") {
-            loginCheck(req);
-            let user = await findUser(req);
-            req.body.parent = user.memory._id;
-        } 
+    constructor(io) {
+        this.io = io;
+        this.router = express.Router();
 
-        let spirit = new req.db.Spirit(req.body);
-        let spiritData = await spirit.recall();
+        this.router.post(`/serve`, this.serve);
+        this.router.post(`/user/:action`, this.user);
+        this.router.post(`/contact-nother`, this.contactNother);
 
-        check(spiritData, "No spirit found.");
-
-        return success("Spirit found.", spiritData);
+        this.io.on('connection', this.#setupChat);
     }
 
-    commit =  async (req) => {
-        if (req.body.scope === "local") {
-            loginCheck(req);
+    user = async (req, res) => {
+        try {
+            let user = new req.db.User(req);
+        
+            if (user[req.params.action]) result = await user[req.body.action](req);
+            else result = {
+                status: "failed",
+                message: `No function with the name ${req.body.action}`,
+                isUpToDate: true,
+                data: {}
+            }
+            
+            res.send(result);
+        } catch (error) {
+            console.log(error);
+            res.send(error);
+        }
+    }
+
+    serve = async (req) => {
+        if (!req.body.route) req.body.route = req.path;
+        
+        let scriptPath = `${req.contentPath}${req.body.route}/${req.body.data.script}.js`;
+        
+        let script, result = null;
+
+        if (fs.existsSync(scriptPath)) {
             let user = await findUser(req);
-            req.body.parent = user.memory._id;
-        } 
 
-        let spirit = new req.db.Spirit(req.body);
-        await spirit.commit(req.body.data);
+            script = await import(scriptPath);
+            result = await script.default(req, user);
+            return success("Served.", result);
+        }
+        else return fail(`Script not found: ${req.body.data.script} at ${scriptPath}`);
+    }
 
-        return success("Spirit updated.");
+    contactNother = async function(req) {
+        req.body.service = "contact";
+        let contact = new req.db.Spirit(req.body);
+
+        await contact.commit({
+            user: req.session.currentUser,
+            location: req.body.data.route,
+            content: req.body.data.content
+        });
+
+        return success();
     }
 }

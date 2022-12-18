@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 import Spirit from "./spirit.js";
+import Attribute from "./attribute";
+import Inventory from "./inventory";
+import Item from "./item.js";
+import User from "./user.js";
 import SendMail from "./send-mail.js";
 
 mongoose.connection.on('connected', (err) => {
@@ -25,50 +29,6 @@ try {
 catch (err) {
     console.log(`Mongoose on connect: ${err}`);
 }
-
-class User extends Spirit {
-    constructor(service, email = null) {
-        super();
-        this.body.route = "/";
-        this.body.service = service;
-        this.email = email;
-    }
-
-    recall = async () => {
-        let result = await this.recallFromData("email", this.email);
-        return result;
-    }
-}
-
-class Item extends Spirit {
-    constructor(name = "") {
-        super();
-        this.body.route = "/";
-        this.body.service = "item";
-
-        this.memory = {
-            data: {
-                name: name
-            }
-        }
-    }
-
-    recall = async () => {
-        let result = await this.recallFromData("name", this.memory.data.name);
-        return result;
-    }
-    
-    commit = async (data = this.memory.data) => {
-        let result = await this.commitByData("name", this.memory.data.name, data);
-        return result;
-    }
-
-    delete = async () => {
-        let result = await this.deleteByData("name", this.memory.data.name);
-        return result;
-    }
-}
-
 
 // migrate
 // const user = mongoose.model('users', new mongoose.Schema({
@@ -141,13 +101,6 @@ class Item extends Spirit {
 //         }
 //     }
 // });
-
-
-
-
-
-
-
 
 export default {
     SendMail: SendMail,
