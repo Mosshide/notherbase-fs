@@ -1,94 +1,90 @@
+import Spirit from "./spirit.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Spirit {
-    constructor(service, email = null) {
-        super();
-        this.body.route = "/";
-        this.body.service = service;
-        this.email = email;
+    static recall = async (target, id = null) => {
+        return await super.recall({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null
+        }, { email: target }, id);
     }
 
-    recall = async () => {
-        let result = await this.recallFromData("email", this.email);
-        return result;
-    }
-
-    loginCheck = (req) => {
-        check(req.session.currentUser, "Please login first.");
-    }
-
-    findUser = async (req, email = req.session.currentUser) => {
-        let user = new req.db.User("user", email);
-        let userData = await user.recall();
-
-        check(userData, "User not found.");
-
-        return user;
-    }
-
-    logout = async (req) => {
-        loginCheck(req);
+    static logout = async (req) => {
+        this.loginCheck(req);
 
         await req.session.destroy();
 
-        return success("Logged out.");
+        return "Logged out.";
     }
 
-    sendPasswordReset = async (req) => {
-        let reset = new req.db.User("reset");
+    static sendPasswordReset = async (req) => {
+        let spirit = await this.findUser(req.body.data.email);
 
-        let token = Math.floor(Math.random() * 9999);
+        if (spirit) {
+            let token = Math.floor(Math.random() * 9999);
 
-        await reset.create({
-            email: req.body.data.email, 
-            token: token, 
-            tokenExp: Date.now() + (1000 * 60 * 30)
-        });
-
-        req.db.SendMail.passwordReset(req.body.data.email, token);
-
-        return success("Password reset.", {});
+            spirit.memory.data.reset.token = token;
+            spirit.memory.data.reset.exp = Date.now() + (1000 * 60 * 30);
+    
+            req.db.SendMail.passwordReset(req.body.data.email, token);
+    
+            return "Password reset.";
+        }
+        else return "User not found.";
     }
 
-    changePassword = async (req) => {
-        let reset = new req.db.User("reset");
-        let resetData = await reset.recallFromData("token", req.body.data.token);
+    static changePassword = async (req) => {
+        let spirit = await super.recall({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null
+        }, { 
+            reset: {
+                token: token
+            } 
+        }, null);
 
-        check(resetData, "Reset token not valid!");
-        check(resetData.tokenExp < Date.now(), "Reset token expired!");
-        check(req.body.data.password !== req.body.data.confirmation, "Passwords must match!");
+        this.check(spirit, "Reset token not valid!");
+        this.check(spirit.memory.data.reset.exp < Date.now(), "Reset token expired!");
+        this.check(req.body.data.password !== req.body.data.confirmation, "Passwords must match!");
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.data.password, salt);
 
-        let user = new req.db.User("user");
-        let userData = (await user.recallFromData("email", resetData.email)).data;
+        spirit.memory.data.password = hash;
+        await spirit.commit();
 
-        userData.password = hash;
-        await user.commit(userData);
-
-        await reset.delete();
-
-        return success("Password changed successfully!");
+        return "Password changed successfully!";
     }
 
-    register = async (req) => {
-        check(req.body.data.password.length > 7, "Password too short.");
-        check(req.body.data.email.length > 7, "Email too short.");
-        check(req.body.data.username.length > 2, "Username too short.");
+    static register = async (req) => {
+        this.check(req.body.data.password.length > 7, "Password too short.");
+        this.check(req.body.data.email.length > 7, "Email too short.");
+        this.check(req.body.data.username.length > 2, "Username too short.");
 
-        let user = new req.db.User("user", req.body.data.email);
-        let userData = await user.recall();
+        let spirit = await this.findUser(req.body.data.email);
 
-        check(!userData, "Email already in use!");
+        this.check(!spirit, "Email already in use!");
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.data.password, salt);
 
-        await user.create({
+        spirit = await super.create({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null
+        }, {
             username: req.body.data.username,
             password: hash,
             email: req.body.data.email,
+            reset: {
+                token: null,
+                exp: null
+            },
             coin: 0,
             home: "/",
             authLevels: [ "Basic" ],
@@ -102,81 +98,92 @@ export default class User extends Spirit {
             inventory: []
         });
 
-        return success("Registration successful!");
+        return "Registration successful!";
     }
 
-    login = async (req) => {
-        let user = await findUser(req, req.body.data.email);
+    static login = async (req) => {
+        let spirit = await this.findUser(req.body.data.email);
+        this.check(spirit, "Password doesn't match.");
 
-        let passResult = await bcrypt.compare(req.body.data.password, user.memory.data.password);
-        check(passResult, "Password doesn't match.");
+        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
+        this.check(passResult, "Password doesn't match.");
 
         req.session.currentUser = req.body.data.email;
 
-        return success("Logged in.");
+        return "Logged in.";
     }
 
-    changeUserEmail = async (req) => {
-        loginCheck(req);
+    static changeUserEmail = async (req) => {
+        this.loginCheck(req);
 
-        let user = new req.db.User("user", req.body.data.email);
-        let userData = await user.recall();
+        let spirit = await this.findUser(req.body.data.email);
 
-        check(!userData, "Email already in use!");
+        this.check(!spirit, "Email already in use!");
 
-        user = await findUser(req);
+        spirit = await this.findUser(req.session.currentUser);
 
-        user.memory.data.email = req.body.data.email;
-        await user.commit();
+        spirit.memory.data.email = req.body.data.email;
+        await spirit.commit();
 
         req.session.currentUser = req.body.data.email;
 
-        return success();
+        return "Email changed.";
     }
-    
-    changeUsername = async (req) => {
-        loginCheck(req);
+
+    static changeUsername = async (req) => {
+        this.loginCheck(req);
        
-        let user = new req.db.User("user");
-        let userData = await user.recallFromData("username", req.body.data.username);
-        check(!userData, "Username already in use!");
+        let spirit = await super.recall({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null
+        }, { username: req.body.data.username });
+        this.check(!spirit, "Username already in use!");
 
-        user = await findUser(req);
+        spirit = await this.findUser(req.session.currentUser);
 
-        user.memory.data.username = req.body.data.username;
-        await user.commit();
+        spirit.memory.data.username = req.body.data.username;
+        await spirit.commit();
 
-        return success();
+        return "Username changed";
     }
 
-    deleteUserPermanently = async (req) => {
-        loginCheck(req);
+    static deleteUserPermanently = async (req) => {
+        this.loginCheck(req);
         
-        await user.findOneAndDelete().where("data.email").equals(req.session.currentUser);
+        let deleted = await super.delete({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null
+        }, { email: req.session.currentUser });
+
+        this.check(deleted > 0, "No account deleted");
+
         await req.session.destroy();
 
-        return success("Account deleted.");
+        return "Account deleted.";
     }
 
-    getUserInventory = async (req) => {
-        loginCheck(req);
-        let user = await findUser(req);
-        let inv = user.memory.data.inventory;
+    static getUserInventory = async (req) => {
+        this.loginCheck(req);
+        let spirit = await this.findUser(req.session.currentUser);
+        let inv = spirit.memory.data.inventory;
     
-        check(inv, "User inventory not found.");
+        this.check(inv, "User inventory not found.");
     
-        return success("User inventory found.", inv);
+        return inv;
     }
 
-    updateItemInInventory = async (req) => {
-        check(req.body.data.name && req.body.data.amount, `${req.body.data.name} ${req.body.data.amount} Check Input!`);
+    static updateItemInInventory = async (req) => {
+        this.check(req.body.data.name && req.body.data.amount, `${req.body.data.name} ${req.body.data.amount} Check Input!`);
     
-        let item = new req.db.Item(req.body.data.name);
-        let itemData = await item.recall();
+        let item = req.db.Item.recall(req.body.data.name);
     
-        check(itemData, "Item not found in database.");
+        this.check(item, "Item not found in database.");
     
-        let user = await findUser(req);
+        let user = await this.findUser(req.session.currentUser);
         let inv = user.memory.data.inventory;
     
         let holding = false;
@@ -194,17 +201,17 @@ export default class User extends Spirit {
                         inv.splice(j, 1);
                         await user.commit();
     
-                        return success("Item emptied.", empty);
+                        return "Item emptied.";
                     }
                     else {
                         await user.commit();
     
-                        return success("Item offset.", inv[j]);
+                        return inv[j];
                     }
                 }
                 else {
-                    return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.name} 
-                        from inventory because the inventory has only ${inv[j].amount}.` );
+                    return `Unable to remove ${req.body.data.amount} ${req.body.data.name} 
+                        from inventory because the inventory has only ${inv[j].amount}.`;
                 }
             }
         }
@@ -218,59 +225,69 @@ export default class User extends Spirit {
     
                 await user.commit();
     
-                return success("Item offset.", inv[inv.length - 1]);
+                return inv[inv.length - 1];
             }
             else {
-                return fail(`Unable to remove ${req.body.data.amount} ${req.body.data.name} 
-                    from inventory because the inventory has none.`);
+                return `Unable to remove ${req.body.data.amount} ${req.body.data.name} 
+                    from inventory because the inventory has none.`;
             }
         };
     }
+
+    static attributes = async (req) => {
+        this.loginCheck(req);
     
-    attributes = async (req) => {
-        loginCheck(req);
+        let user = await this.findUser(req.session.currentUser);
     
-        let user = await findUser(req);
-    
-        return success("Got user attributes.", user.memory.data.attributes);
+        return user.memory.data.attributes;
     }
 
-    checkAttribute = async (req) => {
-        loginCheck(req);
+    static checkAttribute = async (req) => {
+        this.loginCheck(req);
     
-        let user = await findUser(req);
+        let user = await this.findUser(req.session.currentUser);
         let att = user.memory.data.attributes;
     
         if (att[req.body.data.check] >= req.body.data.against) {
-            return success("Passed check.")
+            return "pass";
         }
-        else return fail("Failed check.");
+        else return "fail";
     }
 
-    setAttribute = async (req) => {
-        loginCheck(req);
+    static setAttribute = async (req) => {
+        this.loginCheck(req);
     
-        let user = await findUser(req);
+        let user = await this.findUser(req.session.currentUser);
     
         user.memory.data.attributes[req.body.data.change] = req.body.data.to;
         await user.commit();
     
-        return success("Attributes set.", user.memory.data.attributes);
+        return "Attributes set.";
     }
 
-    incrementAttribute = async (req) => {
-        loginCheck(req);
+    static incrementAttribute = async (req) => {
+        this.loginCheck(req);
     
-        let user = await findUser(req);
+        let user = await this.findUser(req.session.currentUser);
         let att = user.memory.data.attributes;
     
         if (att[req.body.data.change] < req.body.data.max) {
             att[req.body.data.change]++;
             await user.commit();
     
-            return success("Attribute incremented.", att[req.body.data.change]);
+            return att[req.body.data.change];
         } 
-        else return fail("Attribute maxed.", att[req.body.data.change]);
+        else return att[req.body.data.change];
+    }
+
+    constructor(email, id = null) {
+        super();
+        this.email = email;
+        this.id = id;
+    }
+
+    loginCheck = (req) => {
+        this.check(req.session.currentUser, "Please login first.");
     }
 }
 

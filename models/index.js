@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 import Spirit from "./spirit.js";
-import Attribute from "./attribute";
-import Inventory from "./inventory";
 import Item from "./item.js";
 import User from "./user.js";
 import SendMail from "./send-mail.js";
@@ -30,77 +28,79 @@ catch (err) {
     console.log(`Mongoose on connect: ${err}`);
 }
 
-// migrate
-// const user = mongoose.model('users', new mongoose.Schema({
-//     username: String,
-//     password: String,
-//     email: String,
-//     coin: Number,
-//     home: String,
-//     authLevels: [ String ],
-//     location: String,
-//     attributes: {
-//         translation: Number,
-//         strength: Number,
-//         agility: Number,
-//         defense: Number
-//     },
-//     reset: {
-//         token: Number,
-//         exp: Number
-//     }
-// }));
-// const page = mongoose.model('pages', new mongoose.Schema({
-// 	name: String,
-// 	type: String,
-//     user: { 
-//         type: mongoose.Schema.Types.ObjectId, 
-//         ref: "users",
-//         required: false
-//     },
-//     data: {}
-// }));
-
-// user.find({}, async (err, users) => {
-//     for (let i = 0; i < users.length; i++) {
-//         let userSpirit = new User("user", users[i].email);
-        
-//         await userSpirit.create({
-//             username: users[i].username,
-//             password: users[i].password,
-//             email: users[i].email,
-//             coin: users[i].coin,
-//             home: users[i].home,
-//             authLevels: users[i].authLevels,
-//             location: users[i].location,
-//             attributes: users[i].attributes,
-//             inventory: []
-//         });
-        
-//         let foundPages = await page.find({ user: users[i]._id });
-
-//         for (let i = 0; i < foundPages.length; i++) {
-//             let spirit = new Spirit({
-//                 route: `/${foundPages[i].name}`,
-//                 service: foundPages[i].name,
-//                 scope: foundPages[i].type,
-//                 parent: userSpirit.memory._id,
-//                 _lastUpdate: 0,
-//                 data: foundPages[i].data.tickets
-//             });
+let migrate = function () {
+    // migrate
+    // const user = mongoose.model('users', new mongoose.Schema({
+    //     username: String,
+    //     password: String,
+    //     email: String,
+    //     coin: Number,
+    //     home: String,
+    //     authLevels: [ String ],
+    //     location: String,
+    //     attributes: {
+    //         translation: Number,
+    //         strength: Number,
+    //         agility: Number,
+    //         defense: Number
+    //     },
+    //     reset: {
+    //         token: Number,
+    //         exp: Number
+    //     }
+    // }));
+    // const page = mongoose.model('pages', new mongoose.Schema({
+    // 	name: String,
+    // 	type: String,
+    //     user: { 
+    //         type: mongoose.Schema.Types.ObjectId, 
+    //         ref: "users",
+    //         required: false
+    //     },
+    //     data: {}
+    // }));
     
-//             let found = await spirit.recall();
+    // user.find({}, async (err, users) => {
+    //     for (let i = 0; i < users.length; i++) {
+    //         let userSpirit = new User("user", users[i].email);
+            
+    //         await userSpirit.create({
+    //             username: users[i].username,
+    //             password: users[i].password,
+    //             email: users[i].email,
+    //             coin: users[i].coin,
+    //             home: users[i].home,
+    //             authLevels: users[i].authLevels,
+    //             location: users[i].location,
+    //             attributes: users[i].attributes,
+    //             inventory: []
+    //         });
+            
+    //         let foundPages = await page.find({ user: users[i]._id });
     
-//             if (found) {
-//                 spirit.memory.data.tickets.concat(foundPages[i].data.tickets);
-//                 await spirit.commit();
-//             }
-//             else await spirit.create({
-//                 tickets: foundPages[i].data.tickets 
-//             });
-//         }
-//     }
-// });
+    //         for (let i = 0; i < foundPages.length; i++) {
+    //             let spirit = new Spirit({
+    //                 route: `/${foundPages[i].name}`,
+    //                 service: foundPages[i].name,
+    //                 scope: foundPages[i].type,
+    //                 parent: userSpirit.memory._id,
+    //                 _lastUpdate: 0,
+    //                 data: foundPages[i].data.tickets
+    //             });
+        
+    //             let found = await spirit.recall();
+        
+    //             if (found) {
+    //                 spirit.memory.data.tickets.concat(foundPages[i].data.tickets);
+    //                 await spirit.commit();
+    //             }
+    //             else await spirit.create({
+    //                 tickets: foundPages[i].data.tickets 
+    //             });
+    //         }
+    //     }
+    // });
+}
 
 export default {
     SendMail: SendMail,

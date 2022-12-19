@@ -49,13 +49,12 @@ export default class Creation {
 
         try {
             if (fs.existsSync(main + ".ejs")) {
-                let user = new req.db.User("user", req.session.currentUser);
-                let userData = await user.recall();
+                let user = await req.db.User.recall(req);
 
                 let context = {
                     siteTitle: siteTitle,
-                    userID: user._ID,
-                    user: userData,
+                    userID: null,//user._ID,
+                    user: null,//user.memory.data,
                     main: main,
                     query: req.query,
                     dir: req.frontDir,

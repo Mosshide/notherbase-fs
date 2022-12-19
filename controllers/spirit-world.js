@@ -1,6 +1,5 @@
 import express from "express";
 import { stripHtml } from "string-strip-html";
-import { check, findUser, loginCheck, success } from "./spirits/util.js";
 
 export default class SpiritWorld {
     #setupChat = (socket) => {
@@ -42,13 +41,16 @@ export default class SpiritWorld {
 
     user = async (req, res) => {
         try {
-            let user = new req.db.User(req);
+            let result;
         
-            if (user[req.params.action]) result = await user[req.body.action](req);
+            if (req.db.User[req.params.action]) result = {
+                status: "success",
+                message: "User script ran.",
+                data: await req.db.User[req.params.action](req)
+            }
             else result = {
                 status: "failed",
                 message: `No function with the name ${req.body.action}`,
-                isUpToDate: true,
                 data: {}
             }
             
