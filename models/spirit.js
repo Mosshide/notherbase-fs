@@ -12,7 +12,7 @@ let buildQuery = (options = {}, data = {}, id = null) => {
     };
     if (data) query = {
         ...query,
-        data: data
+        data
     };
 
     return query;
@@ -49,7 +49,11 @@ export default class Spirit {
 
         let query = buildQuery(options, data, id);
 
+        console.log(query);
+
         let found = await Spirit.db.find(query);
+
+        console.log(found);
 
         if (found) {
             spirit.memory = found;
@@ -73,7 +77,7 @@ export default class Spirit {
 
     buildQuery = buildQuery;
 
-    check = (checkee, failMsg) => {
+    static check = (checkee, failMsg) => {
         if (!checkee) throw {
             status: "failed",
             message: failMsg,

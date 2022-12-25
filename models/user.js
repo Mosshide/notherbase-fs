@@ -102,11 +102,11 @@ export default class User extends Spirit {
     }
 
     static login = async (req) => {
-        let spirit = await this.findUser(req.body.data.email);
-        this.check(spirit, "Password doesn't match.");
+        let spirit = await User.recall(req.body.data.email);
+        Spirit.check(spirit, "User not found.");
 
         let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
-        this.check(passResult, "Password doesn't match.");
+        Spirit.check(passResult, "Password doesn't match the email.");
 
         req.session.currentUser = req.body.data.email;
 
@@ -166,9 +166,9 @@ export default class User extends Spirit {
         return "Account deleted.";
     }
 
-    static getUserInventory = async (req) => {
-        this.loginCheck(req);
-        let spirit = await this.findUser(req.session.currentUser);
+    static getInventory = async (req) => {
+        User.loginCheck(req);
+        let spirit = await User.recall(req.session.currentUser);
         let inv = spirit.memory.data.inventory;
     
         this.check(inv, "User inventory not found.");
@@ -286,8 +286,8 @@ export default class User extends Spirit {
         this.id = id;
     }
 
-    loginCheck = (req) => {
-        this.check(req.session.currentUser, "Please login first.");
+    static loginCheck = (req) => {
+        Spirit.check(req.session.currentUser, "Please login first.");
     }
 }
 

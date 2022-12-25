@@ -127,6 +127,15 @@ input[type=submit]:hover, button:hover, a:hover {
     cursor: pointer;
 }
 
+.header-link {
+    border: none;
+    padding: 0;
+}
+
+.header-link:hover {
+    border: none;
+}
+
 .login-cover {
     position: absolute;
     left: 0;

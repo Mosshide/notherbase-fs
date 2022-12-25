@@ -1,3 +1,20 @@
+commune = async (route, data = null, options) => {
+    try {
+        let body = { data, ...options };
+    
+        let response = null;
+
+        await $.post(route, JSON.stringify(body), (res) => {
+            response = res;
+            if (res.status != "success") console.log(`${res.status}: ${res.message}`, res.data);
+        });
+    
+        return response;
+    } catch (error) {
+        return error;
+    }
+}
+
 class Base {
     #Inventory = class Inventory {
         constructor() {
@@ -11,77 +28,28 @@ class Base {
     
             this.refresh();
         }
-    
-        async change(itemName, amount) {
-            let change = {
-                name: itemName,
-                amount: amount
-            }
-    
-            let response = await commune("updateItemInInventory", change);
-    
-            if (response.status === "success") {
-                let holding = false;
-    
-                for (let i = 0; i < this.items.length; i++) {
-                    if (this.items[i].name === response.data.name) {
-                        this.items[i].amount = response.data.amount;
-                        holding = true;
-    
-                        if (response.data.amount <= 0) this.items.splice(i, 1);
-                    }
-                }
-                
-                if (!holding && response.data.amount > 0 && response.data.name) {
-                    this.items.push(response.data);
-                }
-    
-                this.render();
-    
-                return true;
-            }
-            else return false;
-        }
-    
-        async getData() {
-            await $.post("/s", JSON.stringify({ action: "getUserInventory" }), (res) => {
-                if (res.status === "success") {
-                    this.items = res.data;
-    
-                    this.clearError();
-                }
-                else console.log(res);
-            });
-        }
-        
-        render() {
-            this.$list.empty();
-            
-            for (let i = 0; i < this.items.length; i++) {
-                let $new = this.$list.append(
-                    `<div class="item-card">
-                        <h5>${this.items[i].name}</h5>
-                        <button id="${i}">X</button>
-                        <hr>
-                        <p>${this.items[i].amount}</p>
-                    </div>`
-                ).children().last();
-    
-                $new.find("button").on("click", this.reduceItem);
-            }
-        }
-    
-        reduceItem = (e) => {
-            let which = parseInt(e.currentTarget.id);
-                    
-            this.change(this.items[which].name, -1);
-    
-            this.clearError();
-        }
         
         async refresh() {
-            await this.getData();
-            this.render();
+            let response = await commune("/s/user/getInventory");
+
+            this.items = response.data;
+
+            if (this.items) {
+                this.$list.empty();
+                
+                for (let i = 0; i < this.items.length; i++) {
+                    let $new = this.$list.append(
+                        `<div class="item-card">
+                            <h5>${this.items[i].name}</h5>
+                            <button id="${i}">X</button>
+                            <hr>
+                            <p>${this.items[i].amount}</p>
+                        </div>`
+                    ).children().last();
+        
+                    $new.find("button").on("click", this.reduceItem);
+                }
+            }
         }
         
         clearError() {
@@ -91,16 +59,6 @@ class Base {
         setError(text) {
             this.$error.text(text);
             this.$error.removeClass("invisible");
-        }
-    
-        hasItem(itemName, minAmount = 1) {
-            for (let i = 0; i < this.items.length; i++) {
-                if (this.items[i].item.name === itemName) {
-                    if (this.items[i].amount >= minAmount) return true;
-                }
-            }
-    
-            return false;
         }
     }
 
@@ -196,29 +154,6 @@ class Base {
        
     }
 
-    #commune = async (action, data = null, options) => {
-        try {
-            let body = {
-                action,
-                data,
-                ...options
-            };
-        
-            let response = null;
-        
-            let onResponse = (res) => {
-                response = res;
-                if (res.status != "success") console.log(`${res.status}: ${res.message}`, res.data);
-            };
-        
-            await $.post("/s", JSON.stringify(body), onResponse);
-        
-            return response;
-        } catch (error) {
-            return error;
-        }
-    }
-
     closeMenu = function closeMenu() {
         if (!this.menuClosing) {
             this.menuClosing = true;
@@ -261,31 +196,31 @@ class Base {
     }
 
     attemptLogin = async () => {
-        let response = await this.#commune("login", {
-            email: $loginEmail.val(),
-            password: $loginPassword.val()
+        let response = await commune("/s/user/login", {
+            email: this.#$loginEmail.val(),
+            password: this.#$loginPassword.val()
         });
         
         if (response.status === "success") {
-            $loginInfo.text("You've logged in.");
+            this.#$loginInfo.text("You've logged in.");
             location.reload();
         }
-        else $loginInfo.text(response.message);
+        else this.#$loginInfo.text(response.message);
     };
 
     resetPassword = async () => {
-        let response = await this.#commune("sendPasswordReset", {
-            email: $loginEmail.val()
+        let response = await commune("/s/user/sendPasswordReset", {
+            email: this.#$loginEmail.val()
         });
         
         if (response.status === "success") {
-            $loginInfo.text("A reset code has been sent to your email. Go to the keeper at The Front to finish resetting your password.")
+            this.#$loginInfo.text("A reset code has been sent to your email. Go to the keeper at The Front to finish resetting your password.")
         }
-        else $loginInfo.text(response.message);
+        else this.#$loginInfo.text(response.message);
     }
 
     do = async (what, data = null) => {
-        let response = await this.#commune("serve", {
+        let response = await commune("serve", {
             script: what,
             ...data
         });
