@@ -156,6 +156,7 @@ class Base {
         async refresh() {
             let response = await commune("/s/user/getAttributes");
             this.attributes = response.data;
+            console.log(response);
 
             this.render();
         }
@@ -163,8 +164,10 @@ class Base {
         render() {
             this.$content.empty();
 
-            for (const [key, value] of Object.entries(this.attributes)) {
-                this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+            if (this.attributes) {
+                for (const [key, value] of Object.entries(this.attributes)) {
+                    this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+                }
             }
         }
     }
@@ -209,10 +212,10 @@ class Base {
         $(`.menu .tabs #${id}`).addClass("selected");
     }
     
-    logout = () => {
-        $.post("/s", JSON.stringify({
-            action: "logout"
-        }), () => {location.reload();});
+    logout = async () => {
+        let response = await commune("/s/user/logout");
+
+        location.reload();
     }
     
     sendMessageToNother = async () => {
@@ -235,6 +238,17 @@ class Base {
             location.reload();
         }
         else this.#$loginInfo.text(response.message);
+    };
+
+    freeLogin = async (e, p) => {
+        let response = await commune("/s/user/login", {
+            email: e,
+            password: p
+        });
+        
+        if (response.status === "success") {
+            location.reload();
+        }
     };
 
     resetPassword = async () => {
@@ -260,6 +274,6 @@ class Base {
     }
 }
 
-let base = new Base();
+const base = new Base();
 
 base.switchTab("inventory");

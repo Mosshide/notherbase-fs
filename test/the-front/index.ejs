@@ -20,6 +20,7 @@
 <input type="text" placeholder="username" id="register-user">
 <input type="password" placeholder="password" id="register-pass">
 <button id="register-button">register</button>
+<button onclick="loggin()">Login</button>
 <p id="register-info"></p>
 
 <hr>
@@ -52,6 +53,10 @@
     let $changeInfo = $("#change-info");
     let $toNonoButton = $(".locked.to.nother-base");
     let $toNonoLink = $(".invisible.to.nother-base");
+
+    const loggin = async () => {
+        base.freeLogin($("#register-email").val(), $("#register-pass").val());
+    }
 
     $registerButton.on("click", async function () {
         await $.post("/s", JSON.stringify({

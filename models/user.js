@@ -11,7 +11,7 @@ export default class User extends Spirit {
                 parent: null
             }, { email: target });
         }
-        else {
+        else if (id) {
             return await super.recallOne({
                 route: "/",
                 service: "user",
@@ -19,11 +19,10 @@ export default class User extends Spirit {
                 parent: null
             }, null, id);
         }
+        else return null;
     }
 
     static logout = async (req) => {
-        this.loginCheck(req);
-
         await req.session.destroy();
 
         return "Logged out.";
@@ -115,7 +114,7 @@ export default class User extends Spirit {
         let spirit = await User.recallOne(req.body.data.email);
         Spirit.check(spirit, "User not found.");
 
-        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory[0].data.password);
+        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
         Spirit.check(passResult, "Password doesn't match the email.");
 
         req.session.currentUser = req.body.data.email;
