@@ -43,88 +43,88 @@
     let chatTest2 = new ChatBox("<%= user.username %>", "test-chat-2");
     let chatTest3 = new ChatBox("<%= user.username %>", "test-chat-3");
 
-    let bought = false;
+    // let bought = false;
 
-    let tradeForDoll = async function tradeForDoll() {
-        if (!bought) {
-            $("#trade").addClass("invisible");
+    // let tradeForDoll = async function tradeForDoll() {
+    //     if (!bought) {
+    //         $("#trade").addClass("invisible");
 
-            let paid = await playerInventory.change("Gold Coin", -5);
+    //         let paid = await playerInventory.change("Gold Coin", -5);
             
-            if (paid) {
-                bought = true;
-                let received = await playerInventory.change("Rag Doll", 1);
-                if (!received) playerInventory.change("Gold Coin", 5);
-            }
-            else {
-                $("#trade").removeClass("invisible");
-            }
-        }
-    }
+    //         if (paid) {
+    //             bought = true;
+    //             let received = await playerInventory.change("Rag Doll", 1);
+    //             if (!received) playerInventory.change("Gold Coin", 5);
+    //         }
+    //         else {
+    //             $("#trade").removeClass("invisible");
+    //         }
+    //     }
+    // }
 
-    let time = 0;
-    let gtime = 0;
+    // let time = 0;
+    // let gtime = 0;
 
-    (async () => {
-        let load = await memories.load("time", "/void/test");
-        let loadg = await establishment.load("time", "/void/test");
-        console.log(load, loadg);
-        time = load.time;
-        $("p#u").text(`Last: ${loadg.u}`);
-        gtime = loadg.time;
-    })();
+    // (async () => {
+    //     let load = await memories.load("time", "/void/test");
+    //     let loadg = await establishment.load("time", "/void/test");
+    //     console.log(load, loadg);
+    //     time = load.time;
+    //     $("p#u").text(`Last: ${loadg.u}`);
+    //     gtime = loadg.time;
+    // })();
 
-    let setTime = async function setTime() {
-        time = Date.now();
-        gtime = time;
+    // let setTime = async function setTime() {
+    //     time = Date.now();
+    //     gtime = time;
         
-        await memories.save("time", {
-            time: time,
-            a: "dabfb",
-            bln: false,
-            numba: 4236,
-            arrray: [32, "sg", 45],
-            check: {
-                time: time,
-                a: "dabfb",
-                bln: false,
-                numba: 4236,
-                arrray: [32, "sg", 45]
-            }
-        }, "/void/test");
+    //     await memories.save("time", {
+    //         time: time,
+    //         a: "dabfb",
+    //         bln: false,
+    //         numba: 4236,
+    //         arrray: [32, "sg", 45],
+    //         check: {
+    //             time: time,
+    //             a: "dabfb",
+    //             bln: false,
+    //             numba: 4236,
+    //             arrray: [32, "sg", 45]
+    //         }
+    //     }, "/void/test");
 
-        await establishment.save("time", {
-            time: time,
-            u: "<%= user.username %>",
-            a: "dabfb",
-            bln: false,
-            numba: 4236,
-            arrray: [32, "sg", 45],
-            check: {
-                time: time,
-                a: "dabfb",
-                bln: false,
-                numba: 4236,
-                arrray: [32, "sg", 45]
-            }
-        }, "/void/test");
+    //     await establishment.save("time", {
+    //         time: time,
+    //         u: "<%= user.username %>",
+    //         a: "dabfb",
+    //         bln: false,
+    //         numba: 4236,
+    //         arrray: [32, "sg", 45],
+    //         check: {
+    //             time: time,
+    //             a: "dabfb",
+    //             bln: false,
+    //             numba: 4236,
+    //             arrray: [32, "sg", 45]
+    //         }
+    //     }, "/void/test");
 
-        $("p#u").text("Last: <%= user.username %>");
-    }
+    //     $("p#u").text("Last: <%= user.username %>");
+    // }
     
-    let updateTime = function updateTime() {
-        $("#timer").text(`Local: ${Math.floor((Date.now() - time) / 1000)}`);
-        $("#timer-g").text(`Global: ${Math.floor((Date.now() - gtime) / 1000)}`);
-    }
+    // let updateTime = function updateTime() {
+    //     $("#timer").text(`Local: ${Math.floor((Date.now() - time) / 1000)}`);
+    //     $("#timer-g").text(`Global: ${Math.floor((Date.now() - gtime) / 1000)}`);
+    // }
 
-    let emailTime = async () => {
-        await commune("serveExplorer", {
-            script: "emailTime",
-            toEmail: "wyattsushi@gmail.com",
-            subject: "New Time Update!",
-            html: `New Time: ${time}`
-        }, { route: currentRoute });
-    }
+    // let emailTime = async () => {
+    //     await commune("serveExplorer", {
+    //         script: "emailTime",
+    //         toEmail: "wyattsushi@gmail.com",
+    //         subject: "New Time Update!",
+    //         html: `New Time: ${time}`
+    //     }, { route: currentRoute });
+    // }
 
-    setInterval(updateTime, 1000);
+    // setInterval(updateTime, 1000);
 </script>

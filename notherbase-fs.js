@@ -54,6 +54,7 @@ class NotherBaseFS {
         this.app.use((req, res, next) => {
             req.db = Models;
             req.contentPath = contentPath;
+            req.lock = false;
             next();
         });
 

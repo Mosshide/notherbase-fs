@@ -13,14 +13,18 @@ export default class Creation {
         //pages
         this.router.get(`/:page`, this.explore);
         //explorer
-        this.router.get(`/:region/:area/:poi`, this.explore);
-        this.router.get(`/:region/:area/:poi/:detail`, this.explore);
+        this.router.get(`/:region/:area/:poi`, this.lock, this.explore);
+        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.explore);
         //void
         this.router.use(function(req, res) { res.redirect("/void"); });
     }
 
+    lock = (req, res, next) => {
+        req.lock = true;
+        next();
+    }
+
     explore = async (req, res, next) => {
-        let reqUser = false;
         let main = `${req.contentPath}`;
         let siteTitle = `NotherBase - `;
 
@@ -31,12 +35,10 @@ export default class Creation {
         else if (req.params.detail) {
             main += `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
             siteTitle += req.params.detail;
-            reqUser = true;
         }
         else if (req.params.poi) {
             main += `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
             siteTitle += req.params.poi;
-            reqUser = true;
         }
         else if (req.params.page) {
             main += `/${req.params.page}/index`;
@@ -49,7 +51,7 @@ export default class Creation {
 
         try {
             if (fs.existsSync(main + ".ejs")) {
-                let user = await req.db.User.recall(req.session.currentUser);
+                let user = await req.db.User.recallOne(req.session.currentUser);
 
                 let context = {
                     siteTitle: siteTitle,
@@ -59,7 +61,7 @@ export default class Creation {
                     query: req.query,
                     dir: req.frontDir,
                     route: req.path,
-                    requireUser: reqUser
+                    requireUser: req.lock
                 }
 
                 res.render(`explorer`, context);

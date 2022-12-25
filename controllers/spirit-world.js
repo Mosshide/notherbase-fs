@@ -33,10 +33,30 @@ export default class SpiritWorld {
         this.router = express.Router();
 
         this.router.post(`/serve`, this.serve);
+        this.router.post("/load", this.load);
         this.router.post(`/user/:action`, this.user);
         this.router.post(`/contact-nother`, this.contactNother);
 
         this.io.on('connection', this.#setupChat);
+    }
+
+    load = async (req, res) => {
+        let user = await req.db.User.recall(req.session.currentUser);
+
+        let spirit = await req.db.Spirit.recall({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: user.memory
+        });
+
+        await contact.commit({
+            user: req.session.currentUser,
+            location: req.body.data.route,
+            content: req.body.data.content
+        });
+
+        return success();
     }
 
     user = async (req, res) => {

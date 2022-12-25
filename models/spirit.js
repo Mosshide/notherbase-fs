@@ -10,10 +10,12 @@ let buildQuery = (options = {}, data = {}, id = null) => {
         ...query,
         ...options
     };
-    if (data) query = {
-        ...query,
-        data
-    };
+    if (data){
+        let keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            query[`data.${keys[i]}`] =  data[keys[i]];
+        }
+    }
 
     return query;
 }
@@ -49,11 +51,22 @@ export default class Spirit {
 
         let query = buildQuery(options, data, id);
 
-        console.log(query);
-
         let found = await Spirit.db.find(query);
 
-        console.log(found);
+        if (found) {
+            spirit.memory = found;
+            
+            return spirit;
+        }
+        else return null;
+    }
+
+    static recallOne = async (options = {}, data = {}, id = null) => {
+        let spirit = new Spirit();
+
+        let query = buildQuery(options, data, id);
+
+        let found = await Spirit.db.findOne(query);
 
         if (found) {
             spirit.memory = found;

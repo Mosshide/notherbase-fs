@@ -1,4 +1,4 @@
-commune = async (route, data = null, options) => {
+commune = async (route, data = null, options = null) => {
     try {
         let body = { data, ...options };
     
@@ -49,6 +49,8 @@ class Base {
         
                     $new.find("button").on("click", this.reduceItem);
                 }
+
+                this.clearError();
             }
         }
         
@@ -80,12 +82,12 @@ class Base {
     
             this.$info = $(".content#account #info");
             
-            // <% if (user) { %>
-            //     this.username = "<%= user.username %>";
-            //     this.email = "<%= user.email %>";
+            <% if (user) { %>
+                this.username = "<%= user.username %>";
+                this.email = "<%= user.email %>";
     
-            //     this.refresh();
-            // <% } %>
+                this.refresh();
+            <% } %>
         }
     
         async refresh() {
@@ -140,9 +142,36 @@ class Base {
             location.reload();
         }
     }
+
+    #PlayerAttributes = class PlayerAttributes {
+        constructor() {
+            this.$content = $(".menu .content#player");
+            this.attributes = [];
+
+            <% if (user) { %>
+                this.refresh();
+            <% } %>
+        }
+
+        async refresh() {
+            let response = await commune("/s/user/getAttributes");
+            this.attributes = response.data;
+
+            this.render();
+        }
+
+        render() {
+            this.$content.empty();
+
+            for (const [key, value] of Object.entries(this.attributes)) {
+                this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+            }
+        }
+    }
     
     #playerInventory = new this.#Inventory();
     #accountServices = new this.#AccountServices();
+    #playerAttributes = new this.#PlayerAttributes();
     #$menu = $(".ui .menu");
     #$fade = $(".ui .fade");
     menuClosing = false;
@@ -224,6 +253,10 @@ class Base {
             script: what,
             ...data
         });
+    }
+
+    load = async (service) => {
+
     }
 }
 

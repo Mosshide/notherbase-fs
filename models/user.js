@@ -2,13 +2,23 @@ import Spirit from "./spirit.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Spirit {
-    static recall = async (target, id = null) => {
-        return await super.recall({
-            route: "/",
-            service: "user",
-            scope: "global",
-            parent: null
-        }, { email: target }, id);
+    static recallOne = async (target, id = null) => {
+        if (target) {
+            return await super.recallOne({
+                route: "/",
+                service: "user",
+                scope: "global",
+                parent: null
+            }, { email: target });
+        }
+        else {
+            return await super.recallOne({
+                route: "/",
+                service: "user",
+                scope: "global",
+                parent: null
+            }, null, id);
+        }
     }
 
     static logout = async (req) => {
@@ -20,7 +30,7 @@ export default class User extends Spirit {
     }
 
     static sendPasswordReset = async (req) => {
-        let spirit = await this.findUser(req.body.data.email);
+        let spirit = await User.recallOne(req.body.data.email);
 
         if (spirit) {
             let token = Math.floor(Math.random() * 9999);
@@ -65,7 +75,7 @@ export default class User extends Spirit {
         this.check(req.body.data.email.length > 7, "Email too short.");
         this.check(req.body.data.username.length > 2, "Username too short.");
 
-        let spirit = await this.findUser(req.body.data.email);
+        let spirit = await User.recallOne(req.body.data.email);
 
         this.check(!spirit, "Email already in use!");
 
@@ -102,10 +112,10 @@ export default class User extends Spirit {
     }
 
     static login = async (req) => {
-        let spirit = await User.recall(req.body.data.email);
+        let spirit = await User.recallOne(req.body.data.email);
         Spirit.check(spirit, "User not found.");
 
-        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
+        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory[0].data.password);
         Spirit.check(passResult, "Password doesn't match the email.");
 
         req.session.currentUser = req.body.data.email;
@@ -116,7 +126,7 @@ export default class User extends Spirit {
     static changeUserEmail = async (req) => {
         this.loginCheck(req);
 
-        let spirit = await this.findUser(req.body.data.email);
+        let spirit = await User.recallOne(req.body.data.email);
 
         this.check(!spirit, "Email already in use!");
 
@@ -141,7 +151,7 @@ export default class User extends Spirit {
         }, { username: req.body.data.username });
         this.check(!spirit, "Username already in use!");
 
-        spirit = await this.findUser(req.session.currentUser);
+        spirit = await User.recallOne(req.session.currentUser);
 
         spirit.memory.data.username = req.body.data.username;
         await spirit.commit();
@@ -168,7 +178,7 @@ export default class User extends Spirit {
 
     static getInventory = async (req) => {
         User.loginCheck(req);
-        let spirit = await User.recall(req.session.currentUser);
+        let spirit = await User.recallOne(req.session.currentUser);
         let inv = spirit.memory.data.inventory;
     
         this.check(inv, "User inventory not found.");
@@ -183,7 +193,7 @@ export default class User extends Spirit {
     
         this.check(item, "Item not found in database.");
     
-        let user = await this.findUser(req.session.currentUser);
+        let user = await User.recallOne(req.session.currentUser);
         let inv = user.memory.data.inventory;
     
         let holding = false;
@@ -234,10 +244,10 @@ export default class User extends Spirit {
         };
     }
 
-    static attributes = async (req) => {
+    static getAttributes = async (req) => {
         this.loginCheck(req);
     
-        let user = await this.findUser(req.session.currentUser);
+        let user = await User.recallOne(req.session.currentUser);
     
         return user.memory.data.attributes;
     }
@@ -245,7 +255,7 @@ export default class User extends Spirit {
     static checkAttribute = async (req) => {
         this.loginCheck(req);
     
-        let user = await this.findUser(req.session.currentUser);
+        let user = await User.recallOne(req.session.currentUser);
         let att = user.memory.data.attributes;
     
         if (att[req.body.data.check] >= req.body.data.against) {
@@ -257,7 +267,7 @@ export default class User extends Spirit {
     static setAttribute = async (req) => {
         this.loginCheck(req);
     
-        let user = await this.findUser(req.session.currentUser);
+        let user = await User.recallOne(req.session.currentUser);
     
         user.memory.data.attributes[req.body.data.change] = req.body.data.to;
         await user.commit();
@@ -268,7 +278,7 @@ export default class User extends Spirit {
     static incrementAttribute = async (req) => {
         this.loginCheck(req);
     
-        let user = await this.findUser(req.session.currentUser);
+        let user = await User.recallOne(req.session.currentUser);
         let att = user.memory.data.attributes;
     
         if (att[req.body.data.change] < req.body.data.max) {
