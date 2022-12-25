@@ -240,6 +240,14 @@ class Base {
         else this.#$loginInfo.text(response.message);
     };
 
+    attemptRegister = async (email, username, password) => {
+        let response = await commune("/s/user/register", { 
+            email, username, password 
+        });
+        
+        return response;
+    }
+
     freeLogin = async (e, p) => {
         let response = await commune("/s/user/login", {
             email: e,

@@ -114,6 +114,8 @@ export default class User extends Spirit {
         let spirit = await User.recallOne(req.body.data.email);
         Spirit.check(spirit, "User not found.");
 
+        console.log(spirit.memory.data, req.body.data);
+
         let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
         Spirit.check(passResult, "Password doesn't match the email.");
 

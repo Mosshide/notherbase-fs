@@ -59,17 +59,14 @@
     }
 
     $registerButton.on("click", async function () {
-        await $.post("/s", JSON.stringify({
-            action: "register",
-            data: {
-                username: $("#register-user").val(),
-                password: $("#register-pass").val(),
-                email: $("#register-email").val()
-            }
-        }), (data) => {
-            if (data.status === "success") $registerInfo.text("Account registered.");
-            else console.log(data);
-        });
+        let response = await base.attemptRegister(
+            $("#register-email").val(),
+            $("#register-user").val(),
+            $("#register-pass").val()
+        );
+
+        if (response.status === "success") $registerInfo.text("Account registered.");
+        else console.log(response);
     });
 
     $changePasswordButton.on("click", async function () {
