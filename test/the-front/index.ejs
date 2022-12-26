@@ -28,9 +28,9 @@
 <div class="auth-form" id="reset-form">
     <h1>NotherBase</h1>
     <h3>Reset your Password</h3>
-    <input type="number" name="token" placeholder="Your Reset Code" id="token">
-    <input type="password" name="password" placeholder="Type Your New Password Here" minlength="8" required id="password">
-    <input type="password" name="confirmation" placeholder="Type Your New Password Here Again" minlength="8" required id="confirmation">
+    <input type="number" placeholder="Your Reset Code" id="token">
+    <input type="password" placeholder="Type Your New Password Here" minlength="8" required id="password">
+    <input type="password" placeholder="Type Your New Password Here Again" minlength="8" required id="confirmation">
     <button id="change-password">Change Password</button>
     <p id="change-info"></p>
 </div>
@@ -46,7 +46,9 @@
 </a>
 
 <script>
-    let $resetPassword = $("#reset-password");
+    let $resetPassword = $("#reset-form #password");
+    let $resetToken = $("#reset-form #token");
+    let $resetConfirmation = $("#reset-form #confirmation");
     let $registerButton = $("#register-button");
     let $registerInfo = $("#register-info");
     let $changePasswordButton = $("button#change-password");
@@ -70,19 +72,14 @@
     });
 
     $changePasswordButton.on("click", async function () {
-        let token = $("#reset-form #token").val();
+        let response = await base.changePassword(
+            $resetToken.val(), 
+            $resetPassword.val(), 
+            $resetConfirmation.val()
+        );
 
-        await $.post("/s", JSON.stringify({
-            action: "changePassword",
-            data: { 
-                token: token,
-                password: $("#reset-form #password").val(),
-                confirmation: $("#reset-form #confirmation").val()
-            }
-        }), (data) => {
-            if (data.status === "success") $changeInfo.text("Password changed.");
-            else console.log(data);
-        });
+        if (response.status === "success") $changeInfo.text("Password changed.");
+        else console.log(response);
     });
 
     let addGold = function addGold(params) {

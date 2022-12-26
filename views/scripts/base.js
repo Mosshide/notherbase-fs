@@ -178,9 +178,6 @@ class Base {
     #$menu = $(".ui .menu");
     #$fade = $(".ui .fade");
     menuClosing = false;
-    #$loginEmail = $(".login-cover #email");
-    #$loginPassword = $(".login-cover #pass");
-    #$loginInfo = $(".login-cover .info");
 
     constructor() {
        
@@ -227,19 +224,6 @@ class Base {
         $(".menu .content#more #content").val("");
     }
 
-    attemptLogin = async () => {
-        let response = await commune("/s/user/login", {
-            email: this.#$loginEmail.val(),
-            password: this.#$loginPassword.val()
-        });
-        
-        if (response.status === "success") {
-            this.#$loginInfo.text("You've logged in.");
-            location.reload();
-        }
-        else this.#$loginInfo.text(response.message);
-    };
-
     attemptRegister = async (email, username, password) => {
         let response = await commune("/s/user/register", { 
             email, username, password 
@@ -248,26 +232,25 @@ class Base {
         return response;
     }
 
-    freeLogin = async (e, p) => {
+    attemptLogin = async (email, password) => {
         let response = await commune("/s/user/login", {
-            email: e,
-            password: p
+            email: email,
+            password: password
         });
         
-        if (response.status === "success") {
-            location.reload();
-        }
+        return response;
     };
 
-    resetPassword = async () => {
-        let response = await commune("/s/user/sendPasswordReset", {
-            email: this.#$loginEmail.val()
-        });
+    resetPassword = async (email) => {
+        let response = await commune("/s/user/sendPasswordReset", { email });
         
-        if (response.status === "success") {
-            this.#$loginInfo.text("A reset code has been sent to your email. Go to the keeper at The Front to finish resetting your password.")
-        }
-        else this.#$loginInfo.text(response.message);
+        return response;
+    }
+
+    changePassword = async (token, password, confirmation) => {
+        let response = await commune("/s/user/changePassword", { token, password, confirmation });
+        
+        return response;
     }
 
     do = async (what, data = null) => {

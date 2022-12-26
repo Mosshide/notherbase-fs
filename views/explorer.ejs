@@ -6,7 +6,6 @@
 </script>
 
 <main class="override">
-    <% console.log(requireUser, user) %>
     <% if (requireUser && !user) { %>
         <div class="login-cover">
             <a class="header-link" href="/">
@@ -15,9 +14,29 @@
             <h3>Login to Your Account</h3>
             <input type="email" placeholder="user@email.com" id="email">
             <input type="password" placeholder="password" id="pass">
-            <button id="login" onclick="base.attemptLogin()">Login</button>
-            <button id="reset" onclick="base.resetPassword()">Reset Password</button>
+            <button id="login" onclick="coverLogin()">Login</button>
+            <button id="reset" onclick="coverReset()">Reset Password</button>
             <p class="info"></p>
+
+            <script>
+                const coverLogin = async () => {
+                    let response = await base.attemptLogin(
+                        $(".login-cover #email").val(),
+                        $(".login-cover #pass").val()
+                    );
+
+                    if (response.status === "success") location.reload();
+                    $(".login-cover .info").text(response.data);
+                };
+
+                const coverReset = async () => {
+                    let response = await base.resetPassword(
+                        $(".login-cover #email").val()
+                    );
+
+                    $(".login-cover .info").text(response.data);
+                };
+            </script>
         </div>
     <% } else { %>
         <%- include(`${main}.ejs`); %>

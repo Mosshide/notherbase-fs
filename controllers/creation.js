@@ -50,7 +50,6 @@ export default class Creation {
         }
 
         try {
-            console.log(req.session.currentUser);
             if (fs.existsSync(main + ".ejs")) {
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 let userStuff = {

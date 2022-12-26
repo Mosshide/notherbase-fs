@@ -34,8 +34,9 @@ export default class User extends Spirit {
         if (spirit) {
             let token = Math.floor(Math.random() * 9999);
 
-            spirit.memory.data.reset.token = token;
-            spirit.memory.data.reset.exp = Date.now() + (1000 * 60 * 30);
+            spirit.memory.data.resetToken = token;
+            spirit.memory.data.resetExp = Date.now() + (1000 * 60 * 30);
+            await spirit.commit();
     
             req.db.SendMail.passwordReset(req.body.data.email, token);
     
@@ -45,20 +46,22 @@ export default class User extends Spirit {
     }
 
     static changePassword = async (req) => {
-        let spirit = await super.recall({
+        let spirit = await super.recallOne({
             route: "/",
             service: "user",
             scope: "global",
             parent: null
         }, { 
-            reset: {
-                token: token
-            } 
+            resetToken: req.body.token
         }, null);
 
+        console.log(spirit);
+
         this.check(spirit, "Reset token not valid!");
-        this.check(spirit.memory.data.reset.exp < Date.now(), "Reset token expired!");
+        this.check(spirit.memory.data.resetExp < Date.now(), "Reset token expired!");
         this.check(req.body.data.password !== req.body.data.confirmation, "Passwords must match!");
+
+        spirit.memory.data.resetExp = -1;
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(req.body.data.password, salt);
@@ -113,8 +116,6 @@ export default class User extends Spirit {
     static login = async (req) => {
         let spirit = await User.recallOne(req.body.data.email);
         Spirit.check(spirit, "User not found.");
-
-        console.log(spirit.memory.data, req.body.data);
 
         let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
         Spirit.check(passResult, "Password doesn't match the email.");
