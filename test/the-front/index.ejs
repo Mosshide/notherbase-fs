@@ -46,67 +46,71 @@
 </a>
 
 <script>
-    let $resetPassword = $("#reset-form #password");
-    let $resetToken = $("#reset-form #token");
-    let $resetConfirmation = $("#reset-form #confirmation");
-    let $registerButton = $("#register-button");
-    let $registerInfo = $("#register-info");
-    let $changePasswordButton = $("button#change-password");
-    let $changeInfo = $("#change-info");
-    let $toNonoButton = $(".locked.to.nother-base");
-    let $toNonoLink = $(".invisible.to.nother-base");
+    class Test {
+        constructor() {
+            this.$resetPassword = $("#reset-form #password");
+            this.$resetToken = $("#reset-form #token");
+            this.$resetConfirmation = $("#reset-form #confirmation");
+            this.$registerButton = $("#register-button");
+            this.$registerInfo = $("#register-info");
+            this.$changePasswordButton = $("button#change-password");
+            this.$changeInfo = $("#change-info");
+            this.$toNonoButton = $(".locked.to.nother-base");
+            this.$toNonoLink = $(".invisible.to.nother-base");
 
-    const loggin = async () => {
-        base.freeLogin($("#register-email").val(), $("#register-pass").val());
-    }
-
-    $registerButton.on("click", async function () {
-        let response = await base.attemptRegister(
-            $("#register-email").val(),
-            $("#register-user").val(),
-            $("#register-pass").val()
-        );
-
-        if (response.status === "success") $registerInfo.text("Account registered.");
-        else console.log(response);
-    });
-
-    $changePasswordButton.on("click", async function () {
-        let response = await base.changePassword(
-            $resetToken.val(), 
-            $resetPassword.val(), 
-            $resetConfirmation.val()
-        );
-
-        if (response.status === "success") $changeInfo.text("Password changed.");
-        else console.log(response);
-    });
-
-    let addGold = function addGold(params) {
-        playerInventory.change("Gold Coin", 23);
-    }
-
-    let newItem = async () => {
-        await commune("newItem", {
-            name: $("#general").val()
-        });
-
-        let items = await commune("getAllItems");
-        console.log(items);
-    }
-
-    let deleteItem = async () => {
-        await commune("deleteItem", {
-            name: $("#general").val()
-        });
-    }
-
-    let emailTime = async () => {
-        await commune("serveFront", {
-            script: "emailTime",
-            toEmail: "wyattsushi@gmail.com",
-            subject: "New Time Update!",
-            html: `New Time: 3       0976`
-        }, { route: currentRoute });
+            $registerButton.on("click", async function () {
+                let response = await base.attemptRegister(
+                    $("#register-email").val(),
+                    $("#register-user").val(),
+                    $("#register-pass").val()
+                );
+        
+                if (response.status === "success") $registerInfo.text("Account registered.");
+                else console.log(response);
+            });
+        
+            $changePasswordButton.on("click", async function () {
+                let response = await base.changePassword(
+                    $resetToken.val(), 
+                    $resetPassword.val(), 
+                    $resetConfirmation.val()
+                );
+        
+                if (response.status === "success") $changeInfo.text("Password changed.");
+                else console.log(response);
+            });
+        }
+    
+        loggin = async () => {
+            base.freeLogin($("#register-email").val(), $("#register-pass").val());
+        }
+    
+        addGold = function addGold(params) {
+            playerInventory.change("Gold Coin", 23);
+        }
+    
+        newItem = async () => {
+            await commune("newItem", {
+                name: $("#general").val()
+            });
+    
+            let items = await commune("getAllItems");
+            console.log(items);
+        }
+    
+        deleteItem = async () => {
+            await commune("deleteItem", {
+                name: $("#general").val()
+            });
+        }
+    
+        emailTime = async () => {
+            await commune("serveFront", {
+                script: "emailTime",
+                toEmail: "wyattsushi@gmail.com",
+                subject: "New Time Update!",
+                html: `New Time: 3       0976`
+            }, { route: currentRoute });
+        }
     }
 </script>
