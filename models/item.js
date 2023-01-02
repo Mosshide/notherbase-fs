@@ -10,8 +10,21 @@ export default class Item extends Spirit {
         }, { name: name });
     }
 
+    static create = async (name, short, long) => {
+        return await super.create({
+            route: "/",
+            service: "item",
+            scope: "global",
+            parent: null
+        }, { 
+            name,
+            short,
+            long
+         });
+    }
+
     static delete = async (name) => {
-        return await super.recall({
+        return await super.delete({
             route: "/",
             service: "item",
             scope: "global",

@@ -29,7 +29,15 @@
         <%- include("./menu/more.ejs"); %>
     </div>
 
-    <button onclick="base.logout()">Logout</button>
+    <button onclick="logoutViaMenu()">Logout</button>
+
+    <script>
+        const logoutViaMenu = async () => {
+            let response = await base.logout();
+            console.log(response);
+            location.reload();
+        }
+    </script>
 </div>
 
 <button id="menu" onclick="base.openMenu()"><i class="fas fa-cog"></i></button>

@@ -1,25 +1,5 @@
 import mongoose from "mongoose";
 
-let buildQuery = (options = {}, data = {}, id = null) => {
-    let query = {};
-    
-    if (id) query = {
-        _id: id
-    };
-    if (options) query = {
-        ...query,
-        ...options
-    };
-    if (data){
-        let keys = Object.keys(data);
-        for (let i = 0; i < keys.length; i++) {
-            query[`data.${keys[i]}`] =  data[keys[i]];
-        }
-    }
-
-    return query;
-}
-
 export default class Spirit {
     static db = mongoose.model('spirits', new mongoose.Schema({
         _lastUpdate: Number,
@@ -33,6 +13,26 @@ export default class Spirit {
         },
         data: {}
     }));
+
+    static buildQuery = (options = {}, data = {}, id = null) => {
+        let query = {};
+        
+        if (id) query = {
+            _id: id
+        };
+        if (options) query = {
+            ...query,
+            ...options
+        };
+        if (data){
+            let keys = Object.keys(data);
+            for (let i = 0; i < keys.length; i++) {
+                query[`data.${keys[i]}`] = data[keys[i]];
+            }
+        }
+    
+        return query;
+    }
 
     static create = async (options, data) => {
         let spirit = new Spirit();
@@ -49,7 +49,7 @@ export default class Spirit {
     static recall = async (options = {}, data = {}, id = null) => {
         let spirit = new Spirit();
 
-        let query = buildQuery(options, data, id);
+        let query = Spirit.buildQuery(options, data, id);
 
         let found = await Spirit.db.find(query);
 
@@ -64,7 +64,7 @@ export default class Spirit {
     static recallOne = async (options = {}, data = {}, id = null) => {
         let spirit = new Spirit();
 
-        let query = buildQuery(options, data, id);
+        let query = Spirit.buildQuery(options, data, id);
 
         let found = await Spirit.db.findOne(query);
 
@@ -77,18 +77,10 @@ export default class Spirit {
     }
 
     static delete = async (options = {}, data = {}, id = null) => {
-        let found = await Spirit.db.findAndDelete(buildQuery(options, data, id));
+        let found = await Spirit.db.findAndDelete(Spirit.buildQuery(options, data, id));
 
         return found.deletedCount;
     }
-
-    constructor() {
-        this.memory = {
-            data: {}
-        };
-    }
-
-    buildQuery = buildQuery;
 
     static check = (checkee, failMsg) => {
         if (!checkee) throw {
@@ -96,6 +88,12 @@ export default class Spirit {
             message: failMsg,
             isUpToDate: true,
             data: null
+        };
+    }
+
+    constructor() {
+        this.memory = {
+            data: {}
         };
     }
 

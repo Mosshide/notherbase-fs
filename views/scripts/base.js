@@ -1,21 +1,21 @@
-commune = async (route, data = null, options = null) => {
-    try {
-        let body = { data, ...options };
-    
-        let response = null;
-
-        await $.post(route, JSON.stringify(body), (res) => {
-            response = res;
-            if (res.status != "success") console.log(`${res.status}: ${res.message}`, res.data);
-        });
-    
-        return response;
-    } catch (error) {
-        return error;
-    }
-}
-
 class Base {
+    static commune = async (route, data = null, options = null) => {
+        try {
+            let body = { data, ...options };
+        
+            let response = null;
+    
+            await $.post(route, JSON.stringify(body), (res) => {
+                response = res;
+                if (res.status != "success") console.log(`${res.status}: ${res.message}`, res.data);
+            });
+        
+            return response;
+        } catch (error) {
+            return error;
+        }
+    }
+
     #Inventory = class Inventory {
         constructor() {
             this.$div = $(".inventory");
@@ -30,7 +30,7 @@ class Base {
         }
         
         async refresh() {
-            let response = await commune("/s/user/getInventory");
+            let response = await Base.commune("/s/user/getInventory");
 
             this.items = response.data;
 
@@ -64,6 +64,35 @@ class Base {
         }
     }
 
+    #PlayerAttributes = class PlayerAttributes {
+        constructor() {
+            this.$content = $(".menu .content#player");
+            this.attributes = [];
+
+            <% if (user) { %>
+                this.refresh();
+            <% } %>
+        }
+
+        async refresh() {
+            let response = await Base.commune("/s/user/getAttributes");
+            this.attributes = response.data;
+            console.log(response);
+
+            this.render();
+        }
+
+        render() {
+            this.$content.empty();
+
+            if (this.attributes) {
+                for (const [key, value] of Object.entries(this.attributes)) {
+                    this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+                }
+            }
+        }
+    }
+
     #AccountServices = class AccountServices {
         constructor() {
             this.$emailSetting = $(".content#account .setting#email");
@@ -81,6 +110,9 @@ class Base {
             this.$passwordInput = this.$passwordEdit.find("input");
     
             this.$info = $(".content#account #info");
+
+            this.username = "";
+            this.email = "";
             
             <% if (user) { %>
                 this.username = "<%= user.username %>";
@@ -90,7 +122,7 @@ class Base {
             <% } %>
         }
     
-        async refresh() {
+        refresh() {
             this.$email.text(this.email);
             this.$emailInput.val(this.email);
             this.$username.text(this.username);
@@ -112,13 +144,16 @@ class Base {
         }
     
         async updateEmail() {
-            let response = await commune("changeUserEmail", { email: this.$emailInput.val() });
+            let response = await Base.commune("/s/user/changeEmail", { email: this.$emailInput.val() });
     
-            this.$email.text(this.$emailInput.val());
+            if (response.status === "success") {
+                this.$email.text(this.$emailInput.val());
+                this.$info.text("Email Updated.");
+            }
+            else {
+                this.$info.text("Email Not Updated!");
+            }
             this.cancelEmail();
-            this.$info.text("Email Updated!");
-    
-            location.reload();
         }
     
         editUsername() {
@@ -133,54 +168,27 @@ class Base {
         }
     
         async updateUsername() {
-            let response = await commune("changeUsername", { username: this.$usernameInput.val() });
+            let response = await Base.commune("/s/user/changeUsername", { username: this.$usernameInput.val() });
     
-            this.$username.text(this.$usernameInput.val());
-            this.cancelUsername();
-            this.$info.text("Username Updated!");
-    
-            location.reload();
-        }
-    }
-
-    #PlayerAttributes = class PlayerAttributes {
-        constructor() {
-            this.$content = $(".menu .content#player");
-            this.attributes = [];
-
-            <% if (user) { %>
-                this.refresh();
-            <% } %>
-        }
-
-        async refresh() {
-            let response = await commune("/s/user/getAttributes");
-            this.attributes = response.data;
-            console.log(response);
-
-            this.render();
-        }
-
-        render() {
-            this.$content.empty();
-
-            if (this.attributes) {
-                for (const [key, value] of Object.entries(this.attributes)) {
-                    this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
-                }
+            if (response.status === "success") {
+                this.$username.text(this.$usernameInput.val());
+                this.$info.text("Username Updated.");
             }
+            else {
+                this.$info.text("Username Not Updated!");
+            }
+            this.cancelUsername();
         }
     }
     
-    #playerInventory = new this.#Inventory();
-    #accountServices = new this.#AccountServices();
-    #playerAttributes = new this.#PlayerAttributes();
     #$menu = $(".ui .menu");
     #$fade = $(".ui .fade");
     menuClosing = false;
 
     constructor() {
-       
+        this.playerInventory = new this.#Inventory();
+        this.playerAttributes = new this.#PlayerAttributes();
+        this.playerAccount = new this.#AccountServices();
     }
 
     closeMenu = function closeMenu() {
@@ -210,13 +218,13 @@ class Base {
     }
     
     logout = async () => {
-        let response = await commune("/s/user/logout");
+        let response = await Base.commune("/s/user/logout");
 
-        location.reload();
+        return response;
     }
     
     sendMessageToNother = async () => {
-        await commune("contactNother", {
+        await Base.commune("contactNother", {
             content: $(".menu .content#more #content").val(),
             route: currentRoute
         });
@@ -225,7 +233,7 @@ class Base {
     }
 
     attemptRegister = async (email, username, password) => {
-        let response = await commune("/s/user/register", { 
+        let response = await Base.commune("/s/user/register", { 
             email, username, password 
         });
         
@@ -233,35 +241,49 @@ class Base {
     }
 
     attemptLogin = async (email, password) => {
-        let response = await commune("/s/user/login", {
+        let response = await Base.commune("/s/user/login", {
             email: email,
             password: password
         });
+
+        if (response.status === "success") {
+            this.playerInventory.refresh();
+            this.playerAccount.username = response.data[1];
+            this.playerAccount.email = email;
+            this.playerAccount.refresh();
+            this.playerAttributes.refresh();
+        }
         
         return response;
     };
 
-    resetPassword = async (email) => {
-        let response = await commune("/s/user/sendPasswordReset", { email });
+    resetPassword = async (email, test = false) => {
+        let response = await Base.commune("/s/user/sendPasswordReset", { email, test });
         
         return response;
     }
 
-    changePassword = async (token, password, confirmation) => {
-        let response = await commune("/s/user/changePassword", { token, password, confirmation });
+    changePassword = async (token, email, password, confirmation) => {
+        let response = await Base.commune("/s/user/changePassword", { token, email, password, confirmation });
         
         return response;
     }
 
     do = async (what, data = null) => {
-        let response = await commune("serve", {
+        let response = await Base.commune("/serve", {
             script: what,
             ...data
         });
+
+        return response;
     }
 
     load = async (service) => {
+        let response = await Base.commune("/load", {}, {
+            service
+        });
 
+        return response;
     }
 }
 

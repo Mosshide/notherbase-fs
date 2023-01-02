@@ -1,39 +1,18 @@
+<h1>NotherBase</h1>
+
 <p>
-    Welcome to The Front.
+    Welcome to The Front Test.
 </p>
 
-<button onclick="addGold()">Gold</button>
-
-<button onclick="emailTime()">email</button>
-
-<input type="text" id="general">
-
-<button onclick="newItem()">newItem</button>
-<button onclick="deleteItem()">deleteItem</button>
-<button onclick="playerInventory.change($('#general').val(), 3)">add Item to inv</button>
-<button onclick="emailTime()">email time</button>
-
 <hr>
 
-<h3>Register Account</h3>
-<input type="email" placeholder="email" id="register-email">
-<input type="text" placeholder="username" id="register-user">
-<input type="password" placeholder="password" id="register-pass">
-<button id="register-button">register</button>
-<button onclick="loggin()">Login</button>
-<p id="register-info"></p>
+<h3>Test Accounts</h3>
+<button onclick="test.runTest()">Run Test</button>
 
-<hr>
+<p id="info"></p>
 
-<div class="auth-form" id="reset-form">
-    <h1>NotherBase</h1>
-    <h3>Reset your Password</h3>
-    <input type="number" placeholder="Your Reset Code" id="token">
-    <input type="password" placeholder="Type Your New Password Here" minlength="8" required id="password">
-    <input type="password" placeholder="Type Your New Password Here Again" minlength="8" required id="confirmation">
-    <button id="change-password">Change Password</button>
-    <p id="change-info"></p>
-</div>
+<input type="number" id="token">
+<button onclick="test.continueTest()">Continue Test</button>
 
 <hr>
 
@@ -48,69 +27,67 @@
 <script>
     class Test {
         constructor() {
-            this.$resetPassword = $("#reset-form #password");
-            this.$resetToken = $("#reset-form #token");
-            this.$resetConfirmation = $("#reset-form #confirmation");
-            this.$registerButton = $("#register-button");
-            this.$registerInfo = $("#register-info");
-            this.$changePasswordButton = $("button#change-password");
-            this.$changeInfo = $("#change-info");
-            this.$toNonoButton = $(".locked.to.nother-base");
-            this.$toNonoLink = $(".invisible.to.nother-base");
+            this.$info = $("#info");
 
-            $registerButton.on("click", async function () {
-                let response = await base.attemptRegister(
-                    $("#register-email").val(),
-                    $("#register-user").val(),
-                    $("#register-pass").val()
-                );
-        
-                if (response.status === "success") $registerInfo.text("Account registered.");
-                else console.log(response);
-            });
-        
-            $changePasswordButton.on("click", async function () {
-                let response = await base.changePassword(
-                    $resetToken.val(), 
-                    $resetPassword.val(), 
-                    $resetConfirmation.val()
-                );
-        
-                if (response.status === "success") $changeInfo.text("Password changed.");
-                else console.log(response);
-            });
+            this.oldID = Math.floor(Math.random() * 1000);
+            this.oldUsername = `testuser${this.oldID}`;
+            this.oldEmail = `${this.oldID}@testmail.com`;
+            this.oldPassword = `${this.oldID}password`;
+
+            this.newID = Math.floor(Math.random() * 1000);
+            this.newUsername = `testuser${this.newID}`;
+            this.newEmail = `${this.newID}@testmail.com`;
+            this.newPassword = `${this.newID}password`;
+
+            this.prepTest();
         }
-    
-        loggin = async () => {
-            base.freeLogin($("#register-email").val(), $("#register-pass").val());
+
+        prepTest = async () => {
+            this.$info.empty();
+
+            this.$info.append(this.oldUsername + "<br>");
+            this.$info.append(this.oldEmail + "<br>");
+            this.$info.append(this.oldPassword + "<br>");
+
+            this.$info.append(this.newUsername + "<br>");
+            this.$info.append(this.newEmail + "<br>");
+            this.$info.append(this.newPassword + "<br>");
         }
-    
-        addGold = function addGold(params) {
-            playerInventory.change("Gold Coin", 23);
+
+        runTest = async () => {
+            let response = await base.attemptRegister(
+                this.oldEmail,
+                this.oldUsername,
+                this.oldPassword
+            );
+            this.$info.append(response.data + "<br>");
+
+            response = await base.attemptLogin(this.oldEmail, this.oldPassword);
+            this.$info.append(response.data + "<br>");
+
+            response = await base.resetPassword(this.oldEmail, true);
+            this.$info.append(response.data + "<br>");
         }
-    
-        newItem = async () => {
-            await commune("newItem", {
-                name: $("#general").val()
-            });
-    
-            let items = await commune("getAllItems");
-            console.log(items);
-        }
-    
-        deleteItem = async () => {
-            await commune("deleteItem", {
-                name: $("#general").val()
-            });
-        }
-    
-        emailTime = async () => {
-            await commune("serveFront", {
-                script: "emailTime",
-                toEmail: "wyattsushi@gmail.com",
-                subject: "New Time Update!",
-                html: `New Time: 3       0976`
-            }, { route: currentRoute });
+
+        continueTest = async () => {
+            let response = await base.logout();
+            this.$info.append(response.data + "<br>");
+
+            response = await base.changePassword(
+                $("#token").val(), 
+                this.oldEmail,
+                this.newPassword, 
+                this.newPassword
+            );
+            this.$info.append(response.data + "<br>");
+
+            response = await base.attemptLogin(this.oldEmail, this.newPassword);
+            this.$info.append(response.data + "<br>");
+
+            response = await base.logout();
+            this.$info.append(response.data + "<br>");
         }
     }
+
+    let test = new Test();
 </script>
