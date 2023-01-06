@@ -63,11 +63,30 @@ catch (err) {
     
 //     user.find({}, async (err, users) => {
 //         for (let i = 0; i < users.length; i++) {
-//             let userSpirit = await User.create(
-//                 users[i].username,
-//                 users[i].password,
-//                 users[i].email
-//             );
+//             let userSpirit = await Spirit.create({
+//                 route: "/",
+//                 service: "user",
+//                 scope: "global",
+//                 parent: null,
+//                 _lastUpdate: Date.now()
+//             }, {
+//                 username: users[i].username,
+//                 password: users[i].password,
+//                 email: users[i].email,
+//                 resetToken: null,
+//                 resetExp: null,
+//                 coin: 0,
+//                 home: "/",
+//                 authLevels: [ "Basic" ],
+//                 location: "/the-front",
+//                 attributes: {
+//                     translation: 0,
+//                     strength: 0,
+//                     agility: 0,
+//                     defense: 0
+//                 },
+//                 inventory: []
+//             });
             
 //             let foundPages = await page.find({ user: users[i]._id });
     

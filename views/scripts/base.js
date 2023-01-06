@@ -6,7 +6,7 @@ class Base {
 
         await $.post(route, JSON.stringify(body), (res) => {
             response = res;
-            if (res.status != "success") console.log(`${route} - ${res}`);
+            if (res.status != "success") console.log(`${route} - ${res.message}`);
         });
     
         return response;

@@ -92,6 +92,7 @@ export default class Spirit {
             return spirit;
         }
         else {
+            options._lastUpdate = Date.now();
             let newSpirit = await Spirit.create(options, initdata);
             return newSpirit;
         }
