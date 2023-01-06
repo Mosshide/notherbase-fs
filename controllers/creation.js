@@ -11,7 +11,7 @@ export default class Creation {
         this.router.get(`/the-front`, this.explore);
         this.router.get(`/the-front/:frontDetail`, this.explore);
         //pages
-        this.router.get(`/:page`, this.explore);
+        this.router.get(`/:page`, this.page);
         //explorer
         this.router.get(`/:region/:area/:poi`, this.lock, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.explore);
@@ -77,6 +77,42 @@ export default class Creation {
                 }
 
                 res.render(`explorer`, context);
+            }
+            else next();
+        }
+        catch(err) {
+            console.log(err);
+            res.status(500).end();
+        }
+    }
+
+    page = async (req, res, next) => {
+        let main = `${req.contentPath}`;
+
+        main += `/${req.params.page}/index.ejs`;
+
+        try {
+            if (fs.existsSync(main)) {
+                let user = await req.db.User.recallOne(req.session.currentUser);
+
+                let userStuff = {
+                    userID: null,
+                    user: null
+                };
+
+                if (user) userStuff = {
+                    userID: user.id,
+                    user: user.memory.data
+                };
+
+                let context = {
+                    ...userStuff,
+                    query: req.query,
+                    dir: req.frontDir,
+                    route: req.path
+                }
+
+                res.render(main, context);
             }
             else next();
         }
