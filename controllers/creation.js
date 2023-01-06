@@ -43,10 +43,6 @@ export default class Creation {
             main += `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
             siteTitle += req.params.poi;
         }
-        else if (req.params.page) {
-            main += `/${req.params.page}/index`;
-            siteTitle = req.params.page;
-        }
         else {
             main += `/the-front/index`;
             siteTitle += "the-front";
