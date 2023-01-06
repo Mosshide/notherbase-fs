@@ -1,44 +1,39 @@
 class Base {
     static commune = async (route, data = null, options = null) => {
-        try {
-            let body = { data, ...options };
-        
-            let response = null;
+        let body = { data, ...options };
     
-            await $.post(route, JSON.stringify(body), (res) => {
-                response = res;
-                if (res.status != "success") console.log(`${res.status}: ${res.message}`, res.data);
-            });
-        
-            return response;
-        } catch (error) {
-            return error;
-        }
+        let response = null;
+
+        await $.post(route, JSON.stringify(body), (res) => {
+            response = res;
+            if (res.status != "success") console.log(`${route} - ${res}`);
+        });
+    
+        return response;
     }
 
     #Inventory = class Inventory {
         constructor() {
-            this.$div = $(".inventory");
-            this.$list = $(".inventory .item-list");
-            this.$search = $(".inventory .search");
-            this.$searchResults = $(".search-results");
-            this.searchResults = [];
-            this.$error = $("#inventory #error");
             this.items = [];
+            this.lastUpdate = 0;
     
-            this.refresh();
+            <% if (user) { %>
+                this.refresh();
+            <% } %>
         }
         
         async refresh() {
-            let response = await Base.commune("/s/user/getInventory");
+            let $list = $(".inventory .item-list");
 
-            this.items = response.data;
+            let response = await Base.commune("/s/user/getInventory", {}, { _lastUpdate: this.lastUpdate });
 
-            if (this.items) {
-                this.$list.empty();
+            if (response.status === "success") {
+                this.items = response.data;
+                this.lastUpdate = response.lastUpdate;
+                $list.empty();
                 
                 for (let i = 0; i < this.items.length; i++) {
-                    let $new = this.$list.append(
+                    let $new = $list.append(
                         `<div class="item-card">
                             <h5>${this.items[i].name}</h5>
                             <button id="${i}">X</button>
@@ -55,19 +50,23 @@ class Base {
         }
         
         clearError() {
-            this.$error.addClass("invisible");
+            let $error = $("#inventory #error");
+
+            $error.addClass("invisible");
         }
     
         setError(text) {
-            this.$error.text(text);
-            this.$error.removeClass("invisible");
+            let $error = $("#inventory #error");
+
+            $error.text(text);
+            $error.removeClass("invisible");
         }
     }
 
     #PlayerAttributes = class PlayerAttributes {
         constructor() {
-            this.$content = $(".menu .content#player");
             this.attributes = [];
+            this.lastUpdate = 0;
 
             <% if (user) { %>
                 this.refresh();
@@ -75,19 +74,23 @@ class Base {
         }
 
         async refresh() {
-            let response = await Base.commune("/s/user/getAttributes");
-            this.attributes = response.data;
-            console.log(response);
-
-            this.render();
+            let response = await Base.commune("/s/user/getAttributes", {}, { _lastUpdate: this.lastUpdate });
+            if (response.status === "success") {
+                this.lastUpdate = response.lastUpdate;
+                this.attributes = response.data;
+    
+                this.render();
+            }
         }
 
         render() {
-            this.$content.empty();
+            let $content = $(".menu .content#player");
+
+            $content.empty();
 
             if (this.attributes) {
                 for (const [key, value] of Object.entries(this.attributes)) {
-                    this.$content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
+                    $content.append(`<h3 id="${key}">${key}: ${value}</h3>`);
                 }
             }
         }
@@ -95,22 +98,6 @@ class Base {
 
     #AccountServices = class AccountServices {
         constructor() {
-            this.$emailSetting = $(".content#account .setting#email");
-            this.$email = this.$emailSetting.find("p");
-            this.$emailEdit = $(".content#account .edit#email");
-            this.$emailInput = this.$emailEdit.find("input");
-    
-            this.$usernameSetting = $(".content#account .setting#username");
-            this.$username = this.$usernameSetting.find("p");
-            this.$usernameEdit = $(".content#account .edit#username");
-            this.$usernameInput = this.$usernameEdit.find("input");
-    
-            this.$passwordSetting = $(".content#account .setting#password");
-            this.$passwordEdit = $(".content#account .edit#password");
-            this.$passwordInput = this.$passwordEdit.find("input");
-    
-            this.$info = $(".content#account #info");
-
             this.username = "";
             this.email = "";
             
@@ -123,91 +110,123 @@ class Base {
         }
     
         refresh() {
-            this.$email.text(this.email);
-            this.$emailInput.val(this.email);
-            this.$username.text(this.username);
-            this.$usernameInput.val(this.username);
+            let $email = $(".content#account .setting#email p");
+            let $emailInput = $(".content#account .edit#email input");
+            let $username = $(".content#account .setting#username p");
+            let $usernameInput = $(".content#account .edit#username input");
+            
+            $email.text(this.email);
+            $emailInput.val(this.email);
+            $username.text(this.username);
+            $usernameInput.val(this.username);
     
             $(".content#account .settings").removeClass("invisible");
             $(".content#account #please-login").addClass("invisible");
         }
     
         editEmail() {
-            this.$emailSetting.addClass("invisible");
-            this.$emailEdit.removeClass("invisible");
+            let $emailSetting = $(".content#account .setting#email");
+            let $emailEdit = $(".content#account .edit#email");
+
+            $emailSetting.addClass("invisible");
+            $emailEdit.removeClass("invisible");
         }
     
         cancelEmail() {
-            this.$emailSetting.removeClass("invisible");
-            this.$emailEdit.addClass("invisible");
-            this.$emailInput.val(this.$email.text());
+            let $email = $(".content#account .setting#email p");
+            let $emailSetting = $(".content#account .setting#email");
+            let $emailEdit = $(".content#account .edit#email");
+            let $emailInput = $(".content#account .edit#email input");
+
+            $emailSetting.removeClass("invisible");
+            $emailEdit.addClass("invisible");
+            $emailInput.val($email.text());
         }
     
         async updateEmail() {
+            let $info = $(".content#account #info");
+            let $email = $(".content#account .setting#email p");
+            let $emailInput = $(".content#account .edit#email input");
+
             let response = await Base.commune("/s/user/changeEmail", { email: this.$emailInput.val() });
     
             if (response.status === "success") {
-                this.$email.text(this.$emailInput.val());
-                this.$info.text("Email Updated.");
+                $email.text($emailInput.val());
+                $info.text("Email Updated.");
             }
             else {
-                this.$info.text("Email Not Updated!");
+                $info.text("Email Not Updated!");
             }
             this.cancelEmail();
         }
     
         editUsername() {
-            this.$usernameSetting.addClass("invisible");
-            this.$usernameEdit.removeClass("invisible");
+            let $usernameSetting = $(".content#account .setting#username");
+            let $usernameEdit = $(".content#account .edit#username");
+
+            $usernameSetting.addClass("invisible");
+            $usernameEdit.removeClass("invisible");
         }
     
         cancelUsername() {
-            this.$usernameSetting.removeClass("invisible");
-            this.$usernameEdit.addClass("invisible");
-            this.$usernameInput.val(this.$username.text());
+            let $usernameSetting = $(".content#account .setting#username");
+            let $usernameEdit = $(".content#account .edit#username");
+            let $usernameInput = $(".content#account .edit#username input");
+            let $username = $(".content#account .setting#username p");
+
+            $usernameSetting.removeClass("invisible");
+            $usernameEdit.addClass("invisible");
+            $usernameInput.val($username.text());
         }
     
         async updateUsername() {
-            let response = await Base.commune("/s/user/changeUsername", { username: this.$usernameInput.val() });
+            let $info = $(".content#account #info");
+            let $username = $(".content#account .setting#username p");
+            let $usernameInput = $(".content#account .edit#username input");
+
+            let response = await Base.commune("/s/user/changeUsername", { username: $usernameInput.val() });
     
             if (response.status === "success") {
-                this.$username.text(this.$usernameInput.val());
-                this.$info.text("Username Updated.");
+                $username.text($usernameInput.val());
+                $info.text("Username Updated.");
             }
             else {
-                this.$info.text("Username Not Updated!");
+                $info.text("Username Not Updated!");
             }
             this.cancelUsername();
         }
     }
     
-    #$menu = $(".ui .menu");
-    #$fade = $(".ui .fade");
-    menuClosing = false;
-
     constructor() {
         this.playerInventory = new this.#Inventory();
         this.playerAttributes = new this.#PlayerAttributes();
         this.playerAccount = new this.#AccountServices();
+        this.menuClosing = false;
     }
 
-    closeMenu = function closeMenu() {
+    closeMenu = () => {
+        let $menu = $(".ui .menu");
+        let $fade = $(".ui .fade");
+
         if (!this.menuClosing) {
             this.menuClosing = true;
-            this.#$fade.addClass("camo");
+            $fade.addClass("camo");
             
             setTimeout(() => { 
-                this.#$menu.addClass("invisible");
-                this.#$fade.addClass("invisible");
+                $menu.addClass("invisible");
+                $fade.addClass("invisible");
                 this.menuClosing = false;
             }, 100);
         }
     }
 
     openMenu = () => {
-        this.#$menu.removeClass("invisible");
-        this.#$fade.removeClass("camo");
-        this.#$fade.removeClass("invisible");
+        let $menu = $(".ui .menu");
+        let $fade = $(".ui .fade");
+
+        $menu.removeClass("invisible");
+        $fade.removeClass("camo");
+        $fade.removeClass("invisible");
     }
 
     switchTab = function switchTab(id) {
@@ -248,7 +267,7 @@ class Base {
 
         if (response.status === "success") {
             this.playerInventory.refresh();
-            this.playerAccount.username = response.data[1];
+            this.playerAccount.username = response.data;
             this.playerAccount.email = email;
             this.playerAccount.refresh();
             this.playerAttributes.refresh();
@@ -269,19 +288,22 @@ class Base {
         return response;
     }
 
-    do = async (what, data = null) => {
-        let response = await Base.commune("/serve", {
+    do = async (what, data = null, route = window.location.pathname) => {
+        let response = await Base.commune("/s/serve", {
             script: what,
             ...data
+        }, {
+            route
         });
+
+        this.playerInventory.refresh();
+        this.playerAttributes.refresh();
 
         return response;
     }
 
-    load = async (service) => {
-        let response = await Base.commune("/load", {}, {
-            service
-        });
+    load = async (service, scope = "local") => {
+        let response = await $.get("/s/load", { service, scope, route: window.location.pathname });
 
         return response;
     }

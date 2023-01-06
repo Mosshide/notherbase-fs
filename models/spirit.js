@@ -55,6 +55,7 @@ export default class Spirit {
 
         if (found) {
             spirit.memory = found;
+            if (!spirit.memory.data) spirit.memory.data = {};
             
             return spirit;
         }
@@ -70,25 +71,36 @@ export default class Spirit {
 
         if (found) {
             spirit.memory = found;
+            if (!spirit.memory.data) spirit.memory.data = {};
             
             return spirit;
         }
         else return null;
     }
 
+    static recallOrCreate = async (options = {}, queryData = {}, initdata = {}) => {
+        let spirit = new Spirit();
+
+        let query = Spirit.buildQuery(options, queryData);
+
+        let found = await Spirit.db.findOne(query);
+
+        if (found) {
+            spirit.memory = found;
+            if (!spirit.memory.data) spirit.memory.data = {};
+            
+            return spirit;
+        }
+        else {
+            let newSpirit = await Spirit.create(options, initdata);
+            return newSpirit;
+        }
+    }
+
     static delete = async (options = {}, data = {}, id = null) => {
         let found = await Spirit.db.findAndDelete(Spirit.buildQuery(options, data, id));
 
         return found.deletedCount;
-    }
-
-    static check = (checkee, failMsg) => {
-        if (!checkee) throw {
-            status: "failed",
-            message: failMsg,
-            isUpToDate: true,
-            data: null
-        };
     }
 
     constructor() {

@@ -1,5 +1,9 @@
 import express from "express";
 import { stripHtml } from "string-strip-html";
+import User from "./spirits/user.js";
+import Contact from "./spirits/contact.js";
+import { success, fail } from "./spirits/util.js";
+import fs from 'fs';
 
 export default class SpiritWorld {
     #setupChat = (socket) => {
@@ -31,64 +35,44 @@ export default class SpiritWorld {
     constructor(io) {
         this.io = io;
         this.router = express.Router();
+        this.user = new User();
+        this.contact = new Contact();
 
-        this.router.post(`/serve`, this.serve);
-        this.router.post("/load", this.load);
-        this.router.post(`/user/:action`, this.user);
-        this.router.post(`/contact-nother`, this.contactNother);
+        this.router.post("/serve", this.serve);
+        this.router.get("/load", this.load);
+        this.router.use("/user", this.user.router);
+        this.router.use("/contact-nother", this.contact.router);
 
         this.io.on('connection', this.#setupChat);
     }
 
     load = async (req, res) => {
-        let user = await req.db.User.recall(req.session.currentUser);
+        let user = await req.db.User.recallOne(req.session.currentUser);
 
-        let spirit = await req.db.Spirit.recall({
-            route: "/",
-            service: "user",
-            scope: "global",
-            parent: user.memory
+        let parent = null;
+        if (req.query.scope === "local" && user) parent = user.id;
+
+        let spirit = await req.db.Spirit.recallOne({
+            route: req.query.route,
+            service: req.query.service,
+            scope: req.query.scope,
+            parent: parent
         });
 
-        await contact.commit({
-            user: req.session.currentUser,
-            location: req.body.data.route,
-            content: req.body.data.content
-        });
+        if (!spirit) spirit = await req.db.Spirit.create({
+            route: req.query.route,
+            service: req.query.service,
+            scope: req.query.scope,
+            parent: parent
+        }, {});
 
-        return success();
+        if (!spirit.memory.data) spirit.memory.data = {};
+
+        res.send(spirit.memory.data);
     }
 
-    user = async (req, res) => {
+    serve = async (req, res) => {
         try {
-            let result;
-        
-            if (req.db.User[req.params.action]) {
-                let data = await req.db.User[req.params.action](req);
-
-                result = {
-                    status: "success",
-                    message: "User script ran.",
-                    data: data
-                }
-            }
-            else result = {
-                status: "failed",
-                message: `No function with the name ${req.body.action}`,
-                data: {}
-            }
-            
-            res.send(result);
-        } catch (error) {
-            console.log(error);
-            res.send(error);
-        }
-    }
-
-    serve = async (req) => {
-        try {
-            if (!req.body.route) req.body.route = req.path;
-            
             let scriptPath = `${req.contentPath}${req.body.route}/${req.body.data.script}.js`;
             
             let script, result = null;
@@ -98,25 +82,12 @@ export default class SpiritWorld {
 
                 script = await import(scriptPath);
                 result = await script.default(req, user);
-                return success("Served.", result);
+                success(res, "Served.", result);
             }
-            else return fail(`Script not found: ${req.body.data.script} at ${scriptPath}`);
+            else fail(res, `Script not found: ${req.body.data.script} at ${scriptPath}`);
         } catch (error) {
             console.log(error);
-            res.send(error);
+            fail(res, "Server error");
         }
-    }
-
-    contactNother = async function(req) {
-        req.body.service = "contact";
-        let contact = new req.db.Spirit(req.body);
-
-        await contact.commit({
-            user: req.session.currentUser,
-            location: req.body.data.route,
-            content: req.body.data.content
-        });
-
-        return success();
     }
 }

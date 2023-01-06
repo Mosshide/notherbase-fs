@@ -1,9 +1,18 @@
 <%- include("./head.ejs"); %>
 
 <script src="/socket.io/socket.io.js"></script>
+
+<div class="ui">
+    <%- include("./menu.ejs", {user: user}); %>
+</div>
+
 <script>
     const currentRoute = "<%- route %>";
+
+    <%- include("./scripts/base.js", {user: user}); %>
 </script>
+
+
 
 <main class="override">
     <% if (requireUser && !user) { %>
@@ -42,13 +51,5 @@
         <%- include(`${main}.ejs`); %>
     <% } %>
 </main>
-
-<div class="ui">
-    <%- include("./menu.ejs", {user: user}); %>
-</div>
-
-<script>
-    <%- include("./scripts/base.js", {user: user}); %>
-</script>
 
 <%- include("./footer.ejs"); %>

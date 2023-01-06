@@ -16,7 +16,10 @@ export default class Creation {
         this.router.get(`/:region/:area/:poi`, this.lock, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.explore);
         //void
-        this.router.use(function(req, res) { res.redirect("/void"); });
+        this.router.use(function(req, res) { 
+            console.log(req.path);
+            res.redirect("/void");
+        });
     }
 
     lock = (req, res, next) => {
@@ -52,12 +55,14 @@ export default class Creation {
         try {
             if (fs.existsSync(main + ".ejs")) {
                 let user = await req.db.User.recallOne(req.session.currentUser);
+
                 let userStuff = {
                     userID: null,
                     user: null,
                 };
+
                 if (user) userStuff = {
-                    userID: user._ID,
+                    userID: user.id,
                     user: user.memory.data,
                 };
 

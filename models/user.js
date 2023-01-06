@@ -1,22 +1,31 @@
 import Spirit from "./spirit.js";
+import Item from "./item.js";
 import bcrypt from "bcrypt";
 
-export default class User {
-    static recallOne = async (target, id = null) => {
-        let spirit = null;
+export default class User extends Spirit {
+    static recallOne = async (target = null, username = null, id = null) => {
+        let spirit = new User(target, id);
+
+        let query = null;
 
         if (target) {
-            spirit = await Spirit.recallOne({
+            query = Spirit.buildQuery({
                 route: "/",
                 service: "user",
                 scope: "global",
                 parent: null
             }, { email: target });
-
-            return new User(target, id, spirit);
+        }
+        else if (username) {
+            query = Spirit.buildQuery({
+                route: "/",
+                service: "user",
+                scope: "global",
+                parent: null
+            }, { username: username });
         }
         else if (id) {
-            spirit = await super.recallOne({
+            query = Spirit.buildQuery({
                 route: "/",
                 service: "user",
                 scope: "global",
@@ -24,287 +33,157 @@ export default class User {
             }, null, id);
         }
         
-        if (spirit) return new User(target, id, spirit);
+        let found = null;
+
+        if (query) found = await Spirit.db.findOne(query);
+
+        if (found) {
+            spirit.memory = found;
+            spirit.id = found._id;
+            
+            return spirit;
+        }
         else return null;
     }
 
-    static logout = async (req) => {
-        await req.session.destroy();
-
-        return "Logged out.";
-    }
-
-    static sendPasswordReset = async (req) => {
-        let spirit = await User.recallOne(req.body.data.email);
-
-        if (spirit) {
-            let token = Math.floor(Math.random() * 9999);
-
-            if (req.body.data.test) console.log("token: " + token);
-
-            spirit.memory.data.resetToken = token;
-            spirit.memory.data.resetExp = Date.now() + (1000 * 60 * 10);
-            await spirit.commit();
-    
-            req.db.SendMail.passwordReset(req.body.data.email, token);
-    
-            return "Password reset.";
-        }
-        else return "User not found.";
-    }
-
-    static changePassword = async (req) => {
-        this.check(req.body.data.token, "No token provided!");
-
-        let spirit = await User.recallOne(req.body.data.email);
-
-        this.check(spirit, "User not found!");
-        this.check(spirit.memory.data.resetToken == req.body.data.token, "Reset token not valid!");
-        this.check(spirit.memory.data.resetExp > Date.now(), "Reset token expired!");
-        this.check(req.body.data.password === req.body.data.confirmation, "Passwords must match!");
-
-        spirit.memory.data.resetExp = -1;
+    static create = async (username, password, email) => {
+        let spirit = new User(email);
 
         const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(req.body.data.password, salt);
+        const hash = await bcrypt.hash(password, salt);
 
-        spirit.memory.data.password = hash;
-        await spirit.commit();
+        spirit.memory = await Spirit.db.create({
+            route: "/",
+            service: "user",
+            scope: "global",
+            parent: null,
+            _lastUpdate: Date.now(),
+            data: {
+                username: username,
+                password: hash,
+                email: email,
+                resetToken: null,
+                resetExp: null,
+                coin: 0,
+                home: "/",
+                authLevels: [ "Basic" ],
+                location: "/the-front",
+                attributes: {
+                    translation: 0,
+                    strength: 0,
+                    agility: 0,
+                    defense: 0
+                },
+                inventory: []
+            }
+        });
 
-        return "Password changed successfully!";
+        return spirit;
     }
 
-    static register = async (req) => {
-        this.check(req.body.data.password.length > 7, "Password too short.");
-        this.check(req.body.data.email.length > 7, "Email too short.");
-        this.check(req.body.data.username.length > 2, "Username too short.");
-
-        let spirit = await User.recallOne(req.body.data.email);
-
-        this.check(!spirit, "Email already in use!");
-
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(req.body.data.password, salt);
-
-        spirit = await super.create({
+    static delete = async (target) => {
+        let found = await Spirit.db.findAndDelete(Spirit.buildQuery({
             route: "/",
             service: "user",
             scope: "global",
             parent: null
-        }, {
-            username: req.body.data.username,
-            password: hash,
-            email: req.body.data.email,
-            reset: {
-                token: null,
-                exp: null
-            },
-            coin: 0,
-            home: "/",
-            authLevels: [ "Basic" ],
-            location: "/the-front",
-            attributes: {
-                translation: 0,
-                strength: 0,
-                agility: 0,
-                defense: 0
-            },
-            inventory: []
-        });
+        }, { email: target }));
 
-        return "Registration successful!";
+        return found.deletedCount;
     }
 
-    static login = async (req) => {
-        let spirit = await User.recallOne(req.body.data.email);
-        Spirit.check(spirit, "User not found.");
-
-        let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
-        Spirit.check(passResult, "Password doesn't match the email.");
-
-        req.session.currentUser = req.body.data.email;
-
-        return ["Logged in.", spirit.memory.data.username];
-    }
-
-    static loginCheck = (req) => {
-        Spirit.check(req.session.currentUser, "Please login first.");
-    }
-
-    constructor(email, id = null, spirit = null) {
-        this.spirit = spirit;
+    constructor(email, id = null) {
+        super();
         this.email = email;
         this.id = id;
     }
 
-    changeEmail = async (req) => {
-        this.loginCheck(req);
-
-        let spirit = await User.recallOne(req.body.data.email);
-
-        console.log(spirit);
-
-        this.check(!spirit, "Email already in use!");
-
-        spirit = await User.recallOne(req.session.currentUser);
-
-        spirit.memory.data.email = req.body.data.email;
-        await spirit.commit();
-
-        req.session.currentUser = req.body.data.email;
-
-        return "Email changed.";
-    }
-
-    changeUsername = async (req) => {
-        this.loginCheck(req);
-
-        let spirit = await super.recallOne({
-            route: "/",
-            service: "user",
-            scope: "global",
-            parent: null
-        }, { username: req.body.data.username });
-
-        this.check(!spirit, "Username already in use!");
-
-        spirit = await User.recallOne(req.session.currentUser);
-
-        spirit.memory.data.username = req.body.data.username;
-        await spirit.commit();
-
-        return "Username changed";
-    }
-
-    deleteUserPermanently = async (req) => {
-        this.loginCheck(req);
-        
-        let deleted = await super.delete({
-            route: "/",
-            service: "user",
-            scope: "global",
-            parent: null
-        }, { email: req.session.currentUser });
-
-        this.check(deleted > 0, "No account deleted");
-
-        await req.session.destroy();
-
-        return "Account deleted.";
-    }
-
-    getInventory = async (req) => {
-        User.loginCheck(req);
-        let spirit = await User.recallOne(req.session.currentUser);
-        let inv = spirit.memory.data.inventory;
+    offsetItem = async (name, offset) => {
+        let item = Item.recallOne(name);
     
-        this.check(inv, "User inventory not found.");
+        if (!item) return "Item not found in database.";
     
-        return inv;
-    }
-
-    updateItemInInventory = async (req) => {
-        this.check(req.body.data.name && req.body.data.amount, `${req.body.data.name} ${req.body.data.amount} Check Input!`);
-    
-        let item = req.db.Item.recall(req.body.data.name);
-    
-        this.check(item, "Item not found in database.");
-    
-        let user = await User.recallOne(req.session.currentUser);
-        let inv = user.memory.data.inventory;
+        let inv = this.memory.data.inventory;
     
         let holding = false;
     
         for (let j = 0; j < inv.length; j++) {
-            if (inv[j].name === req.body.data.name) {
+            if (inv[j].name === name) {
                 holding = true;
     
-                if (inv[j].amount >= -Math.floor(req.body.data.amount)) {
-                    inv[j].amount += Math.floor(req.body.data.amount);
+                if (inv[j].amount >= -Math.floor(offset)) {
+                    inv[j].amount += Math.floor(offset);
     
                     if (inv[j].amount === 0) {
                         let empty = inv[j];
     
                         inv.splice(j, 1);
-                        await user.commit();
+
+                        this.memory._lastUpdate = Date.now();
+                        await this.commit();
     
                         return "Item emptied.";
                     }
                     else {
-                        await user.commit();
+                        this.memory._lastUpdate = Date.now();
+                        await this.commit();
     
                         return inv[j];
                     }
                 }
                 else {
-                    return `Unable to remove ${req.body.data.amount} ${req.body.data.name} 
+                    return `Unable to remove ${-offset} ${name} 
                         from inventory because the inventory has only ${inv[j].amount}.`;
                 }
             }
         }
         
         if (!holding) {
-            if (req.body.data.amount > 0) {
+            if (offset > 0) {
                 inv.push({
-                    name: req.body.data.name,
-                    amount: req.body.data.amount
+                    name: name,
+                    amount: offset
                 });
+
+                this.memory._lastUpdate = Date.now();
     
-                await user.commit();
+                await this.commit();
     
                 return inv[inv.length - 1];
             }
             else {
-                return `Unable to remove ${req.body.data.amount} ${req.body.data.name} 
+                return `Unable to remove ${-offset} ${name} 
                     from inventory because the inventory has none.`;
             }
         };
     }
 
-    getAttributes = async (req) => {
-        this.loginCheck(req);
+    checkAttribute = async (check, against) => {
+        let att = this.memory.data.attributes;
     
-        let user = await User.recallOne(req.session.currentUser);
-    
-        return user.memory.data.attributes;
+        return att[check] >= against;
     }
 
-    checkAttribute = async (req) => {
-        this.loginCheck(req);
+    setAttribute = async (change, to) => {
+        let att = this.memory.data.attributes;
     
-        let user = await User.recallOne(req.session.currentUser);
-        let att = user.memory.data.attributes;
-    
-        if (att[req.body.data.check] >= req.body.data.against) {
-            return "pass";
-        }
-        else return "fail";
-    }
-
-    setAttribute = async (req) => {
-        this.loginCheck(req);
-    
-        let user = await User.recallOne(req.session.currentUser);
-    
-        user.memory.data.attributes[req.body.data.change] = req.body.data.to;
-        await user.commit();
+        att[change] = to;
+        this.memory._lastUpdate = Date.now();
+        await this.commit();
     
         return "Attributes set.";
     }
 
-    incrementAttribute = async (req) => {
-        this.loginCheck(req);
+    incrementAttribute = async (change, max) => {
+        let att = this.memory.data.attributes;
     
-        let user = await User.recallOne(req.session.currentUser);
-        let att = user.memory.data.attributes;
-    
-        if (att[req.body.data.change] < req.body.data.max) {
-            att[req.body.data.change]++;
-            await user.commit();
-    
-            return att[req.body.data.change];
+        if (att[change] < max) {
+            att[change]++;
+            this.memory._lastUpdate = Date.now();
+            await this.commit();
         } 
-        else return att[req.body.data.change];
+        
+        return att[change];
     }
 }
 
