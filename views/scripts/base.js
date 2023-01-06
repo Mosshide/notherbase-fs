@@ -148,7 +148,7 @@ class Base {
             let $email = $(".content#account .setting#email p");
             let $emailInput = $(".content#account .edit#email input");
 
-            let response = await Base.commune("/s/user/changeEmail", { email: this.$emailInput.val() });
+            let response = await Base.commune("/s/user/changeEmail", { email: $emailInput.val() });
     
             if (response.status === "success") {
                 $email.text($emailInput.val());
