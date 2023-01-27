@@ -1,79 +1,43 @@
-<div class="fade invisible">
+<div class="fade invisible" onclick="base.closeMenu()">
 
 </div>
 
 <div class="menu invisible">
     <div class="tabs">
-        <button id="inventory">
+        <button id="inventory" onclick="base.switchTab('inventory')">
             Inventory
         </button>
-        <button id="player">
+        <button id="player" onclick="base.switchTab('player')">
             Player
         </button>
-        <button id="account">
+        <button id="account" onclick="base.switchTab('account')">
             Account
         </button>
-        <button id="more">
+        <button id="more" onclick="base.switchTab('more')">
             More
         </button>
     </div>
 
-    <button id="close">
+    <button id="close" onclick="base.closeMenu()">
         X
     </button>
 
     <div id="content-window">
-        <%- include("./inventory.ejs"); %>
-        <%- include("./player.ejs"); %>
-        <%- include("./account.ejs"); %>
-        <%- include("./more.ejs"); %>
+        <%- include("./menu/inventory.ejs"); %>
+        <%- include("./menu/player.ejs"); %>
+        <%- include("./menu/account.ejs", { user: user }); %>
+        <%- include("./menu/more.ejs"); %>
     </div>
 
-    <a href="/user/logout" id="logout">Logout</a>
+    <button onclick="logoutViaMenu()">Logout</button>
+
+    <script>
+        const logoutViaMenu = async () => {
+            let response = await base.logout();
+            console.log(response);
+            location.reload();
+        }
+    </script>
 </div>
 
-<button id="menu"><i class="fas fa-cog"></i></button>
-
-<script>
-    let $menu = $(".menu");
-    let $fade = $(".ui .fade");
-    let menuClosing = false;
-
-    let closeMenu = function closeMenu() {
-        menuClosing = true;
-        $fade.addClass("camo");
-        
-        setTimeout(() => { 
-            $menu.addClass("invisible");
-            $fade.addClass("invisible");
-            menuClosing = false;
-        }, 100);
-    }
-
-    $("button#menu").on("click", function () {
-        $menu.toggleClass("invisible");
-        $fade.removeClass("camo");
-        $fade.removeClass("invisible");
-    });
-
-    $fade.on("click", function () {
-        if (!menuClosing) closeMenu();
-    });
-
-    $(".menu button#close").on("click", function () {
-        closeMenu();
-    });
-
-    $(".menu .tabs button").on("click", function (e) {
-        switchTab(e.currentTarget.id);
-    });
-
-    let switchTab = function switchTab(id) {
-        $("#content-window .content").addClass("invisible");
-        $(".menu .tabs button").removeClass("selected");
-        $(`#content-window #${id}`).removeClass("invisible");
-        $(`.menu .tabs #${id}`).addClass("selected");
-    }
-
-    switchTab("inventory");
-</script>
+<button id="menu" onclick="base.openMenu()"><i class="fas fa-cog"></i></button>

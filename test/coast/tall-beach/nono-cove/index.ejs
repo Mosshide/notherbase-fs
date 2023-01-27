@@ -1,0 +1,29 @@
+<p>
+    nono
+</p>
+
+<hr>
+
+<h3>chat</h3>
+
+<div class="chat-box" id="test-chat"></div>
+<div class="chat-box" id="test-chat-2"></div>
+<div class="chat-box" id="test-chat-3"></div>
+
+<hr>
+
+<a href="/the-front" class="to">
+    Go to The Front
+</a>
+
+<a href="/coast/tall-beach/nono-cove/nono-og" class="to">
+    Go to Nono Cove
+</a>
+
+
+<script src="/js/chat-box.js"></script>
+<script>
+    let chatTest = new ChatBox("<%= user.username %>", "test-chat");
+    let chatTest2 = new ChatBox("<%= user.username %>", "test-chat-2");
+    let chatTest3 = new ChatBox("<%= user.username %>", "test-chat-3");
+</script>

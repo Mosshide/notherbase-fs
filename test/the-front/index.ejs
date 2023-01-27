@@ -1,0 +1,107 @@
+<h1>NotherBase</h1>
+
+<p>
+    Welcome to The Front Test.
+</p>
+
+<p id="gold">0 Gold Added</p>
+
+<hr>
+
+<h3>Test Accounts</h3>
+<button onclick="test.runTest()">Run Test</button>
+
+<p id="info"></p>
+
+<input type="number" id="token">
+<button onclick="test.continueTest()">Continue Test</button>
+<button onclick="base.do('incTranslation')">inc trans</button>
+
+<hr>
+
+<a href="/coast/tall-beach/nono-cove" class="to nother-base">
+    Go inside
+</a>
+
+<a href="/the-front/check">
+    Go to The Check
+</a>
+
+<script>
+    class Test {
+        constructor() {
+            this.$info = $("main #info");
+            this.$gold = $("#gold");
+
+            this.oldID = Math.floor(Math.random() * 1000);
+            this.oldUsername = `testuser${this.oldID}`;
+            this.oldEmail = `${this.oldID}@testmail.com`;
+            this.oldPassword = `${this.oldID}password`;
+
+            this.newID = Math.floor(Math.random() * 1000);
+            this.newUsername = `testuser${this.newID}`;
+            this.newEmail = `${this.newID}@testmail.com`;
+            this.newPassword = `${this.newID}password`;
+
+            this.prepTest();
+        }
+
+        prepTest = async () => {
+            this.$info.empty();
+
+            this.$info.append(this.oldUsername + "<br>");
+            this.$info.append(this.oldEmail + "<br>");
+            this.$info.append(this.oldPassword + "<br>");
+
+            this.$info.append(this.newUsername + "<br>");
+            this.$info.append(this.newEmail + "<br>");
+            this.$info.append(this.newPassword + "<br>");
+
+            let loaded = await base.load("gold", "global");
+            this.$gold.text(`?/${loaded.gold ? loaded.gold : 0} Gold Added`);
+        }
+
+        runTest = async () => {
+            let response = await base.attemptRegister(
+                this.oldEmail,
+                this.oldUsername,
+                this.oldPassword
+            );
+            this.$info.append(response.message + "<br>");
+
+            response = await base.attemptLogin(this.oldEmail, this.oldPassword);
+            this.$info.append(response.message + "<br>");
+
+            response = await base.do("add-gold", null, "/the-front");
+            this.$info.append(response.message + "<br>");
+
+            let amountLocal = await base.load("gold");
+            let amountGlobal = await base.load("gold", "global");
+            this.$gold.text(`${amountLocal.gold}/${amountGlobal.gold} Gold Added`);
+
+            response = await base.resetPassword(this.oldEmail, true);
+            this.$info.append(response.message + "<br>");
+        }
+
+        continueTest = async () => {
+            let response = await base.logout();
+            this.$info.append(response.message + "<br>");
+
+            response = await base.changePassword(
+                $("#token").val(), 
+                this.oldEmail,
+                this.newPassword, 
+                this.newPassword
+            );
+            this.$info.append(response.message + "<br>");
+
+            response = await base.attemptLogin(this.oldEmail, this.newPassword);
+            this.$info.append(response.message + "<br>");
+
+            response = await base.logout();
+            this.$info.append(response.message + "<br>");
+        }
+    }
+
+    let test = new Test();
+</script>

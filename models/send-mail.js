@@ -22,6 +22,8 @@ const passwordReset = async (toEmail, resetToken) => {
 };
 
 const send = async (toEmail, subject, html) => {
+    console.log("dfhd");
+
     var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {

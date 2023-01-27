@@ -1,10 +1,10 @@
 {
   "name": "notherbase-fs",
-  "version": "1.5.3",
+  "version": "3.0.3",
   "description": "Functions to help make developing for NotherBase easier.",
   "exports": "./notherbase-fs.js",
   "scripts": {
-    "test": "nodemon test/test-index.js",
+    "test": "nodemon test-index.js",
     "gmail-auth": "node gmail-auth.js",
     "gmail-token": "node gmail-token.js"
   },
