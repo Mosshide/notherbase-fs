@@ -101,16 +101,12 @@ export default class User extends Spirit {
     offsetItem = async (name, offset) => {
         let item = await Item.recallOne(name);
     
-        if (!item) return "Item not found in database.";
+        if (!item) return false;
     
         let inv = this.memory.data.inventory;
-    
-        let holding = false;
-    
+
         for (let j = 0; j < inv.length; j++) {
             if (inv[j].name === name) {
-                holding = true;
-    
                 if (inv[j].amount >= -Math.floor(offset)) {
                     inv[j].amount += Math.floor(offset);
     
@@ -118,44 +114,29 @@ export default class User extends Spirit {
                         let empty = inv[j];
     
                         inv.splice(j, 1);
+                    }
 
-                        this.memory._lastUpdate = Date.now();
-                        await this.commit();
-    
-                        return "Item emptied.";
-                    }
-                    else {
-                        this.memory._lastUpdate = Date.now();
-                        await this.commit();
-    
-                        return inv[j];
-                    }
+                    this.memory._lastUpdate = Date.now();
+                    await this.commit();
+                    return true;
                 }
-                else {
-                    return `Unable to remove ${-offset} ${name} 
-                        from inventory because the inventory has only ${inv[j].amount}.`;
-                }
+                else return false;
             }
         }
         
-        if (!holding) {
-            if (offset > 0) {
-                inv.push({
-                    name: name,
-                    amount: offset
-                });
+        if (offset > 0) {
+            inv.push({
+                name: name,
+                amount: offset
+            });
 
-                this.memory._lastUpdate = Date.now();
-    
-                await this.commit();
-    
-                return inv[inv.length - 1];
-            }
-            else {
-                return `Unable to remove ${-offset} ${name} 
-                    from inventory because the inventory has none.`;
-            }
-        };
+            this.memory._lastUpdate = Date.now();
+
+            await this.commit();
+
+            return true;
+        }
+        else return false;
     }
 
     checkAttribute = async (check, against) => {
