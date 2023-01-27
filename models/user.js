@@ -99,7 +99,7 @@ export default class User extends Spirit {
     }
 
     offsetItem = async (name, offset) => {
-        let item = Item.recallOne(name);
+        let item = await Item.recallOne(name);
     
         if (!item) return "Item not found in database.";
     
