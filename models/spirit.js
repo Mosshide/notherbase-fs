@@ -99,7 +99,7 @@ export default class Spirit {
     }
 
     static delete = async (options = {}, data = {}, id = null) => {
-        let found = await Spirit.db.findAndDelete(Spirit.buildQuery(options, data, id));
+        let found = await Spirit.db.deleteMany(Spirit.buildQuery(options, data, id));
 
         return found.deletedCount;
     }
