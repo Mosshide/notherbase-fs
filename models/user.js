@@ -101,7 +101,7 @@ export default class User extends Spirit {
     offsetItem = async (name, offset) => {
         let item = await Item.recallOne(name);
     
-        if (!item) return "Item not found in database.";
+        if (!item) return false;
     
         let inv = this.memory.data.inventory;
     
@@ -122,18 +122,17 @@ export default class User extends Spirit {
                         this.memory._lastUpdate = Date.now();
                         await this.commit();
     
-                        return "Item emptied.";
+                        return true;
                     }
                     else {
                         this.memory._lastUpdate = Date.now();
                         await this.commit();
     
-                        return inv[j];
+                        return true;
                     }
                 }
                 else {
-                    return `Unable to remove ${-offset} ${name} 
-                        from inventory because the inventory has only ${inv[j].amount}.`;
+                    return false;
                 }
             }
         }
@@ -149,11 +148,10 @@ export default class User extends Spirit {
     
                 await this.commit();
     
-                return inv[inv.length - 1];
+                return true;
             }
             else {
-                return `Unable to remove ${-offset} ${name} 
-                    from inventory because the inventory has none.`;
+                return false;
             }
         };
     }

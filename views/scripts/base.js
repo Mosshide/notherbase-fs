@@ -289,7 +289,7 @@ class Base {
     }
 
     do = async (what, data = null, route = window.location.pathname) => {
-        let response = await Base.commune("/s/serve", {
+        let response = Base.commune("/s/serve", {
             script: what,
             ...data
         }, {
@@ -299,6 +299,7 @@ class Base {
         this.playerInventory.refresh();
         this.playerAttributes.refresh();
 
+        await response;
         return response;
     }
 
