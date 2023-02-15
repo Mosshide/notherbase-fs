@@ -104,13 +104,9 @@ export default class User extends Spirit {
         if (!item) return false;
     
         let inv = this.memory.data.inventory;
-    
-        let holding = false;
-    
+
         for (let j = 0; j < inv.length; j++) {
             if (inv[j].name === name) {
-                holding = true;
-    
                 if (inv[j].amount >= -Math.floor(offset)) {
                     inv[j].amount += Math.floor(offset);
     
@@ -118,42 +114,29 @@ export default class User extends Spirit {
                         let empty = inv[j];
     
                         inv.splice(j, 1);
+                    }
 
-                        this.memory._lastUpdate = Date.now();
-                        await this.commit();
-    
-                        return true;
-                    }
-                    else {
-                        this.memory._lastUpdate = Date.now();
-                        await this.commit();
-    
-                        return true;
-                    }
+                    this.memory._lastUpdate = Date.now();
+                    await this.commit();
+                    return true;
                 }
-                else {
-                    return false;
-                }
+                else return false;
             }
         }
         
-        if (!holding) {
-            if (offset > 0) {
-                inv.push({
-                    name: name,
-                    amount: offset
-                });
+        if (offset > 0) {
+            inv.push({
+                name: name,
+                amount: offset
+            });
 
-                this.memory._lastUpdate = Date.now();
-    
-                await this.commit();
-    
-                return true;
-            }
-            else {
-                return false;
-            }
-        };
+            this.memory._lastUpdate = Date.now();
+
+            await this.commit();
+
+            return true;
+        }
+        else return false;
     }
 
     checkAttribute = async (check, against) => {
