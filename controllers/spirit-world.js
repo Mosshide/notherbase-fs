@@ -47,24 +47,14 @@ export default class SpiritWorld {
     }
 
     load = async (req, res) => {
-        let user = await req.db.User.recallOne(req.session.currentUser);
-
         let parent = null;
-        if (req.query.scope === "local" && user) parent = user.id;
 
-        let spirit = await req.db.Spirit.recallOne({
-            route: req.query.route,
-            service: req.query.service,
-            scope: req.query.scope,
-            parent: parent
-        });
+        if (req.query.scope === "local") {
+            let user = await req.db.User.recallOne(req.session.currentUser);
+            parent = user.id;
+        } 
 
-        if (!spirit) spirit = await req.db.Spirit.create({
-            route: req.query.route,
-            service: req.query.service,
-            scope: req.query.scope,
-            parent: parent
-        }, {});
+        let spirit = await req.db.Spirit.recallOne(req.query.service, parent);
 
         if (!spirit.memory.data) spirit.memory.data = {};
 
@@ -73,7 +63,7 @@ export default class SpiritWorld {
 
     serve = async (req, res) => {
         try {
-            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.data.script}.js`;
+            let scriptPath = `${req.contentPath}${req.body.data.route}/${req.body.data.script}.js`;
             
             let script, result = null;
 

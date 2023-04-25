@@ -5,10 +5,8 @@ export default class Item extends Spirit {
         let spirit = new Item(name);
 
         spirit.memory = await Spirit.db.create({
-            route: "/",
             service: "items",
             parent: null,
-            scope: "global",
             _lastUpdate: Date.now(),
             data: {
                 name,
@@ -24,10 +22,8 @@ export default class Item extends Spirit {
         let spirit = new Item();
 
         let found = await Spirit.db.find({
-            route: "/",
             service: "items",
-            parent: null,
-            scope: "global"
+            parent: null
         });
 
         if (found) {
@@ -41,14 +37,7 @@ export default class Item extends Spirit {
     static recallOne = async (name) => {
         let spirit = new Item(name);
 
-        let query = Spirit.buildQuery({
-            route: "/",
-            service: "items",
-            parent: null,
-            scope: "global"
-        }, {
-            name: name
-        });
+        let query = Spirit.buildQuery("items", { name });
 
         let found = await Spirit.db.findOne(query);
 
@@ -61,14 +50,7 @@ export default class Item extends Spirit {
     }
 
     static delete = async (name) => {
-        let found = await Spirit.db.findAndDelete(Spirit.buildQuery({
-            route: "/",
-            service: "items",
-            parent: null,
-            scope: "global"
-        }, {
-            name: name
-        }));
+        let found = await Spirit.db.findAndDelete(Spirit.buildQuery("items", { name }));
 
         return found.deletedCount;
     }

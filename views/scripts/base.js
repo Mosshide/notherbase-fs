@@ -288,12 +288,12 @@ class Base {
         return response;
     }
 
-    do = async (what, data = null, route = window.location.pathname) => {
+    do = async (what, data = null) => {
+        console.log(window.location.pathname);
         let response = await Base.commune("/s/serve", {
             script: what,
-            ...data
-        }, {
-            route
+            ...data,
+            route: window.location.pathname
         });
 
         this.playerInventory.refresh();
@@ -303,7 +303,7 @@ class Base {
     }
 
     load = async (service, scope = "local") => {
-        let response = await $.get("/s/load", { service, scope, route: window.location.pathname });
+        let response = await $.get("/s/load", { service, scope });
 
         return response;
     }

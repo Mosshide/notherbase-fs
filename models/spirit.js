@@ -3,9 +3,7 @@ import mongoose from "mongoose";
 export default class Spirit {
     static db = mongoose.model('spirits', new mongoose.Schema({
         _lastUpdate: Number,
-        route: String,
         service: String,
-        scope: String,
         parent: { 
             type: mongoose.Schema.Types.ObjectId, 
             ref: "spirits",
@@ -14,16 +12,14 @@ export default class Spirit {
         data: {}
     }));
 
-    static buildQuery = (options = {}, data = {}, id = null) => {
-        let query = {};
+    static buildQuery = (service, data = null, parent = null, id = null) => {
+        let query = {
+            service: service,
+            parent: parent
+        };
         
-        if (id) query = {
-            _id: id
-        };
-        if (options) query = {
-            ...query,
-            ...options
-        };
+        if (id) query._id = id;
+
         if (data){
             let keys = Object.keys(data);
             for (let i = 0; i < keys.length; i++) {
@@ -34,11 +30,12 @@ export default class Spirit {
         return query;
     }
 
-    static create = async (options, data) => {
+    static create = async (service, data = {}, parent = null) => {
         let spirit = new Spirit();
 
         spirit.memory = await Spirit.db.create({
-            ...options,
+            service,
+            parent,
             _lastUpdate: Date.now(),
             data: data
         });
@@ -46,54 +43,36 @@ export default class Spirit {
         return spirit;
     }
 
-    static recall = async (options = {}, data = {}, id = null) => {
+    static recallAll = async (service) => {
         let spirit = new Spirit();
 
-        let query = Spirit.buildQuery(options, data, id);
+        let query = Spirit.buildQuery(service);
 
-        let found = await Spirit.db.find(query);
+        let found = await Spirit.db.find({
+            service: service
+        });
 
         if (found) {
             spirit.memory = found;
-            if (!spirit.memory.data) spirit.memory.data = {};
             
             return spirit;
         }
         else return null;
     }
 
-    static recallOne = async (options = {}, data = {}, id = null) => {
+    static recallOne = async (service, parent = null, data = {}, id = null) => {
         let spirit = new Spirit();
 
-        let query = Spirit.buildQuery(options, data, id);
+        let query = Spirit.buildQuery(service, data, parent, id);
 
         let found = await Spirit.db.findOne(query);
 
         if (found) {
             spirit.memory = found;
-            if (!spirit.memory.data) spirit.memory.data = {};
-            
-            return spirit;
-        }
-        else return null;
-    }
-
-    static recallOrCreate = async (options = {}, queryData = {}, initdata = {}) => {
-        let spirit = new Spirit();
-
-        let query = Spirit.buildQuery(options, queryData);
-
-        let found = await Spirit.db.findOne(query);
-
-        if (found) {
-            spirit.memory = found;
-            if (!spirit.memory.data) spirit.memory.data = {};
-            
             return spirit;
         }
         else {
-            options._lastUpdate = Date.now();
-            let newSpirit = await Spirit.create(options, initdata);
+            let newSpirit = await Spirit.create(service, {}, parent);
             return newSpirit;
         }
     }

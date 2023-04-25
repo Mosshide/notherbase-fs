@@ -85,7 +85,7 @@ export default class Creation {
     page = async (req, res, next) => {
         let main = `${req.contentPath}`;
 
-        main += `/${req.params.page}/index.ejs`;
+        main += `/pages/${req.params.page}/index.ejs`;
 
         try {
             if (fs.existsSync(main)) {

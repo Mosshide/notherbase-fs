@@ -3,34 +3,19 @@ import Item from "./item.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Spirit {
-    static recallOne = async (target = null, username = null, id = null) => {
-        let spirit = new User(target, id);
+    static recallOne = async (email = null, username = null, id = null) => {
+        let spirit = new User(email, id);
 
         let query = null;
 
-        if (target) {
-            query = Spirit.buildQuery({
-                route: "/",
-                service: "user",
-                scope: "global",
-                parent: null
-            }, { email: target });
+        if (email) {
+            query = Spirit.buildQuery("user", { email: email });
         }
         else if (username) {
-            query = Spirit.buildQuery({
-                route: "/",
-                service: "user",
-                scope: "global",
-                parent: null
-            }, { username: username });
+            query = Spirit.buildQuery("user", { username: username });
         }
         else if (id) {
-            query = Spirit.buildQuery({
-                route: "/",
-                service: "user",
-                scope: "global",
-                parent: null
-            }, null, id);
+            query = Spirit.buildQuery("user", null, null, id);
         }
         
         let found = null;
