@@ -292,8 +292,8 @@ class Base {
         console.log(window.location.pathname);
         let response = await Base.commune("/s/serve", {
             script: what,
-            ...data,
-            route: window.location.pathname
+            route: window.location.pathname,
+            ...data
         });
 
         this.playerInventory.refresh();

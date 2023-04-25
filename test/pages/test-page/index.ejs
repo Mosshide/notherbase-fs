@@ -19,21 +19,29 @@
     <link rel="stylesheet" href="/styles/account.css">
     <link rel="stylesheet" href="/styles/more.css">
     <link rel="stylesheet" href="/styles/chat.css">
+    <script src="/js/base.js"></script>
 </head>
+
+<script>
+    const currentRoute = "<%- route %>";
+
+    <%- include("../../../views/scripts/base.js", {user: user}); %>
+</script>
+
+
 <body>
     Test hahahahahah
     <button onclick="emailTime()">email</button>
 </body>
 
-<script src="/js/commune.js"></script>
 <script>
     let emailTime = async () => {
-        await commune("servePages", {
-            script: "emailTime",
+        base.do("emailTime", {
             toEmail: "wyattsushi@gmail.com",
             subject: "New Time Update!",
-            html: `New Time: 358970976`
-        }, { route: "/test" });
+            html: `New Time: 358970976`,
+            route: "/pages/test-page"
+        });
     }
 </script>
 </html>
