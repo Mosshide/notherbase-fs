@@ -16,6 +16,7 @@ export default class User {
         this.router.post("/deletePermanently", this.deletePermanently);
         this.router.post("/getInventory", this.getInventory);
         this.router.post("/getAttributes", this.getAttributes);
+        this.router.post("/getInfo", this.getInfo);
     }
 
     logout = async (req, res) => {
@@ -158,6 +159,20 @@ export default class User {
                 success(res, "Attributes found", user.memory.data.attributes);
             }
             else fail(res, "Attributes up to date.");
+        }
+    }
+
+    getInfo = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.User.recallOne(req.session.currentUser);
+    
+            if (user.memory._lastUpdate > req.body._lastUpdate) {
+                success(res, "Info found", {
+                    email: user.memory.data.email,
+                    username: user.memory.data.username
+                });
+            }
+            else fail(res, "Info up to date.");
         }
     }
 }

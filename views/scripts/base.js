@@ -12,9 +12,7 @@ class Base {
             this.items = [];
             this.lastUpdate = 0;
     
-            <% if (user) { %>
-                this.refresh();
-            <% } %>
+            this.refresh();
         }
         
         async refresh() {
@@ -63,9 +61,7 @@ class Base {
             this.attributes = [];
             this.lastUpdate = 0;
 
-            <% if (user) { %>
-                this.refresh();
-            <% } %>
+            this.refresh();
         }
 
         async refresh() {
@@ -95,16 +91,19 @@ class Base {
         constructor() {
             this.username = "";
             this.email = "";
+            this.lastUpdate = 0;
             
-            <% if (user) { %>
-                this.username = "<%= user.username %>";
-                this.email = "<%= user.email %>";
-    
-                this.refresh();
-            <% } %>
+            this.refresh();
         }
     
-        refresh() {
+        async refresh() {
+            let response = await Base.commune("getInfo", { _lastUpdate: this.lastUpdate });
+            if (response.status === "success") {
+                this.lastUpdate = response.lastUpdate;
+                this.email = response.data.email;
+                this.username = response.data.username;
+            }
+
             let $email = $(".content#account .setting#email p");
             let $emailInput = $(".content#account .edit#email input");
             let $username = $(".content#account .setting#username p");
@@ -146,6 +145,7 @@ class Base {
             let response = await Base.commune("changeEmail", { email: $emailInput.val() });
     
             if (response.status === "success") {
+                this.email = $emailInput.val();
                 $email.text($emailInput.val());
                 $info.text("Email Updated.");
             }
@@ -182,6 +182,7 @@ class Base {
             let response = await Base.commune("changeUsername", { username: $usernameInput.val() });
     
             if (response.status === "success") {
+                this.username = $usernameInput.val();
                 $username.text($usernameInput.val());
                 $info.text("Username Updated.");
             }
@@ -197,6 +198,8 @@ class Base {
         this.playerAttributes = new this.#PlayerAttributes();
         this.playerAccount = new this.#AccountServices();
         this.menuClosing = false;
+
+        this.switchTab("inventory");
     }
 
     closeMenu = () => {
@@ -295,7 +298,3 @@ class Base {
         return response;
     }
 }
-
-const base = new Base();
-
-base.switchTab("inventory");
