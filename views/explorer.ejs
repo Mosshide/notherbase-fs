@@ -6,10 +6,9 @@
     <%- include("./menu.ejs", {user: user}); %>
 </div>
 
+<script src="/js/base.js"></script>
 <script>
     const currentRoute = "<%- route %>";
-
-    <%- include("./scripts/base.js", {user: user}); %>
 
     const base = new Base();
 </script>
