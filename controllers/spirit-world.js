@@ -1,8 +1,7 @@
 import express from "express";
 import { stripHtml } from "string-strip-html";
-import User from "./spirits/user.js";
-import Contact from "./spirits/contact.js";
 import { success, fail } from "./spirits/util.js";
+import User from "./spirits/user.js";
 import fs from 'fs';
 
 export default class SpiritWorld {
@@ -36,12 +35,10 @@ export default class SpiritWorld {
         this.io = io;
         this.router = express.Router();
         this.user = new User();
-        this.contact = new Contact();
 
+        this.router.post("/load", this.load);
         this.router.post("/serve", this.serve);
-        this.router.get("/load", this.load);
         this.router.use("/user", this.user.router);
-        this.router.use("/contact-nother", this.contact.router);
 
         this.io.on('connection', this.#setupChat);
     }
@@ -49,12 +46,12 @@ export default class SpiritWorld {
     load = async (req, res) => {
         let parent = null;
 
-        if (req.query.scope === "local") {
+        if (req.body.scope === "local") {
             let user = await req.db.User.recallOne(req.session.currentUser);
             parent = user.id;
         } 
 
-        let spirit = await req.db.Spirit.recallOne(req.query.service, parent);
+        let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
 
         if (!spirit.memory.data) spirit.memory.data = {};
 
@@ -63,7 +60,7 @@ export default class SpiritWorld {
 
     serve = async (req, res) => {
         try {
-            let scriptPath = `${req.contentPath}${req.body.data.route}/${req.body.data.script}.js`;
+            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
             
             let script, result = null;
 
@@ -74,7 +71,7 @@ export default class SpiritWorld {
                 result = await script.default(req, user);
                 success(res, "Served.", result);
             }
-            else fail(res, `Script not found: ${req.body.data.script} at ${scriptPath}`);
+            else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
         } catch (error) {
             console.log(error);
             fail(res, "Server error");

@@ -25,18 +25,18 @@ export default class User {
     }
 
     sendPasswordReset = async (req, res) => {
-        let spirit = await req.db.User.recallOne(req.body.data.email);
+        let spirit = await req.db.User.recallOne(req.body.email);
 
         if (spirit) {
             let token = Math.floor(Math.random() * 9999);
 
-            if (req.body.data.test) console.log("token: " + token);
+            if (req.body.test) console.log("token: " + token);
 
             spirit.memory.data.resetToken = token;
             spirit.memory.data.resetExp = Date.now() + (1000 * 60 * 10);
             await spirit.commit();
     
-            req.db.SendMail.passwordReset(req.body.data.email, token);
+            req.db.SendMail.passwordReset(req.body.email, token);
     
             success(res, "Password reset token sent.");
         }
@@ -44,18 +44,18 @@ export default class User {
     }
 
     changePassword = async (req, res) => {
-        if (check(res, req.body.data.token, "No token provided!")){
-            let spirit = await req.db.User.recallOne(req.body.data.email);
+        if (check(res, req.body.token, "No token provided!")){
+            let spirit = await req.db.User.recallOne(req.body.email);
     
             if (check(res, spirit, "User not found!") &&
-                check(res, spirit.memory.data.resetToken == req.body.data.token, "Reset token not valid!") &&
+                check(res, spirit.memory.data.resetToken == req.body.token, "Reset token not valid!") &&
                 check(res, spirit.memory.data.resetExp > Date.now(), "Reset token expired!") &&
-                check(res, req.body.data.password === req.body.data.confirmation, "Passwords must match!")) 
+                check(res, req.body.password === req.body.confirmation, "Passwords must match!")) 
             {
                 spirit.memory.data.resetExp = -1;
         
                 const salt = await bcrypt.genSalt(10);
-                const hash = await bcrypt.hash(req.body.data.password, salt);
+                const hash = await bcrypt.hash(req.body.password, salt);
         
                 spirit.memory.data.password = hash;
                 await spirit.commit();
@@ -66,14 +66,14 @@ export default class User {
     }
 
     register = async (req, res) => {
-        if (check(res, req.body.data.password.length > 7, "Password too short.") &&
-            check(res, req.body.data.email.length > 7, "Email too short.") &&
-            check(res, req.body.data.username.length > 2, "Username too short.")) 
+        if (check(res, req.body.password.length > 7, "Password too short.") &&
+            check(res, req.body.email.length > 7, "Email too short.") &&
+            check(res, req.body.username.length > 2, "Username too short.")) 
         {
-            let spirit = await req.db.User.recallOne(req.body.data.email);
+            let spirit = await req.db.User.recallOne(req.body.email);
     
             if (check(res, !spirit, "Email already in use!")) {
-                spirit = await req.db.User.create(req.body.data.username, req.body.data.password, req.body.data.email);
+                spirit = await req.db.User.create(req.body.username, req.body.password, req.body.email);
         
                 success(res, "Registration successful!");
             }
@@ -81,12 +81,13 @@ export default class User {
     }
 
     login = async (req, res) => {
-        let spirit = await req.db.User.recallOne(req.body.data.email);
+        let spirit = await req.db.User.recallOne(req.body.email);
+
         if (check(res, spirit, "User not found.")) {
-            let passResult = await bcrypt.compare(req.body.data.password, spirit.memory.data.password);
+            let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
             
             if (check(res, passResult, "Password doesn't match the email.")) {
-                req.session.currentUser = req.body.data.email;
+                req.session.currentUser = req.body.email;
         
                 success(res, "Logged in.", spirit.memory.data.username);
             }
@@ -95,15 +96,15 @@ export default class User {
 
     changeEmail = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.User.recallOne(req.body.data.email);
+            let spirit = await req.db.User.recallOne(req.body.email);
     
             if (check(res, !spirit, "Email already in use!")) {
                 spirit = await req.db.User.recallOne(req.session.currentUser);
         
-                spirit.memory.data.email = req.body.data.email;
+                spirit.memory.data.email = req.body.email;
                 await spirit.commit();
         
-                req.session.currentUser = req.body.data.email;
+                req.session.currentUser = req.body.email;
         
                 success(res, "Email changed.");
             }
@@ -112,12 +113,12 @@ export default class User {
 
     changeUsername = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.User.recallOne(null, req.body.data.username);
+            let spirit = await req.db.User.recallOne(null, req.body.username);
     
             if (check(res, !spirit, "Username already in use!")) {
                 spirit = await req.db.User.recallOne(req.session.currentUser);
         
-                spirit.memory.data.username = req.body.data.username;
+                spirit.memory.data.username = req.body.username;
                 await spirit.commit();
         
                 success(res, "Username changed");

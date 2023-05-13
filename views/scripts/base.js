@@ -1,13 +1,8 @@
 class Base {
-    static commune = async (route, data = null, options = null) => {
-        let body = { data, ...options };
-    
-        let response = null;
+    static commune = async (route, data = {}) => {
+        let response = await $.post("/s/user/" + route, JSON.stringify(data));
 
-        await $.post(route, JSON.stringify(body), (res) => {
-            response = res;
-            if (res.status != "success") console.log(`${route} - ${res.message}`);
-        });
+        if (response.status != "success") console.log(`${"/s/user/" + route} - ${response.message}`);
     
         return response;
     }
@@ -25,7 +20,7 @@ class Base {
         async refresh() {
             let $list = $(".inventory .item-list");
 
-            let response = await Base.commune("/s/user/getInventory", {}, { _lastUpdate: this.lastUpdate });
+            let response = await Base.commune("getInventory", { _lastUpdate: this.lastUpdate });
 
             if (response.status === "success") {
                 this.items = response.data;
@@ -74,7 +69,7 @@ class Base {
         }
 
         async refresh() {
-            let response = await Base.commune("/s/user/getAttributes", {}, { _lastUpdate: this.lastUpdate });
+            let response = await Base.commune("getAttributes", { _lastUpdate: this.lastUpdate });
             if (response.status === "success") {
                 this.lastUpdate = response.lastUpdate;
                 this.attributes = response.data;
@@ -148,7 +143,7 @@ class Base {
             let $email = $(".content#account .setting#email p");
             let $emailInput = $(".content#account .edit#email input");
 
-            let response = await Base.commune("/s/user/changeEmail", { email: $emailInput.val() });
+            let response = await Base.commune("changeEmail", { email: $emailInput.val() });
     
             if (response.status === "success") {
                 $email.text($emailInput.val());
@@ -184,7 +179,7 @@ class Base {
             let $username = $(".content#account .setting#username p");
             let $usernameInput = $(".content#account .edit#username input");
 
-            let response = await Base.commune("/s/user/changeUsername", { username: $usernameInput.val() });
+            let response = await Base.commune("changeUsername", { username: $usernameInput.val() });
     
             if (response.status === "success") {
                 $username.text($usernameInput.val());
@@ -237,22 +232,13 @@ class Base {
     }
     
     logout = async () => {
-        let response = await Base.commune("/s/user/logout");
+        let response = await Base.commune("logout");
 
         return response;
     }
-    
-    sendMessageToNother = async () => {
-        await Base.commune("contactNother", {
-            content: $(".menu .content#more #content").val(),
-            route: currentRoute
-        });
-    
-        $(".menu .content#more #content").val("");
-    }
 
     attemptRegister = async (email, username, password) => {
-        let response = await Base.commune("/s/user/register", { 
+        let response = await Base.commune("register", { 
             email, username, password 
         });
         
@@ -260,7 +246,7 @@ class Base {
     }
 
     attemptLogin = async (email, password) => {
-        let response = await Base.commune("/s/user/login", {
+        let response = await Base.commune("login", {
             email: email,
             password: password
         });
@@ -277,24 +263,25 @@ class Base {
     };
 
     resetPassword = async (email, test = false) => {
-        let response = await Base.commune("/s/user/sendPasswordReset", { email, test });
+        let response = await Base.commune("sendPasswordReset", { email, test });
         
         return response;
     }
 
     changePassword = async (token, email, password, confirmation) => {
-        let response = await Base.commune("/s/user/changePassword", { token, email, password, confirmation });
+        let response = await Base.commune("changePassword", { token, email, password, confirmation });
         
         return response;
     }
 
     do = async (what, data = null) => {
-        console.log(window.location.pathname);
-        let response = await Base.commune("/s/serve", {
+        let response = await $.post("/s/serve", JSON.stringify({ 
             script: what,
             route: window.location.pathname,
             ...data
-        });
+        }));
+
+        if (response.status != "success") console.log(`${window.location.pathname} - ${response.message}`);
 
         this.playerInventory.refresh();
         this.playerAttributes.refresh();
@@ -303,7 +290,7 @@ class Base {
     }
 
     load = async (service, scope = "local") => {
-        let response = await $.get("/s/load", { service, scope });
+        let response = await $.post("/s/load", JSON.stringify({ service, scope }));
 
         return response;
     }

@@ -40,4 +40,8 @@
     setInterval(moveNono, 2000);
 
     <%- include("./nono.js"); %>
+
+    base.load("test", "global").then((res) => {
+        console.log(res);
+    });
 </script>

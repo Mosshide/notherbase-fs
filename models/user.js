@@ -66,13 +66,11 @@ export default class User extends Spirit {
         return spirit;
     }
 
-    static delete = async (target) => {
+    static delete = async (email) => {
         let found = await Spirit.db.findAndDelete(Spirit.buildQuery({
-            route: "/",
             service: "user",
-            scope: "global",
             parent: null
-        }, { email: target }));
+        }, { email: email }));
 
         return found.deletedCount;
     }

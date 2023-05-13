@@ -29,28 +29,41 @@ export default class Creation {
 
     explore = async (req, res, next) => {
         let main = `${req.contentPath}`;
+        let route = "";
         let siteTitle = `NotherBase - `;
 
         if (req.params.frontDetail) {
-            main += `/the-front/${req.params.frontDetail}/index`;
+            route = `/the-front/${req.params.frontDetail}/index`;
             siteTitle += req.params.frontDetail;
         }
         else if (req.params.detail) {
-            main += `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
+            route = `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
             siteTitle += req.params.detail;
         }
         else if (req.params.poi) {
-            main += `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
+            route = `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
             siteTitle += req.params.poi;
         }
         else {
-            main += `/the-front/index`;
+            route = `/the-front/index`;
             siteTitle += "the-front";
         }
+        main += route;
 
         try {
             if (fs.existsSync(main + ".ejs")) {
                 let user = await req.db.User.recallOne(req.session.currentUser);
+
+                let stats = await req.db.Spirit.recallOne("stats");
+                if (stats.memory.data[route]) {
+                    stats.memory.data[route].visits++;
+                }
+                else {
+                    stats.memory.data[route] = {
+                        visits: 1
+                    }
+                }
+                await stats.commit();
 
                 let userStuff = {
                     userID: null,
@@ -67,7 +80,7 @@ export default class Creation {
                     siteTitle: siteTitle,
                     main: main,
                     query: req.query,
-                    dir: req.frontDir,
+                    // dir: req.frontDir,
                     route: req.path,
                     requireUser: req.lock
                 }
@@ -90,6 +103,17 @@ export default class Creation {
         try {
             if (fs.existsSync(main)) {
                 let user = await req.db.User.recallOne(req.session.currentUser);
+
+                let stats = await req.db.Spirit.recallOne("stats");
+                if (stats.memory.data[main]) {
+                    stats.memory.data[main].visits++;
+                }
+                else {
+                    stats.memory.data[main] = {
+                        visits: 1
+                    }
+                }
+                await stats.commit();
 
                 let userStuff = {
                     userID: null,

@@ -185,7 +185,7 @@ class NonoGame {
 
     tryFinishGame() {
         if (this.checkForSolve()) {
-            playerInventory.change(this.goldItem, this.level + this.difficulty);
+            base.do("add-gold");
 
             let $tiles = $(".nono-tile");
             $tiles.off("click");
