@@ -8,13 +8,13 @@ export default class Creation {
         //home
         this.router.get("/", function(req, res) { res.redirect("/the-front"); });
         //the-front
-        this.router.get(`/the-front`, this.explore);
-        this.router.get(`/the-front/:frontDetail`, this.explore);
+        this.router.get(`/the-front`, this.front, this.explore);
+        this.router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
         //pages
-        this.router.get(`/:page`, this.page);
+        this.router.get(`/:page`, this.page, this.explore);
         //explorer
-        this.router.get(`/:region/:area/:poi`, this.lock, this.explore);
-        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.explore);
+        this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
+        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
         //void
         this.router.use(function(req, res) { 
             console.log(req.path);
@@ -28,64 +28,30 @@ export default class Creation {
     }
 
     explore = async (req, res, next) => {
-        let main = `${req.contentPath}`;
-        let route = "";
-        let siteTitle = `NotherBase - `;
-
-        if (req.params.frontDetail) {
-            route = `/the-front/${req.params.frontDetail}/index`;
-            siteTitle += req.params.frontDetail;
-        }
-        else if (req.params.detail) {
-            route = `/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
-            siteTitle += req.params.detail;
-        }
-        else if (req.params.poi) {
-            route = `/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
-            siteTitle += req.params.poi;
-        }
-        else {
-            route = `/the-front/index`;
-            siteTitle += "the-front";
-        }
-        main += route;
-
         try {
-            if (fs.existsSync(main + ".ejs")) {
-                let user = await req.db.User.recallOne(req.session.currentUser);
-
+            if (fs.existsSync(req.main + ".ejs")) {
                 let stats = await req.db.Spirit.recallOne("stats");
-                if (stats.memory.data[route]) {
-                    stats.memory.data[route].visits++;
-                }
-                else {
-                    stats.memory.data[route] = {
-                        visits: 1
-                    }
-                }
+                if (stats.memory.data[req.path]) stats.memory.data[req.path].visits++;
+                else stats.memory.data[req.path] = { visits: 1 };
                 await stats.commit();
 
-                let userStuff = {
+                let context = {
                     userID: null,
                     user: null,
-                };
-
-                if (user) userStuff = {
-                    userID: user.id,
-                    user: user.memory.data,
-                };
-
-                let context = {
-                    ...userStuff,
-                    siteTitle: siteTitle,
-                    main: main,
+                    siteTitle: req.siteTitle,
+                    main: req.main,
                     query: req.query,
-                    // dir: req.frontDir,
                     route: req.path,
                     requireUser: req.lock
                 }
 
-                res.render(`explorer`, context);
+                let user = await req.db.User.recallOne(req.session.currentUser);
+                if (user) {
+                    context.userID = user.id;
+                    context.user = user.memory.data;
+                };
+
+                res.render(req.toRender, context);
             }
             else next();
         }
@@ -95,50 +61,38 @@ export default class Creation {
         }
     }
 
+    front = async (req, res, next) => {
+        req.main = req.contentPath + "/the-front/index";
+        req.siteTitle = "NotherBase - The Front";
+        req.toRender = "explorer";
+        next();
+    }
+
+    frontDetail = async (req, res, next) => {
+        req.main = `${req.contentPath}/the-front/${req.params.frontDetail}/index`;
+        req.siteTitle = `NotherBase - ${req.params.frontDetail}`;
+        req.toRender = "explorer";
+        next();
+    }
+
+    poi = async (req, res, next) => {
+        req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
+        req.siteTitle = `NotherBase - ${req.params.poi}`;
+        req.toRender = "explorer";
+        next();
+    }
+
+    detail = async (req, res, next) => {
+        req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
+        req.siteTitle = `NotherBase - ${req.params.detail}`;
+        req.toRender = "explorer";
+        next();
+    }
+
     page = async (req, res, next) => {
-        let main = `${req.contentPath}`;
-
-        main += `/pages/${req.params.page}/index.ejs`;
-
-        try {
-            if (fs.existsSync(main)) {
-                let user = await req.db.User.recallOne(req.session.currentUser);
-
-                let stats = await req.db.Spirit.recallOne("stats");
-                if (stats.memory.data[main]) {
-                    stats.memory.data[main].visits++;
-                }
-                else {
-                    stats.memory.data[main] = {
-                        visits: 1
-                    }
-                }
-                await stats.commit();
-
-                let userStuff = {
-                    userID: null,
-                    user: null
-                };
-
-                if (user) userStuff = {
-                    userID: user.id,
-                    user: user.memory.data
-                };
-
-                let context = {
-                    ...userStuff,
-                    query: req.query,
-                    dir: req.frontDir,
-                    route: req.path
-                }
-
-                res.render(main, context);
-            }
-            else next();
-        }
-        catch(err) {
-            console.log(err);
-            res.status(500).end();
-        }
+        req.main = `${req.contentPath}/pages/${req.params.page}/index`;
+        req.siteTitle = `${req.params.page}`;
+        req.toRender = req.main;
+        next();
     }
 }
