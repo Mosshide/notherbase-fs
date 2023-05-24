@@ -44,18 +44,24 @@ export default class SpiritWorld {
     }
 
     load = async (req, res) => {
-        let parent = null;
+        try {
+            let parent = null;
 
-        if (req.body.scope === "local") {
-            let user = await req.db.User.recallOne(req.session.currentUser);
-            parent = user.id;
-        } 
+            if (req.body.scope === "local") {
+                let user = await req.db.User.recallOne(req.session.currentUser);
+                if (user?.id) parent = user.id;
+                else console.log("User had no id on load(): ", user);
+            } 
 
-        let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
+            let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
 
-        if (!spirit.memory.data) spirit.memory.data = {};
+            if (!spirit.memory.data) spirit.memory.data = {};
 
-        res.send(spirit.memory.data);
+            res.send(spirit.memory.data);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
     }
 
     serve = async (req, res) => {
