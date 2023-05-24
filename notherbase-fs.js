@@ -13,6 +13,9 @@ const __dirname = fileURLToPath(new URL('./', import.meta.url));
 import Creation from "./controllers/creation.js";
 import SpiritWorld from "./controllers/spirit-world.js";
 
+/**
+ * The engine that runs a nother base.
+ */
 class NotherBaseFS {
     constructor(contentPath) {
         this.app = express();

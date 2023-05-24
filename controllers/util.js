@@ -3,7 +3,7 @@
  * @param {Object} res An Express.js response.
  * @param {*} checkee What to check against.    
  * @param {String} failMsg Message to send in a potential failure response.
- * @returns 
+ * @returns True or false.
  */
 export const check = (res, checkee, failMsg = "Failed!") => {
     if (!checkee) {

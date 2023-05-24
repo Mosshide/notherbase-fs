@@ -1,20 +1,11 @@
-.inventory {
-    border: 1px solid var(--textColor);
-    color: var(--textColor);
-    width: 100%;
-    height: 100%;
-    padding: 5px;
-    z-index: 500;
-    overflow: auto;
-}
-
 .inventory .item-list {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    overflow: auto;
-    border: 1px solid var(--textColor);
+    border: none;
     align-content: flex-start;
+    justify-content: center;
+    padding: 0;
 }
 
 .inventory .item-spawner {
@@ -38,26 +29,48 @@
 }
 
 .item-card {
-    width: 150px;
-    height: 45px;
-    border-radius: 3px;
-    border: 1px solid var(--textColor);
-    padding: 5px;
-    margin: 2.5px;
-    position: relative;
+    margin: var(--margin);
+    width: var(--fillFromMargin);
+    height: 70px;
+    border: var(--standardBorder);
     background-color: var(--bgColor);
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
-.item-card button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin: 0;
-    padding: 0;
-    border-radius: 0;
+.item-card h5 {
+    width: 70%;
+    text-align: left;
+    padding: 5px;
+}
+
+.item-card p {
+    width: 27%;
+    text-align: right;
 }
 
 .item-card hr {
-    width: 100%;
+    border: none;
+    border-right: var(--standardBorder);
+    height: 100%;
+    width: 1px;
     margin: 0;
+}
+
+.item-card button {
+    margin: 0;
+    padding: 0 3px;
+    border-radius: 0;
+    border-bottom: none;
+    height: 50%;
+    width: 75px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: none;
+}
+
+@media only screen and (max-width: 1000px) {
+
 }
