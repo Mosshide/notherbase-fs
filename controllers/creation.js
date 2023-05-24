@@ -1,6 +1,9 @@
 import express from "express";
 import fs from 'fs';
 
+/**
+ * Creation is all the renedered pages in a base.
+ */
 export default class Creation {
     constructor() {
         this.router = express.Router();
@@ -18,7 +21,7 @@ export default class Creation {
         //explorer
         this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
-        
+
         //void
         this.router.use(function(req, res) { 
             console.log(req.path);
@@ -26,11 +29,23 @@ export default class Creation {
         });
     }
 
+    /**
+     * This middleware requires a user to login to access affected routes.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     lock = (req, res, next) => {
         req.lock = true;
         next();
     }
 
+    /**
+     * This route renders a page and sends it to the client.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     explore = async (req, res, next) => {
         try {
             if (fs.existsSync(req.main + ".ejs")) {
@@ -61,10 +76,16 @@ export default class Creation {
         }
         catch(err) {
             console.log(err);
-            res.status(500).end();
+            res.status(500).send("Server Error");
         }
     }
 
+    /**
+     * This middleware directs exploration to the front.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     front = async (req, res, next) => {
         req.main = req.contentPath + "/the-front/index";
         req.siteTitle = "NotherBase - The Front";
@@ -72,6 +93,12 @@ export default class Creation {
         next();
     }
 
+    /**
+     * This middleware directs exploration to a detail in the front.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     frontDetail = async (req, res, next) => {
         req.main = `${req.contentPath}/the-front/${req.params.frontDetail}/index`;
         req.siteTitle = `NotherBase - ${req.params.frontDetail}`;
@@ -79,6 +106,12 @@ export default class Creation {
         next();
     }
 
+    /**
+     * This middleware directs exploration to a point of interest.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     poi = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
         req.siteTitle = `NotherBase - ${req.params.poi}`;
@@ -86,6 +119,12 @@ export default class Creation {
         next();
     }
 
+    /**
+     * This middleware directs exploration to a detail.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     detail = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
         req.siteTitle = `NotherBase - ${req.params.detail}`;
@@ -93,6 +132,12 @@ export default class Creation {
         next();
     }
 
+    /**
+     * This middleware directs exploration to a one-off page.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     * @param {Function} next next()
+     */
     page = async (req, res, next) => {
         req.main = `${req.contentPath}/pages/${req.params.page}/index`;
         req.siteTitle = `${req.params.page}`;
