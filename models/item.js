@@ -1,6 +1,13 @@
 import Spirit from "./spirit.js";
 
 export default class Item extends Spirit {
+    /**
+     * Creates an item in the database.
+     * @param {String} name The item name.
+     * @param {String} short A short descrption.
+     * @param {String} long A long description.
+     * @returns The item created.
+     */
     static create = async (name, short, long) => {
         let spirit = new Item(name);
 
@@ -18,8 +25,12 @@ export default class Item extends Spirit {
         return spirit;
     }
 
+    /**
+     * Recalls all items.
+     * @returns The items found or null.
+     */
     static recallAll = async () => {
-        let spirit = new Item();
+        let items = new Item();
 
         let found = await Spirit.db.find({
             service: "items",
@@ -27,13 +38,18 @@ export default class Item extends Spirit {
         });
 
         if (found) {
-            spirit.memory = found;
+            items.memory = found;
             
-            return spirit;
+            return items;
         }
         else return null;
     }
 
+    /**
+     * Recalls one item by name.
+     * @param {String} name The item name.
+     * @returns The item found or null.
+     */
     static recallOne = async (name) => {
         let spirit = new Item(name);
 
@@ -49,6 +65,11 @@ export default class Item extends Spirit {
         else return null;
     }
 
+    /**
+     * Deletes items by name.
+     * @param {String} name The item name.
+     * @returns Number of documents deleted.
+     */
     static delete = async (name) => {
         let found = await Spirit.db.findAndDelete(Spirit.buildQuery("items", { name }));
 
