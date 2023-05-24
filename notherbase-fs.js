@@ -51,6 +51,7 @@ class NotherBaseFS {
             saveUninitialized: false
         }));
 
+        //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
             req.db = Models;
             req.contentPath = contentPath;
@@ -58,10 +59,13 @@ class NotherBaseFS {
             next();
         });
 
+        //spirit world routes
         this.app.use("/s", this.spiritWorld.router);
         
+        //all actual pages
         this.app.use("/", this.creation.router);
     
+        //start the server
         this.server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);
             this.started = true;

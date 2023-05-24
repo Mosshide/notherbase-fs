@@ -2,31 +2,42 @@ import Spirit from "./spirit.js";
 import Item from "./item.js";
 import bcrypt from "bcrypt";
 
+/**
+ * A user spirit.
+ * @extends Spirit
+ */
 export default class User extends Spirit {
+    /**
+     * Recalls one user from the database.
+     * @param {String} email Email address of the user.
+     * @param {String} username The user's name.
+     * @param {ObjectID} id The MongoDB id of the user.
+     * @returns A user found or null.
+     */
     static recallOne = async (email = null, username = null, id = null) => {
-        let spirit = new User(email, id);
+        let user = new User(email, id);
 
         let query = null;
 
-        if (email) {
-            query = Spirit.buildQuery("user", { email: email });
+        if (id) {
+            query = Spirit.buildQuery("user", null, null, id);
         }
         else if (username) {
             query = Spirit.buildQuery("user", { username: username });
         }
-        else if (id) {
-            query = Spirit.buildQuery("user", null, null, id);
+        else if (email) {
+            query = Spirit.buildQuery("user", { email: email });
         }
+        else return null;
         
-        let found = null;
-
-        if (query) found = await Spirit.db.findOne(query);
+        let found = await Spirit.db.findOne(query);
 
         if (found) {
-            spirit.memory = found;
-            spirit.id = found._id;
+            user.memory = found;
+            user.id = found._id;
+            user.email = found.data.email;
             
-            return spirit;
+            return user;
         }
         else return null;
     }

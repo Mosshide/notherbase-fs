@@ -7,14 +7,18 @@ export default class Creation {
 
         //home
         this.router.get("/", function(req, res) { res.redirect("/the-front"); });
+
         //the-front
         this.router.get(`/the-front`, this.front, this.explore);
         this.router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
+
         //pages
         this.router.get(`/:page`, this.page, this.explore);
+
         //explorer
         this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
+        
         //void
         this.router.use(function(req, res) { 
             console.log(req.path);
