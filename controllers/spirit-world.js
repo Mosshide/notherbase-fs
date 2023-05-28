@@ -22,8 +22,6 @@ export default class SpiritWorld {
                 ]
             }
         }
-
-        console.log(this.rooms[socket.handshake.query.room]);
     
         this.io.to(socket.handshake.query.room).emit("chat message", {
             name: "Server",

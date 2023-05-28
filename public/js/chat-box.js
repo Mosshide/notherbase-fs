@@ -72,7 +72,7 @@ class ChatBox {
     render() {
         this.$div.empty();
 
-        this.$header = $(`<h4>Chatting with the name ${this.username}:`).appendTo(this.$div);
+        this.$header = $(`<h4>Chatting with the name ${this.username}:</h4>`).appendTo(this.$div);
         this.$chatLog = $(`<div class="chat-log"></div>`).appendTo(this.$div);
         this.$users = $(`<ul class="users"></ul>`).appendTo(this.$div);
         this.$entry = $(`<input autocomplete="off" type="text" class="chat-entry">`).appendTo(this.$div);

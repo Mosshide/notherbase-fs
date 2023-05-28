@@ -62,4 +62,5 @@
     width: 20%;
     height: 300px;
     border: var(--standardBorder);
+    margin: 0;
 }
