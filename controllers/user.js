@@ -2,6 +2,9 @@ import express from "express";
 import bcrypt from "bcrypt";
 import { check, success, fail, loginCheck } from "./util.js";
 
+/**
+ * API routes for user functions.
+ */
 export default class User {
     constructor() {
         this.router = express.Router();
@@ -19,12 +22,22 @@ export default class User {
         this.router.post("/getInfo", this.getInfo);
     }
 
+    /**
+     * Logs the user out.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     logout = async (req, res) => {
         await req.session.destroy();
 
         success(res, "Logged out.");
     }
 
+    /**
+     * Sends an email with a password reset code.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     sendPasswordReset = async (req, res) => {
         let spirit = await req.db.User.recallOne(req.body.email);
 
@@ -44,6 +57,11 @@ export default class User {
         else fail(res, "User not found.");
     }
 
+    /**
+     * Change a user's password.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     changePassword = async (req, res) => {
         if (check(res, req.body.token, "No token provided!")){
             let spirit = await req.db.User.recallOne(req.body.email);
@@ -66,6 +84,11 @@ export default class User {
         }
     }
 
+    /**
+     * Register a new user account.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     register = async (req, res) => {
         if (check(res, req.body.password.length > 7, "Password too short.") &&
             check(res, req.body.email.length > 7, "Email too short.") &&
@@ -81,6 +104,11 @@ export default class User {
         }
     }
 
+    /**
+     * Logs a user in.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     login = async (req, res) => {
         let spirit = await req.db.User.recallOne(req.body.email);
 
@@ -95,6 +123,11 @@ export default class User {
         }
     }
 
+    /**
+     * Changes a user's email address on file.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     changeEmail = async (req, res) => {
         if (loginCheck(req, res)) {
             let spirit = await req.db.User.recallOne(req.body.email);
@@ -112,6 +145,11 @@ export default class User {
         }
     }
 
+    /**
+     * Changes a user's display name.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     changeUsername = async (req, res) => {
         if (loginCheck(req, res)) {
             let spirit = await req.db.User.recallOne(null, req.body.username);
@@ -127,6 +165,11 @@ export default class User {
         }
     }
 
+    /**
+     * Deletes a user account premanently.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     deletePermanently = async (req, res) => {
         if (loginCheck(req, res)) {
             let deleted = await req.db.User.delete(req.session.currentUser);
@@ -139,40 +182,59 @@ export default class User {
         }
     }
 
+    /**
+     * Gets a user's inventory.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     getInventory = async (req, res) => {
         if (loginCheck(req, res)) {
             let spirit = await req.db.User.recallOne(req.session.currentUser);
-            if (spirit.memory._lastUpdate > req.body._lastUpdate) {
-                let inv = spirit.memory.data.inventory;
-            
-                success(res, "Inventory found", inv, spirit.memory._lastUpdate);
+
+            if (check(res, spirit, "Account not found!")) {
+                if (check(res, spirit.memory._lastUpdate > req.body._lastUpdate, "Inventory up to date.")) {
+                    let inv = spirit.memory.data.inventory;
+                
+                    success(res, "Inventory found", inv, spirit.memory._lastUpdate);
+                }
             }
-            else fail(res, "Inventory up to date.");
         }
     }
 
+    /**
+     * Gets a user attributes.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     getAttributes = async (req, res) => {
         if (loginCheck(req, res)) {
             let user = await req.db.User.recallOne(req.session.currentUser);
     
-            if (user.memory._lastUpdate > req.body._lastUpdate) {
-                success(res, "Attributes found", user.memory.data.attributes);
+            if(check(res, user, "Account not found!")) {
+                if (check(res, user.memory._lastUpdate > req.body._lastUpdate, "Attributes up to date.")) {
+                    success(res, "Attributes found", user.memory.data.attributes);
+                }
             }
-            else fail(res, "Attributes up to date.");
         }
     }
 
+    /**
+     * Gets basic account information.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
     getInfo = async (req, res) => {
         if (loginCheck(req, res)) {
             let user = await req.db.User.recallOne(req.session.currentUser);
     
-            if (user.memory._lastUpdate > req.body._lastUpdate) {
-                success(res, "Info found", {
-                    email: user.memory.data.email,
-                    username: user.memory.data.username
-                });
+            if (check(res, user, "Account not found!")) {
+                if (check(res, user.memory._lastUpdate > req.body._lastUpdate, "Info up to date.")) {
+                    success(res, "Info found", {
+                        email: user.memory.data.email,
+                        username: user.memory.data.username
+                    });
+                }
             }
-            else fail(res, "Info up to date.");
         }
     }
 }

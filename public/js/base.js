@@ -1,4 +1,10 @@
 class Base {
+    /**
+     * Communes with the user spirit for easy access to those functions.
+     * @param {String} route /s/user/[route]
+     * @param {Object} data Data to send with the communion.
+     * @returns Communion response.
+     */
     static commune = async (route, data = {}) => {
         let response = await $.post("/s/user/" + route, JSON.stringify(data));
 
@@ -7,6 +13,9 @@ class Base {
         return response;
     }
 
+    /**
+     * The player's inventory.
+     */
     #Inventory = class Inventory {
         constructor() {
             this.items = [];
@@ -15,6 +24,9 @@ class Base {
             this.refresh();
         }
         
+        /**
+         * Reloads the inventory.
+         */
         async refresh() {
             let $list = $(".inventory .item-list");
 
@@ -42,12 +54,19 @@ class Base {
             }
         }
         
+        /**
+         * Clears the error on screen.
+         */
         clearError() {
             let $error = $("#inventory #error");
 
             $error.addClass("invisible");
         }
     
+        /**
+         * Shows an error on screen.
+         * @param {String} text The error message.
+         */
         setError(text) {
             let $error = $("#inventory #error");
 
@@ -56,6 +75,9 @@ class Base {
         }
     }
 
+    /**
+     * The player's attributes.
+     */
     #PlayerAttributes = class PlayerAttributes {
         constructor() {
             this.attributes = [];
@@ -64,6 +86,9 @@ class Base {
             this.refresh();
         }
 
+        /**
+         * Reloads the player's attributes.
+         */
         async refresh() {
             let response = await Base.commune("getAttributes", { _lastUpdate: this.lastUpdate });
             if (response.status === "success") {
@@ -74,6 +99,9 @@ class Base {
             }
         }
 
+        /**
+         * Renders the attributes.
+         */
         render() {
             let $content = $(".menu .content#player");
 
@@ -87,6 +115,9 @@ class Base {
         }
     }
 
+    /**
+     * Services for the player's account.
+     */
     #AccountServices = class AccountServices {
         constructor() {
             this.username = "";
@@ -96,6 +127,9 @@ class Base {
             this.refresh();
         }
     
+        /**
+         * Reloads the player's basic info.
+         */
         async refresh() {
             let response = await Base.commune("getInfo", { _lastUpdate: this.lastUpdate });
             if (response.status === "success") {
@@ -118,6 +152,9 @@ class Base {
             $(".content#account #please-login").addClass("invisible");
         }
     
+        /**
+         * Initiates email editing.
+         */
         editEmail() {
             let $emailSetting = $(".content#account .setting#email");
             let $emailEdit = $(".content#account .edit#email");
@@ -126,6 +163,9 @@ class Base {
             $emailEdit.removeClass("invisible");
         }
     
+        /**
+         * Cancels editing the email.
+         */
         cancelEmail() {
             let $email = $(".content#account .setting#email p");
             let $emailSetting = $(".content#account .setting#email");
@@ -137,6 +177,9 @@ class Base {
             $emailInput.val($email.text());
         }
     
+        /**
+         * Confirms and submits an email edit.
+         */
         async updateEmail() {
             let $info = $(".content#account #info");
             let $email = $(".content#account .setting#email p");
@@ -155,6 +198,9 @@ class Base {
             this.cancelEmail();
         }
     
+        /**
+         * Initiates username editing.
+         */
         editUsername() {
             let $usernameSetting = $(".content#account .setting#username");
             let $usernameEdit = $(".content#account .edit#username");
@@ -163,6 +209,9 @@ class Base {
             $usernameEdit.removeClass("invisible");
         }
     
+        /**
+         * Cancels username editing.
+         */
         cancelUsername() {
             let $usernameSetting = $(".content#account .setting#username");
             let $usernameEdit = $(".content#account .edit#username");
@@ -174,6 +223,9 @@ class Base {
             $usernameInput.val($username.text());
         }
     
+        /**
+         * Confirms and submits a username edit.
+         */
         async updateUsername() {
             let $info = $(".content#account #info");
             let $username = $(".content#account .setting#username p");
@@ -202,6 +254,9 @@ class Base {
         this.switchTab("inventory");
     }
 
+    /**
+     * Closes the menu.
+     */
     closeMenu = () => {
         let $menu = $(".ui .menu");
         let $fade = $(".ui .fade");
@@ -218,6 +273,9 @@ class Base {
         }
     }
 
+    /**
+     * Opens the menu.
+     */
     openMenu = () => {
         let $menu = $(".ui .menu");
         let $fade = $(".ui .fade");
@@ -227,6 +285,10 @@ class Base {
         $fade.removeClass("invisible");
     }
 
+    /**
+     * Switches tabs in the menu.
+     * @param {String} id The name of the tab to switch to.
+     */
     switchTab = function switchTab(id) {
         $("#content-window .content").addClass("invisible");
         $(".menu .tabs button").removeClass("selected");
@@ -234,12 +296,23 @@ class Base {
         $(`.menu .tabs #${id}`).addClass("selected");
     }
     
+    /**
+     * Communes to logout.
+     * @returns Communion response.
+     */
     logout = async () => {
         let response = await Base.commune("logout");
 
         return response;
     }
 
+    /**
+     * Communes to register a new account.
+     * @param {String} email The user's email address.
+     * @param {String} username The user's display name.
+     * @param {String} password The user's ****.
+     * @returns Communion response.
+     */
     attemptRegister = async (email, username, password) => {
         let response = await Base.commune("register", { 
             email, username, password 
@@ -248,6 +321,12 @@ class Base {
         return response;
     }
 
+    /**
+     * Communes to login.
+     * @param {String} email The user's email address.
+     * @param {String} password The user's password.
+     * @returns Communion response.
+     */
     attemptLogin = async (email, password) => {
         let response = await Base.commune("login", {
             email: email,
@@ -265,18 +344,38 @@ class Base {
         return response;
     };
 
+    /**
+     * Communes to send a password reset email.
+     * @param {String} email The user's email.
+     * @param {Boolean} test Debug mode
+     * @returns Communion response.
+     */
     resetPassword = async (email, test = false) => {
         let response = await Base.commune("sendPasswordReset", { email, test });
         
         return response;
     }
 
+    /**
+     * Communes to finalize a password change.
+     * @param {Number} token The password reset token.
+     * @param {String} email The user's email address.
+     * @param {String} password The user's new password.
+     * @param {String} confirmation Confirmation of the user's new password.
+     * @returns Communion response.
+     */
     changePassword = async (token, email, password, confirmation) => {
         let response = await Base.commune("changePassword", { token, email, password, confirmation });
         
         return response;
     }
 
+    /**
+     * Runs a script on the server.
+     * @param {String} what The script to run.
+     * @param {Object} data Data to send as input for the script.
+     * @returns Communion response.
+     */
     do = async (what, data = null) => {
         let response = await $.post("/s/serve", JSON.stringify({ 
             script: what,
@@ -292,6 +391,12 @@ class Base {
         return response;
     }
 
+    /**
+     * Loads a certain spirit.
+     * @param {String} service The name of the spirit to load.
+     * @param {String} scope Defaults to local, else global.
+     * @returns Spirit world response.
+     */
     load = async (service, scope = "local") => {
         let response = await $.post("/s/load", JSON.stringify({ service, scope }));
 

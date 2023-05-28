@@ -1,5 +1,10 @@
 import nodemailer from "nodemailer";
 
+/**
+ * Sends an email with a password reset code. WIP
+ * @param {String} toEmail Email address to send to.
+ * @param {Number} resetToken Token to reset by.
+ */
 const passwordReset = async (toEmail, resetToken) => {
     var transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -21,9 +26,14 @@ const passwordReset = async (toEmail, resetToken) => {
     });
 };
 
+/**
+ * Sends an email. WIP
+ * @param {String} toEmail Email Address to send to.
+ * @param {String} subject Subject of the email.   
+ * @param {String} html Body of the email.
+ * @returns 
+ */
 const send = async (toEmail, subject, html) => {
-    console.log("dfhd");
-
     var transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -43,6 +53,5 @@ const send = async (toEmail, subject, html) => {
         if (error) console.log(error);
     });
 }
-
 
 export default { passwordReset, send };

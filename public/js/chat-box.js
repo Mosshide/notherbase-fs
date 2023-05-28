@@ -1,3 +1,6 @@
+/**
+ * Creates a chat box from a div.chat-box.
+ */
 class ChatBox {
     constructor(username, room) {
         this.socket = null;
@@ -20,6 +23,10 @@ class ChatBox {
         this.render();
     }
 
+    /**
+     * Renders a new message in the chat.
+     * @param {Object} msg An object including the text to render.
+     */
     newMessage = (msg) => {
         let time = new Date(msg.time);
         this.$chatLog.append(`<p>[${time.toLocaleTimeString('en-US')}] ${msg.name}: ${msg.text}</p>`);
@@ -32,6 +39,10 @@ class ChatBox {
         }
     }
 
+    /**
+     * Updates info about the chat room in the chat box.
+     * @param {Object} msg An object including the users in the room.
+     */
     updateInfo = (msg) => {
         this.$users.empty();
         for (let i = 0; i < msg.data.users.length; i++) {
@@ -39,6 +50,9 @@ class ChatBox {
         }
     }
 
+    /**
+     * Sends a new chat message to the server.
+     */
     sendMessage = () => {
         if (this.$entry.val() !== ""){
             let val = this.$entry.val();
@@ -52,6 +66,9 @@ class ChatBox {
         }
     }
 
+    /**
+     * Renders necessary child elements.
+     */
     render() {
         this.$div.empty();
 

@@ -2,45 +2,61 @@ import Spirit from "./spirit.js";
 import Item from "./item.js";
 import bcrypt from "bcrypt";
 
+/**
+ * A user spirit.
+ * @extends Spirit
+ */
 export default class User extends Spirit {
+    /**
+     * Recalls one user from the database.
+     * @param {String} email Email address of the user.
+     * @param {String} username The user's name.
+     * @param {ObjectID} id The MongoDB id of the user.
+     * @returns A user found or null.
+     */
     static recallOne = async (email = null, username = null, id = null) => {
-        let spirit = new User(email, id);
+        let user = new User(email, id);
 
         let query = null;
 
-        if (email) {
-            query = Spirit.buildQuery("user", { email: email });
+        if (id) {
+            query = Spirit.buildQuery("user", null, null, id);
         }
         else if (username) {
             query = Spirit.buildQuery("user", { username: username });
         }
-        else if (id) {
-            query = Spirit.buildQuery("user", null, null, id);
+        else if (email) {
+            query = Spirit.buildQuery("user", { email: email });
         }
+        else return null;
         
-        let found = null;
-
-        if (query) found = await Spirit.db.findOne(query);
+        let found = await Spirit.db.findOne(query);
 
         if (found) {
-            spirit.memory = found;
-            spirit.id = found._id;
+            user.memory = found;
+            user.id = found._id;
+            user.email = found.data.email;
             
-            return spirit;
+            return user;
         }
         else return null;
     }
 
+    /**
+     * Creates one user in the database.
+     * @param {String} email Email address of the user.
+     * @param {String} password The user's ****.
+     * @param {String} username The user's name.
+     * @returns The user created.
+     */
     static create = async (username, password, email) => {
-        let spirit = new User(email);
+        let user = new User(email);
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
 
-        spirit.memory = await Spirit.db.create({
-            route: "/",
+        user.memory = await Spirit.db.create({
             service: "user",
-            scope: "global",
             parent: null,
             _lastUpdate: Date.now(),
             data: {
@@ -63,9 +79,14 @@ export default class User extends Spirit {
             }
         });
 
-        return spirit;
+        return user;
     }
 
+    /**
+     * Delete a user account.
+     * @param {String} email Email address of the account to delete.
+     * @returns 
+     */
     static delete = async (email) => {
         let found = await Spirit.db.findAndDelete(Spirit.buildQuery({
             service: "user",
@@ -81,6 +102,12 @@ export default class User extends Spirit {
         this.id = id;
     }
 
+    /**
+     * Attempts to offset the user's inventory of a certain item.
+     * @param {String} name The item's name.
+     * @param {Number} offset The amount to offset by.
+     * @returns True if successful.
+     */
     offsetItem = async (name, offset) => {
         let item = await Item.recallOne(name);
     
@@ -122,12 +149,24 @@ export default class User extends Spirit {
         else return false;
     }
 
+    /**
+     * Tests if an attribute meets a requirement.
+     * @param {String} check The attribute to check.
+     * @param {Number} against The number to meet.
+     * @returns 
+     */
     checkAttribute = async (check, against) => {
         let att = this.memory.data.attributes;
     
         return att[check] >= against;
     }
 
+    /**
+     * Sets a user's attribute score.
+     * @param {String} change The attribute to change.
+     * @param {Number} to The number to set it to.
+     * @returns Attributes set
+     */
     setAttribute = async (change, to) => {
         let att = this.memory.data.attributes;
     
@@ -138,6 +177,12 @@ export default class User extends Spirit {
         return "Attributes set.";
     }
 
+    /**
+     * Increments a user's attribute by one.
+     * @param {String} change The attribute to increment.
+     * @param {Number} max The ceiling.
+     * @returns The resulting attribute score.
+     */
     incrementAttribute = async (change, max) => {
         let att = this.memory.data.attributes;
     

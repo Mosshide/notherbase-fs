@@ -1,10 +1,17 @@
 import express from "express";
 import { stripHtml } from "string-strip-html";
-import { success, fail } from "./spirits/util.js";
-import User from "./spirits/user.js";
+import { success, fail } from "./util.js";
+import User from "./user.js";
 import fs from 'fs';
 
+/**
+* The spirit world is the API of a base.
+*/
 export default class SpiritWorld {
+    /**
+     * Sets up socket.io for instant messaging and etc.
+     * @param {*} socket 
+     */
     #setupChat = (socket) => {
         socket.join(socket.handshake.query.room);
         if (this.rooms[socket.handshake.query.room]) this.rooms[socket.handshake.query.room].users.push(socket.handshake.query.name);
@@ -61,6 +68,10 @@ export default class SpiritWorld {
         });
     }
 
+    /**
+     * Sets up the spirit world.
+     * @param {Server} io 
+     */
     constructor(io) {
         this.io = io;
         this.rooms = {};
@@ -75,6 +86,11 @@ export default class SpiritWorld {
         this.io.on('connection', this.#setupChat);
     }
 
+    /**
+     * This API route requests a spirit from the database.
+     * @param {Object} req 
+     * @param {Object} res 
+     */
     load = async (req, res) => {
         try {
             let parent = null;
@@ -82,20 +98,23 @@ export default class SpiritWorld {
             if (req.body.scope === "local") {
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 if (user?.id) parent = user.id;
-                else console.log("User had no id on load(): ", user);
+                else throw new Error("User had no id on load(): ", user);
             } 
 
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
 
-            if (!spirit.memory.data) spirit.memory.data = {};
-
-            res.send(spirit.memory.data);
+            res.send(spirit.memory.data ? spirit.memory.data : {});
         } catch (error) {
             console.log(error);
             fail(res, "Server error");
         }
     }
 
+    /**
+     * This API route runs a script on the server. Responds with the result.
+     * @param {Object} req 
+     * @param {Object} res 
+     */
     serve = async (req, res) => {
         try {
             let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;

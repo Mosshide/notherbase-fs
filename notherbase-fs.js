@@ -13,6 +13,9 @@ const __dirname = fileURLToPath(new URL('./', import.meta.url));
 import Creation from "./controllers/creation.js";
 import SpiritWorld from "./controllers/spirit-world.js";
 
+/**
+ * The engine that runs a nother base.
+ */
 class NotherBaseFS {
     constructor(contentPath) {
         this.app = express();
@@ -51,6 +54,7 @@ class NotherBaseFS {
             saveUninitialized: false
         }));
 
+        //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
             req.db = Models;
             req.contentPath = contentPath;
@@ -58,10 +62,13 @@ class NotherBaseFS {
             next();
         });
 
+        //spirit world routes
         this.app.use("/s", this.spiritWorld.router);
         
+        //all actual pages
         this.app.use("/", this.creation.router);
     
+        //start the server
         this.server.listen(process.env.PORT, function () {
             console.log(`Server started at ${process.env.PORT}`);
             this.started = true;
