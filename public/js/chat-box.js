@@ -16,6 +16,7 @@ class ChatBox {
         });
 
         this.socket.on('chat message', this.newMessage);
+        this.socket.on('chat info', this.updateInfo);
         this.render();
     }
 
@@ -28,6 +29,13 @@ class ChatBox {
             for (let i = 0; i < msgs.length - this.maxMessages; i++) {
                 msgs[i].remove();
             }
+        }
+    }
+
+    updateInfo = (msg) => {
+        this.$users.empty();
+        for (let i = 0; i < msg.data.users.length; i++) {
+            this.$users.append(`<li>${msg.data.users[i]}</li>`);
         }
     }
 
@@ -47,15 +55,13 @@ class ChatBox {
     render() {
         this.$div.empty();
 
-        this.$div.append(`<h4>Chatting with the name ${this.username}:`);
-        this.$div.append(`<div class="chat-log"> </div>`);
-        this.$div.append(`<input autocomplete="off" type="text" class="chat-entry">`);
-        this.$div.append(`<button class="chat-send">Send</button>`);
+        this.$header = $(`<h4>Chatting with the name ${this.username}:`).appendTo(this.$div);
+        this.$chatLog = $(`<div class="chat-log"></div>`).appendTo(this.$div);
+        this.$users = $(`<ul class="users"></ul>`).appendTo(this.$div);
+        this.$entry = $(`<input autocomplete="off" type="text" class="chat-entry">`).appendTo(this.$div);
+        this.$send = $(`<button class="chat-send">Send</button>`).appendTo(this.$div);
 
-        this.$chatLog = this.$div.find(".chat-log");
-        this.$entry = this.$div.find(".chat-entry");
-
-        this.$div.find("button").on("click", this.sendMessage);
+        this.$send.on("click", this.sendMessage);
         this.$entry.on("keyup", (e) => {
             if (e.keyCode == 13) this.sendMessage();
         });

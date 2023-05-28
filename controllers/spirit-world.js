@@ -7,11 +7,29 @@ import fs from 'fs';
 export default class SpiritWorld {
     #setupChat = (socket) => {
         socket.join(socket.handshake.query.room);
+        if (this.rooms[socket.handshake.query.room]) this.rooms[socket.handshake.query.room].users.push(socket.handshake.query.name);
+        else {
+            this.rooms[socket.handshake.query.room] = {
+                users: [
+                    socket.handshake.query.name
+                ]
+            }
+        }
+
+        console.log(this.rooms[socket.handshake.query.room]);
     
         this.io.to(socket.handshake.query.room).emit("chat message", {
             name: "Server",
             time: Date.now(),
             text: `${socket.handshake.query.name} has joined the room.`
+        });
+
+        this.io.to(socket.handshake.query.room).emit("chat info", {
+            name: socket.handshake.query.room,
+            time: Date.now(),
+            data: {
+                users: this.rooms[socket.handshake.query.room].users
+            }
         });
     
         socket.on("chat message", (msg) => {
@@ -23,16 +41,30 @@ export default class SpiritWorld {
         });
     
         socket.on('disconnect', () => {
+            this.rooms[socket.handshake.query.room].users.splice(this.rooms[socket.handshake.query.room].users.indexOf(socket.handshake.query.name));
+
             this.io.to(socket.handshake.query.room).emit("chat message", {
                 name: "Server",
                 time: Date.now(),
                 text: `${socket.handshake.query.name} has left the room.`
             });
+
+            this.io.to(socket.handshake.query.room).emit("chat info", {
+                name: socket.handshake.query.room,
+                time: Date.now(),
+                data: {
+                    users: this.rooms[socket.handshake.query.room].users
+                }
+            });
+
+            if (this.rooms[socket.handshake.query.room].users.length < 1) delete this.rooms[socket.handshake.query.room];
         });
     }
 
     constructor(io) {
         this.io = io;
+        this.rooms = {};
+
         this.router = express.Router();
         this.user = new User();
 
