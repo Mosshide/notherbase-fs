@@ -9,26 +9,10 @@ import fs from 'fs';
 */
 export default class SpiritWorld {
     /**
-     * Sets up the spirit world.
-     * @param {Server} io 
-     */
-    constructor(io) {
-        this.io = io;
-        this.rooms = {};
-
-        this.router = express.Router();
-        this.user = new User();
-
-        this.router.use("/user", this.user.router);
-
-        this.io.on('connection', this.connect);
-    }
-
-    /**
      * Sets up socket.io for instant messaging and etc.
      * @param {*} socket 
      */
-    connect = (socket) => {
+    #setupChat = (socket) => {
         socket.join(socket.handshake.query.room);
         if (this.rooms[socket.handshake.query.room]) this.rooms[socket.handshake.query.room].users.push(socket.handshake.query.name);
         else {
@@ -60,46 +44,7 @@ export default class SpiritWorld {
                 text: stripHtml(msg.text).result
             });
         });
-
-        // load = async (req, res) => {
-        //     try {
-        //         let parent = null;
     
-        //         if (req.body.scope === "local") {
-        //             let user = await req.db.User.recallOne(req.session.currentUser);
-        //             if (user?.id) parent = user.id;
-        //             else throw new Error("User had no id on load(): ", user);
-        //         } 
-    
-        //         let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
-    
-        //         res.send(spirit.memory.data ? spirit.memory.data : {});
-        //     } catch (error) {
-        //         console.log(error);
-        //         fail(res, "Server error");
-        //     }
-        // }
-
-        // serve = async (req, res) => {
-        //     try {
-        //         let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
-                
-        //         let script, result = null;
-    
-        //         if (fs.existsSync(scriptPath)) {
-        //             let user = await req.db.User.recallOne(req.session.currentUser);
-    
-        //             script = await import(scriptPath);
-        //             result = await script.default(req, user);
-        //             success(res, "Served.", result);
-        //         }
-        //         else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
-        //     } catch (error) {
-        //         console.log(error);
-        //         fail(res, "Server error");
-        //     }
-        // }
-
         socket.on('disconnect', () => {
             this.rooms[socket.handshake.query.room].users.splice(this.rooms[socket.handshake.query.room].users.indexOf(socket.handshake.query.name));
 
@@ -119,5 +64,72 @@ export default class SpiritWorld {
 
             if (this.rooms[socket.handshake.query.room].users.length < 1) delete this.rooms[socket.handshake.query.room];
         });
+    }
+
+    /**
+     * Sets up the spirit world.
+     * @param {Server} io 
+     */
+    constructor(io) {
+        this.io = io;
+        this.rooms = {};
+
+        this.router = express.Router();
+        this.user = new User();
+
+        this.router.post("/load", this.load);
+        this.router.post("/serve", this.serve);
+        this.router.use("/user", this.user.router);
+
+        this.io.on('connection', this.#setupChat);
+    }
+
+    /**
+     * This API route requests a spirit from the database.
+     * @param {Object} req 
+     * @param {Object} res 
+     */
+    load = async (req, res) => {
+        try {
+            let parent = null;
+
+            if (req.body.scope === "local") {
+                let user = await req.db.User.recallOne(req.session.currentUser);
+                if (user?.id) parent = user.id;
+                else throw new Error("User had no id on load(): ", user);
+            } 
+
+            let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
+
+            res.send(spirit.memory.data ? spirit.memory.data : {});
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
+    }
+
+    /**
+     * This API route runs a script on the server. Responds with the result.
+     * @param {Object} req 
+     * @param {Object} res 
+     */
+    serve = async (req, res) => {
+        try {
+            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
+            
+            let script, result = null;
+
+            if (fs.existsSync(scriptPath)) {
+                let user = await req.db.User.recallOne(req.session.currentUser);
+
+                script = await import(scriptPath);
+                result = await script.default(req, user);
+                success(res, "Served.", result);
+            }
+            else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
     }
 }
