@@ -1,3 +1,7 @@
+<style>
+    <%- include("./check.css"); %> 
+</style>
+
 <h1>The Big Check</h1>
 
 <hr>
@@ -5,6 +9,7 @@
 <button onclick="base.do('add-more-gold')">+3</button>
 <button onclick="base.do('subtract-gold')">-30</button>
 <button onclick="base.do('emailTime')">email</button>
+<button class="switch" onclick="base.do('flip')">Flip Me</button>
 <input type="text" id="test" placeholder="Loading...">
 <button onclick="saveInput()">Save</button>
 
@@ -26,5 +31,21 @@
         let inp = $inp.val();
 
         base.do("save-input", { text: inp });
+    }
+
+    let switchSocket = io({
+        query: {
+            room: "big-switch",
+            name: "player"
+        }
+    });
+
+    switchSocket.on('big-switch', (update) => {
+        flipSwitch(update.flipped);
+    });
+
+    let flipSwitch = function flipSwitch(flipped) {
+        if (flipped) $(".switch").addClass("flipped");
+        else $(".switch").removeClass("flipped");
     }
 </script>

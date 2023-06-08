@@ -9,6 +9,24 @@ import fs from 'fs';
 */
 export default class SpiritWorld {
     /**
+     * Sets up the spirit world.
+     * @param {Server} io 
+     */
+    constructor(io) {
+        this.io = io;
+        this.rooms = {};
+
+        this.router = express.Router();
+        this.user = new User();
+
+        this.router.post("/load", this.load);
+        this.router.post("/serve", this.serve);
+        this.router.use("/user", this.user.router);
+
+        this.io.on('connection', this.#setupChat);
+    }
+
+    /**
      * Sets up socket.io for instant messaging and etc.
      * @param {*} socket 
      */
@@ -67,24 +85,6 @@ export default class SpiritWorld {
     }
 
     /**
-     * Sets up the spirit world.
-     * @param {Server} io 
-     */
-    constructor(io) {
-        this.io = io;
-        this.rooms = {};
-
-        this.router = express.Router();
-        this.user = new User();
-
-        this.router.post("/load", this.load);
-        this.router.post("/serve", this.serve);
-        this.router.use("/user", this.user.router);
-
-        this.io.on('connection', this.#setupChat);
-    }
-
-    /**
      * This API route requests a spirit from the database.
      * @param {Object} req 
      * @param {Object} res 
@@ -123,7 +123,7 @@ export default class SpiritWorld {
                 let user = await req.db.User.recallOne(req.session.currentUser);
 
                 script = await import(scriptPath);
-                result = await script.default(req, user);
+                result = await script.default(req, user, this.io);
                 success(res, "Served.", result);
             }
             else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
