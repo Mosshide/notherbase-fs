@@ -6,24 +6,7 @@ import nodemailer from "nodemailer";
  * @param {Number} resetToken Token to reset by.
  */
 const passwordReset = async (toEmail, resetToken) => {
-    var transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.NOREPLY,
-          pass: process.env.NOREPLYPW
-        }
-    });
-      
-    var mailOptions = {
-        from: process.env.NOREPLY,
-        to: toEmail,
-        subject: 'Password Reset for NotherBase',
-        html: `<h1>Your One-Time Password Reset Code: ${resetToken}<h1>`
-    };
-    
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) console.log(error);
-    });
+    return await send(toEmail, 'Password Reset for NotherBase', `<h1>Your One-Time Password Reset Code: ${resetToken}<h1>`);
 };
 
 /**
@@ -34,14 +17,14 @@ const passwordReset = async (toEmail, resetToken) => {
  * @returns 
  */
 const send = async (toEmail, subject, html) => {
-    var transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: process.env.NOREPLY,
-          pass: process.env.NOREPLYPW
+          pass: process.env.EMAILPW
         }
-    });
-      
+      });
+
     var mailOptions = {
         from: process.env.NOREPLY,
         to: toEmail,
@@ -49,9 +32,11 @@ const send = async (toEmail, subject, html) => {
         html: html
     };
     
-    return await transporter.sendMail(mailOptions, function(error, info){
+    let sent = await transporter.sendMail(mailOptions, function(error, info){
         if (error) console.log(error);
     });
+
+    return sent;
 }
 
 export default { passwordReset, send };
