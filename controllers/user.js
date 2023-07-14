@@ -44,13 +44,12 @@ export default class User {
         if (spirit) {
             let token = Math.floor(Math.random() * 9999);
 
-            if (req.body.test) console.log("token: " + token);
-
             spirit.memory.data.resetToken = token;
             spirit.memory.data.resetExp = Date.now() + (1000 * 60 * 10);
             await spirit.commit();
     
-            req.db.SendMail.passwordReset(req.body.email, token);
+            if (req.body.test) console.log("token: " + token);
+            else req.db.SendMail.passwordReset(req.body.email, token);
     
             success(res, "Password reset token sent.");
         }

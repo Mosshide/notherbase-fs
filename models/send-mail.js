@@ -6,7 +6,10 @@ import nodemailer from "nodemailer";
  * @param {Number} resetToken Token to reset by.
  */
 const passwordReset = async (toEmail, resetToken) => {
-    return await send(toEmail, 'Password Reset for NotherBase', `<h1>Your One-Time Password Reset Code: ${resetToken}<h1>`);
+    return await send(toEmail, 'Password Reset for NotherBase', 
+        `<h1>Your One-Time Password Reset Code:<h1>
+        <h2>${resetToken}<h2>
+        <p>Visit <a href="https://www.notherbase.com/the-front/keeper">notherbase.com/the-front/keeper</a> to finish changing your password.</p>`);
 };
 
 /**
