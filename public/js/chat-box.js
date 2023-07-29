@@ -29,7 +29,8 @@ class ChatBox {
      */
     newMessage = (msg) => {
         let time = new Date(msg.time);
-        this.$chatLog.append(`<p>[${time.toLocaleTimeString('en-US')}] ${msg.name}: ${msg.text}</p>`);
+        let times = time.toLocaleTimeString('en-US').split(":");
+        this.$chatLog.append(`<p>(${times[0]}:${times[1]}) ${msg.name}: ${msg.text}</p>`);
         this.$chatLog.scrollTop(this.$chatLog.prop("scrollHeight"));
         let msgs = this.$chatLog.find("p");
         if (msgs.length > this.maxMessages) {
@@ -44,7 +45,11 @@ class ChatBox {
      * @param {Object} msg An object including the users in the room.
      */
     updateInfo = (msg) => {
+        this.$usersChatting.text(`${msg.data.users.length} User${msg.data.users.length !== 1 ? "s" : ""} Chatting`);
+
         this.$users.empty();
+        this.$header = $(`<h4>You are ${this.username}</h4>`).appendTo(this.$users);
+        
         for (let i = 0; i < msg.data.users.length; i++) {
             this.$users.append(`<li>${msg.data.users[i]}</li>`);
         }
@@ -72,9 +77,11 @@ class ChatBox {
     render() {
         this.$div.empty();
 
-        this.$header = $(`<h4>Chatting with the name ${this.username}:</h4>`).appendTo(this.$div);
+        this.$usersChatting = $(`<button id="chatting">0 Users Chatting</button>`).appendTo(this.$div);
+        this.$usersChatting.click(this.toggleUsers);
         this.$chatLog = $(`<div class="chat-log"></div>`).appendTo(this.$div);
         this.$users = $(`<ul class="users"></ul>`).appendTo(this.$div);
+        this.$header = $(`<h4>You are ${this.username}</h4>`).appendTo(this.$users);
         this.$entry = $(`<input autocomplete="off" type="text" class="chat-entry">`).appendTo(this.$div);
         this.$send = $(`<button class="chat-send">Send</button>`).appendTo(this.$div);
 
@@ -82,6 +89,10 @@ class ChatBox {
         this.$entry.on("keyup", (e) => {
             if (e.keyCode == 13) this.sendMessage();
         });
+    }
+
+    toggleUsers = () => {
+        this.$users.toggleClass("shown");
     }
 }
 
