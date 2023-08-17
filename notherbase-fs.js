@@ -17,7 +17,7 @@ import SpiritWorld from "./controllers/spirit-world.js";
  * The engine that runs a nother base.
  */
 class NotherBaseFS {
-    constructor(contentPath) {
+    constructor(contentPath, globals = null) {
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
@@ -56,6 +56,7 @@ class NotherBaseFS {
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
+            req.globals = globals;
             req.db = Models;
             req.contentPath = contentPath;
             req.lock = false;
