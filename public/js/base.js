@@ -21,8 +21,6 @@ class Base {
             this.username = "";
             this.email = "";
             this.lastUpdate = 0;
-            
-            this.refresh();
         }
     
         /**
@@ -79,7 +77,8 @@ class Base {
     logout = async () => {
         let response = await Base.commune("logout");
 
-        return response;
+        location.reload();
+        //return response;
     }
 
     /**
@@ -110,11 +109,8 @@ class Base {
         });
 
         if (response.status === "success") {
-            this.playerInventory.refresh();
             this.playerAccount.username = response.data;
             this.playerAccount.email = email;
-            this.playerAccount.refresh();
-            this.playerAttributes.refresh();
         }
         
         return response;
@@ -160,9 +156,6 @@ class Base {
         }));
 
         if (response.status != "success") console.log(`${window.location.pathname} - ${response.message}`);
-
-        this.playerInventory.refresh();
-        this.playerAttributes.refresh();
         
         return response;
     }
