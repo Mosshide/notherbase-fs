@@ -96,7 +96,10 @@ export default class SpiritWorld {
             if (req.body.scope === "local") {
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 if (user?.id) parent = user.id;
-                else throw new Error("User had no id on load(): ", user);
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
             } 
 
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent);

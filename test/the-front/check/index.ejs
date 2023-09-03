@@ -25,7 +25,7 @@
     base.load("test-save3").then((res) => {
         if (res.text) $inp.attr("placeholder", res.text);
         else  $inp.attr("placeholder", "No Input Saved");
-    })
+    });
 
     const saveInput = function saveInput() {
         let inp = $inp.val();
