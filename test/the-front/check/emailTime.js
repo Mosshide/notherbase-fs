@@ -5,7 +5,5 @@ export default async function emailTime(req, user) {
         'sdntndtjln l'
     );
 
-    console.log(req.body);
-
     return "Sent";
 }
