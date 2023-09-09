@@ -6,6 +6,8 @@ import Item from "./item.js";
 import User from "./user.js";
 import SendMail from "./send-mail.js";
 
+mongoose.set('strictQuery', true);
+
 mongoose.connection.on('connected', (err) => {
     console.log(`Mongoose connected to db`);
 });
