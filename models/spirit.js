@@ -109,7 +109,7 @@ export default class Spirit {
      * @returns The number of documents deleted.
      */
     static delete = async (service, data = {}, parent = null, id = null) => {
-        let found = await Spirit.db.deleteMany(Spirit.buildQuery(service, data, id));
+        let found = await Spirit.db.deleteMany(Spirit.buildQuery(service, data, parent, id));
 
         return found.deletedCount;
     }
