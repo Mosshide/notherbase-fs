@@ -30,6 +30,7 @@
                     );
 
                     if (response.status === "success") location.reload();
+                    console.log(response);
                     $(".login-cover .info").text(response.data);
                 };
             </script>
