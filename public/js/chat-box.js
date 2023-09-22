@@ -30,9 +30,9 @@ class ChatBox {
      * Adds the chat box styles if needed.
      */
     static attemptStyle() {
-        if (!Browser.styled) {
+        if (!ChatBox.styled) {
             $("head").append(`<link href='/styles/chat.css' rel='stylesheet' />`);
-            Browser.styled = true;
+            ChatBox.styled = true;
         }
     }
 
