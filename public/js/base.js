@@ -171,4 +171,30 @@ class Base {
 
         return response;
     }
+
+    createToggleViewButton = async () => {
+        Base.commune("getView").then((res) => {
+            // add a button to the footer for toggling between compact and full view
+            this.$viewToggle = $("<button>").addClass("view-toggle").text(">");
+            this.$viewToggle.on("click", () => {
+                this.toggleView();
+            });
+            $("footer").append(this.$viewToggle);
+
+            if (res.data === "full") this.toggleView(false);
+        });
+    }
+
+    toggleView = async (save = true) => {
+        if (this.$viewToggle.text() === ">") {
+            this.$viewToggle.text("<");
+            $("main").addClass("full-view");
+            if (save) Base.commune("setView", { view: "full" });
+        }
+        else {
+            this.$viewToggle.text(">");
+            $("main").removeClass("full-view");
+            if (save) Base.commune("setView", { view: "compact" });
+        }
+    }
 }

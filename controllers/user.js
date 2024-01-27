@@ -20,6 +20,8 @@ export default class User {
         this.router.post("/getInventory", this.getInventory);
         this.router.post("/getAttributes", this.getAttributes);
         this.router.post("/getInfo", this.getInfo);
+        this.router.post("/getView", this.getView);
+        this.router.post("/setView", this.setView);
     }
 
     /**
@@ -233,6 +235,35 @@ export default class User {
                         username: user.memory.data.username
                     });
                 }
+            }
+        }
+    }
+
+    /**
+     * Gets a user's saved view state.
+     */
+    getView = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.User.recallOne(req.session.currentUser);
+
+            if (check(res, user, "Account not found!")) {
+                success(res, "View found", user.memory.data.view);
+            }
+        }
+    }
+
+    /**
+     * Sets a user's view state.
+     */
+    setView = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.User.recallOne(req.session.currentUser);
+
+            if (check(res, user, "Account not found!")) {
+                user.memory.data.view = req.body.view;
+                await user.commit();
+
+                success(res, "View set");
             }
         }
     }
