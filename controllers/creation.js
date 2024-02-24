@@ -5,8 +5,7 @@ import fs from 'fs';
  * Creation is all the renedered pages in a base.
  */
 export default class Creation {
-    constructor(siteTitle = "Base") {
-        this.siteTitle = siteTitle;
+    constructor() {
         this.router = express.Router();
 
         //home
@@ -25,6 +24,7 @@ export default class Creation {
 
         //void
         this.router.use(function(req, res) { 
+            console.log(req.path);
             res.redirect("/void");
         });
     }
@@ -88,7 +88,7 @@ export default class Creation {
      */
     front = async (req, res, next) => {
         req.main = req.contentPath + "/the-front/index";
-        req.siteTitle = this.siteTitle;
+        req.siteTitle = "NotherBase - The Front";
         req.toRender = "explorer";
         next();
     }
@@ -101,7 +101,7 @@ export default class Creation {
      */
     frontDetail = async (req, res, next) => {
         req.main = `${req.contentPath}/the-front/${req.params.frontDetail}/index`;
-        req.siteTitle = `${this.siteTitle} - ${req.params.frontDetail}`;
+        req.siteTitle = `NotherBase - ${req.params.frontDetail}`;
         req.toRender = "explorer";
         next();
     }
@@ -114,7 +114,7 @@ export default class Creation {
      */
     poi = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
-        req.siteTitle = `${this.siteTitle} - ${req.params.poi}`;
+        req.siteTitle = `NotherBase - ${req.params.poi}`;
         req.toRender = "explorer";
         next();
     }
@@ -127,7 +127,7 @@ export default class Creation {
      */
     detail = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
-        req.siteTitle = `${this.siteTitle} - ${req.params.detail}`;
+        req.siteTitle = `NotherBase - ${req.params.detail}`;
         req.toRender = "explorer";
         next();
     }
