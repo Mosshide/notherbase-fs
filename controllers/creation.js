@@ -10,7 +10,7 @@ export default class Creation {
         this.router = express.Router();
 
         //home
-        this.router.get("/", function(req, res) { res.redirect("/the-front"); });
+        this.router.get("/", this.front, this.explore);
 
         //the-front
         this.router.get(`/the-front`, this.front, this.explore);
@@ -24,8 +24,7 @@ export default class Creation {
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
 
         //void
-        this.router.use(function(req, res) { 
-            console.log(req.path);
+        this.router.use(function(req, res) {
             res.redirect("/void");
         });
     }
