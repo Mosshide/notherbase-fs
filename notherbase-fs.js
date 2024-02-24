@@ -17,11 +17,15 @@ import SpiritWorld from "./controllers/spirit-world.js";
  * The engine that runs a nother base.
  */
 class NotherBaseFS {
-    constructor(contentPath, globals = null) {
+    constructor(contentPath, globals = null, settings = {}) {
+        this.settings = {
+            siteTitle: "NotherBase",
+            ...settings
+        }
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
-        this.creation = new Creation();
+        this.creation = new Creation(this.settings.siteTitle);
         this.spiritWorld = new SpiritWorld(this.io);
         
         //set views path
