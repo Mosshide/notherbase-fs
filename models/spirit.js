@@ -66,10 +66,12 @@ export default class Spirit {
      * @param {String} service The name of the spirit.
      * @returns All spirits of the given name.
      */
-    static recallAll = async (service, extraQuery) => {
+    static recallAll = async (service, parent = null, data = {}, id = null) => {
         let spirit = new Spirit();
 
-        let found = await Spirit.db.find({ service: service, ...extraQuery });
+        let query = Spirit.buildQuery(service, data, parent, id);
+
+        let found = await Spirit.db.find(query);
 
         if (found) {
             spirit.memory = found;
