@@ -91,9 +91,17 @@ export default class SpiritWorld {
      */
     load = async (req, res) => {
         try {
-            let parent = null;
+            let body = {
+                service: null,
+                scope: "local",
+                id: null,
+                ...req.body
+            };
 
-            if (req.body.scope === "local") {
+            // if the scope is global, the parent is null
+            let parent = null;
+            if (body.scope === "local") {
+                // if the scope is local, the parent is the user
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 if (user?.id) parent = user.id;
                 else {
@@ -102,9 +110,57 @@ export default class SpiritWorld {
                 }
             } 
 
+            let spirit = null;
+            // if the id is set, the recall one
+            if (body.id) {
+                spirit = await req.db.Spirit.recallOne(body.service, parent, {}, body.id);
+            }
+            // else recall all
+            else {
+                spirit = await req.db.Spirit.recallAll(body.service, parent);
+            }
+
+            if (spirit) res.send(spirit ? spirit.memory.data : {});
+            else fail(res, "Spirit not found.");
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
+    }
+
+    /**
+     * This API route saves a spirit to the database.
+     * @param {Object} req
+     * @param {Object} res
+     */
+    save = async (req, res) => {
+        try {
+            let body = {
+                service: null,
+                scope: "local",
+                id: null,
+                data: {},
+                ...req.body
+            };
+
+            // if the scope is global, the parent is null
+            let parent = null;
+            if (body.scope === "local") {
+                // if the scope is local, the parent is the user
+                let user = await req.db.User.recallOne(req.session.currentUser);
+                if (user?.id) parent = user.id;
+                else {
+                    fail(res, "User had no id on save()");
+                    return;
+                }
+            } 
+
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
 
-            res.send(spirit.memory.data ? spirit.memory.data : {});
+            spirit.memory.data = req.body.data;
+            await spirit.save();
+
+            success(res, "Saved.");
         } catch (error) {
             console.log(error);
             fail(res, "Server error");
