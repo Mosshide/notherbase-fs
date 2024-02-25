@@ -20,6 +20,7 @@ class NotherBaseFS {
     constructor(contentPath, globals = null, settings = {}) {
         this.settings = {
             siteTitle: "NotherBase",
+            favicon: null,
             ...settings
         }
         this.app = express();
@@ -48,8 +49,8 @@ class NotherBaseFS {
         this.app.use(express.static(`${__dirname}/public`));
     
         // sets the favicon image
-        this.app.use(favicon(contentPath + '/public/img/logo.ico'));
-        this.app.use(favicon(__dirname + '/public/img/logo.png'));
+        if (this.settings.favicon) this.app.use(favicon(this.settings.favicon));
+        else this.app.use(favicon(__dirname + '/public/img/logo.png'));
     
         //enable cookies
         this.app.use(session({
