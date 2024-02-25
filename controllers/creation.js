@@ -19,6 +19,9 @@ export default class Creation {
         //pages
         this.router.get(`/:page`, this.page, this.explore);
 
+        //the-front optional shortcuts
+        this.router.get(`/:frontDetail`, this.frontDetail, this.explore);
+
         //explorer
         this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
