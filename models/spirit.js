@@ -88,7 +88,7 @@ export default class Spirit {
     static recallAny = async (service) => {
         let spirit = new Spirit();
 
-        let found = await Spirit.db.findOne({ service: service });
+        let found = await Spirit.db.find({ service: service });
 
         if (found) {
             spirit.memory = found;
