@@ -392,13 +392,13 @@ class Base {
     }
 
     /**
-     * Loads a certain spirit.
-     * @param {String} service The name of the spirit to load.
+     * Loads all spirits of a certain service.
+     * @param {String} service The name of the spirits to load.
      * @param {String} scope Defaults to local, else global.
      * @returns Spirit world response.
      */
-    load = async (service, scope = "local") => {
-        let response = await $.post("/s/load", JSON.stringify({ service, scope }));
+    loadAll = async (service, scope = "local", data = {}, id = null) => {
+        let response = await $.post("/s/loadAll", JSON.stringify({ service, scope, data, id }));
 
         return response;
     }

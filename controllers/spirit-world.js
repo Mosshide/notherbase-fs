@@ -85,23 +85,40 @@ export default class SpiritWorld {
     }
 
     /**
-     * This API route requests a spirit from the database.
-     * @param {Object} req 
-     * @param {Object} res 
+     * This API route requests all spirits of a kind from the database.
+     * @param {Object} req
+     * @param {Object} res
+     * @returns {Object} The requested spirits.
      */
-    load = async (req, res) => {
+    loadAll = async (req, res) => {
         try {
             let parent = null;
+            let data = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
 
+            // if the scope is local, the parent is the user's id
             if (req.body.scope === "local") {
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 if (user?.id) parent = user.id;
                 else throw new Error("User had no id on load(): ", user);
             } 
 
-            let spirit = await req.db.Spirit.recallOne(req.body.service, parent);
+            // recall all spirits with the given service name and parent
+            let spirit = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
 
-            res.send(spirit.memory.data ? spirit.memory.data : {});
+            // if the spirit is not an array, it's a single spirit
+            if (!Array.isArray(spirit.memory)) {
+                let togo = spirit.memory;
+                res.send(togo);
+            }
+            // if the spirit is an array, it's multiple spirits
+            else {
+                let togo = [];
+                for (let i = 0; i < spirit.memory.length; i++) {
+                    togo.push(spirit.memory[i]);
+                }
+                res.send(togo);
+            }
         } catch (error) {
             console.log(error);
             fail(res, "Server error");

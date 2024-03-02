@@ -66,14 +66,32 @@ export default class Spirit {
      * @param {String} service The name of the spirit.
      * @returns All spirits of the given name.
      */
-    static recallAll = async (service) => {
+    static recallAll = async (service, parent = null, data = {}, id = null) => {
         let spirit = new Spirit();
 
-        let found = await Spirit.db.find({ service: service });
+        let query = Spirit.buildQuery(service, data, parent, id);
+
+        let found = await Spirit.db.find(query);
 
         if (found) {
             spirit.memory = found;
-            
+            return spirit;
+        }
+        else return null;
+    }
+
+    /**
+     * Recalls any spirit from the database.
+     * @param {String} service The name of the spirit.
+     * @returns Any spirit found.
+     */
+    static recallAny = async (service) => {
+        let spirit = new Spirit();
+
+        let found = await Spirit.db.findOne({ service: service });
+
+        if (found) {
+            spirit.memory = found;
             return spirit;
         }
         else return null;
@@ -133,5 +151,37 @@ export default class Spirit {
         await this.memory.save();
 
         return "Updated";
+    }
+
+    /**
+     * Normalizes the data property to an array.
+     */
+    normalizeDataToArray = () => {
+        if (!Array.isArray(this.memory.data)) this.memory.data = [];
+    }
+
+    /**
+     * Adds a new backup to the spirit's data.
+     * If backups have not already been enabled, the old dat will be moved to a backup.
+     * @param {Object} data Data to add to the backup.
+     */
+    addBackup = async (data, max = 5) => {
+        if (!this.memory.data._backupsEnabled) {
+            let oldData = this.memory.data;
+            this.memory.data = {
+                _backupsEnabled: true,
+                backups: [ oldData ]
+            };
+        }
+        else {
+            this.memory.data.backups.unshift({
+                _lastUpdate: Date.now(),
+                data: data
+            });
+
+            if (max > 1) {
+                while (this.memory.data.backups.length > max) this.memory.data.backups.pop();
+            }
+        }
     }
 };
