@@ -19,7 +19,7 @@ export default class SpiritWorld {
         this.router = express.Router();
         this.user = new User();
 
-        this.router.post("/load", this.load);
+        this.router.post("/loadAll", this.loadAll);
         this.router.post("/serve", this.serve);
         this.router.use("/user", this.user.router);
 
