@@ -186,15 +186,14 @@ export default class Spirit {
                 backups: [ oldData ]
             };
         }
-        else {
-            this.memory.data.backups.unshift({
-                _lastUpdate: Date.now(),
-                data: data
-            });
 
-            if (max > 1) {
-                while (this.memory.data.backups.length > max) this.memory.data.backups.pop();
-            }
+        this.memory.data.backups.unshift({
+            _lastUpdate: Date.now(),
+            data: data
+        });
+
+        if (max > 1) {
+            while (this.memory.data.backups.length > max) this.memory.data.backups.pop();
         }
     }
 };
