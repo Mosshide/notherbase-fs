@@ -125,14 +125,6 @@ export default class User {
     }
 
     /**
-     * Checks if a user is logged in.
-     */
-    loggedIn = () => {
-        if (this.id) return true;
-        else return false;
-    }
-
-    /**
      * Changes a user's email address on file.
      * @param {Object} req An Express.js request.
      * @param {Object} res An Express.js response.

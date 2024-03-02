@@ -101,5 +101,13 @@ export default class User extends Spirit {
         this.email = email;
         this.id = id;
     }
+
+    /**
+     * Checks if a user is logged in.
+     */
+    loggedIn = () => {
+        if (this.id) return true;
+        else return false;
+    }
 }
 
