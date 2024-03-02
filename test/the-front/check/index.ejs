@@ -22,15 +22,19 @@
 <script>
     const $inp = $("input#test");
 
-    base.load("test-save3").then((res) => {
-        if (res.text) $inp.attr("placeholder", res.text);
+    base.loadAll("test-save3").then((res) => {
+        console.log(res);
+        if (res[0].data.text) $inp.attr("placeholder", res[0].data.text);
         else  $inp.attr("placeholder", "No Input Saved");
     });
 
     const saveInput = function saveInput() {
         let inp = $inp.val();
 
-        base.do("save-input", { text: inp });
+        base.do("save-input", { 
+            text: inp,
+            route: "/the-front/check"
+         });
     }
 
     let switchSocket = io({
