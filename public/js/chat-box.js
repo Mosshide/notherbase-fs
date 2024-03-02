@@ -3,6 +3,7 @@
  */
 class ChatBox {
     constructor(username, room) {
+        ChatBox.attemptStyle();
         this.socket = null;
         this.username = username;
         this.room = room;
@@ -21,6 +22,18 @@ class ChatBox {
         this.socket.on('chat message', this.newMessage);
         this.socket.on('chat info', this.updateInfo);
         this.render();
+    }
+
+    static styled = false;
+
+    /**
+     * Adds the chat box styles if needed.
+     */
+    static attemptStyle() {
+        if (!ChatBox.styled) {
+            $("head").append(`<link href='/styles/chat.css' rel='stylesheet' />`);
+            ChatBox.styled = true;
+        }
     }
 
     /**

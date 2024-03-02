@@ -5,11 +5,12 @@ import fs from 'fs';
  * Creation is all the renedered pages in a base.
  */
 export default class Creation {
-    constructor() {
+    constructor(siteTitle = "Base") {
+        this.siteTitle = siteTitle;
         this.router = express.Router();
 
         //home
-        this.router.get("/", function(req, res) { res.redirect("/the-front"); });
+        this.router.get("/", this.front, this.explore);
 
         //the-front
         this.router.get(`/the-front`, this.front, this.explore);
@@ -18,13 +19,15 @@ export default class Creation {
         //pages
         this.router.get(`/:page`, this.page, this.explore);
 
+        //the-front optional shortcuts
+        this.router.get(`/:frontDetail`, this.frontDetail, this.explore);
+
         //explorer
         this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
         this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
 
         //void
-        this.router.use(function(req, res) { 
-            console.log(req.path);
+        this.router.use(function(req, res) {
             res.redirect("/void");
         });
     }
@@ -88,7 +91,7 @@ export default class Creation {
      */
     front = async (req, res, next) => {
         req.main = req.contentPath + "/the-front/index";
-        req.siteTitle = "NotherBase - The Front";
+        req.siteTitle = this.siteTitle;
         req.toRender = "explorer";
         next();
     }
@@ -101,7 +104,7 @@ export default class Creation {
      */
     frontDetail = async (req, res, next) => {
         req.main = `${req.contentPath}/the-front/${req.params.frontDetail}/index`;
-        req.siteTitle = `NotherBase - ${req.params.frontDetail}`;
+        req.siteTitle = `${this.siteTitle} - ${req.params.frontDetail}`;
         req.toRender = "explorer";
         next();
     }
@@ -114,7 +117,7 @@ export default class Creation {
      */
     poi = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
-        req.siteTitle = `NotherBase - ${req.params.poi}`;
+        req.siteTitle = `${this.siteTitle} - ${req.params.poi}`;
         req.toRender = "explorer";
         next();
     }
@@ -127,7 +130,7 @@ export default class Creation {
      */
     detail = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
-        req.siteTitle = `NotherBase - ${req.params.detail}`;
+        req.siteTitle = `${this.siteTitle} - ${req.params.detail}`;
         req.toRender = "explorer";
         next();
     }

@@ -2,18 +2,12 @@
 
 <script src="/socket.io/socket.io.js"></script>
 
-<div class="ui">
-    <%- include("./menu.ejs", {user: user}); %>
-</div>
-
 <script src="/js/base.js"></script>
 <script>
     const currentRoute = "<%- route %>";
 
     const base = new Base();
 </script>
-
-
 
 <main class="override">
     <% if (requireUser && !user) { %>
@@ -36,7 +30,7 @@
                     );
 
                     if (response.status === "success") location.reload();
-                    $(".login-cover .info").text(response.data);
+                    $(".login-cover .info").text(response.message);
                 };
             </script>
         </div>
@@ -46,3 +40,7 @@
 </main>
 
 <%- include("./footer.ejs"); %>
+
+<script>
+    base.createToggleViewButton();
+</script>

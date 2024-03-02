@@ -127,7 +127,7 @@ export default class Spirit {
      * @returns The number of documents deleted.
      */
     static delete = async (service, data = {}, parent = null, id = null) => {
-        let found = await Spirit.db.deleteMany(Spirit.buildQuery(service, data, id));
+        let found = await Spirit.db.deleteMany(Spirit.buildQuery(service, data, parent, id));
 
         return found.deletedCount;
     }
@@ -143,12 +143,25 @@ export default class Spirit {
      * @param {Object} data Data to save.
      * @returns Updated
      */
-    commit = async (data = this.memory.data) => {
+    commit = async (data = this.memory.data, which = -1) => {
         this.memory._lastUpdate = Date.now();
 
-        this.memory.data = data;
-        this.memory.markModified("data");
-        await this.memory.save();
+        if (!Array.isArray(this.memory)) {
+            this.memory.data = data;
+            this.memory.markModified("data");
+            await this.memory.save();
+        }
+        else {
+            for (let i = 0; i < this.memory.length; i++) {
+                if (data) {
+                    if (which < 0) this.memory[i].data = data;
+                    else if (which === i) this.memory[i].data = data;
+                }
+                
+                this.memory[i].markModified("data");
+                await this.memory[i].save();
+            }
+        }
 
         return "Updated";
     }

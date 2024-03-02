@@ -1,6 +1,6 @@
 
 <footer>
-    
+    <%- user ? `<p class="login-status">Logged In: ${user.username}</p><button onclick="base.logout()">Logout</button>` : `<p class="login-status">Not Logged In</p>` %>
 </footer>
 
 </body>

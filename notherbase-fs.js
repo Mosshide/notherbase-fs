@@ -17,11 +17,16 @@ import SpiritWorld from "./controllers/spirit-world.js";
  * The engine that runs a nother base.
  */
 class NotherBaseFS {
-    constructor(contentPath) {
+    constructor(contentPath, globals = null, settings = {}) {
+        this.settings = {
+            siteTitle: "NotherBase",
+            favicon: null,
+            ...settings
+        }
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
-        this.creation = new Creation();
+        this.creation = new Creation(this.settings.siteTitle);
         this.spiritWorld = new SpiritWorld(this.io);
         
         //set views path
@@ -44,7 +49,8 @@ class NotherBaseFS {
         this.app.use(express.static(`${__dirname}/public`));
     
         // sets the favicon image
-        this.app.use(favicon(__dirname + '/public/img/logo.png'));
+        if (this.settings.favicon) this.app.use(favicon(this.settings.favicon));
+        else this.app.use(favicon(__dirname + '/public/img/logo.png'));
     
         //enable cookies
         this.app.use(session({
@@ -56,6 +62,7 @@ class NotherBaseFS {
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
+            req.globals = globals;
             req.db = Models;
             req.contentPath = contentPath;
             req.lock = false;
