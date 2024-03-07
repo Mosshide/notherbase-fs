@@ -36,8 +36,8 @@ export default class User extends Spirit {
         if (found) {
             user.memory = found;
             user.id = found._id;
-            user.context = found.data.backups[0].data;
-            user.email = user.context.email;
+            user.data = found.data.backups[0].data;
+            user.email = user.data.email;
             
             return user;
         }
@@ -61,25 +61,30 @@ export default class User extends Spirit {
             service: "user",
             parent: null,
             _lastUpdate: Date.now(),
-            data: {
-                username: username,
-                password: hash,
-                email: email,
-                resetToken: null,
-                resetExp: null,
-                coin: 0,
-                home: "/",
-                authLevels: [ "Basic" ],
-                location: "/the-front",
-                attributes: {
-                    translation: 0,
-                    strength: 0,
-                    agility: 0,
-                    defense: 0
-                },
-                inventory: []
-            }
+            data: {}
         });
+        user.addBackup({
+            username: username,
+            password: hash,
+            email: email,
+            resetToken: null,
+            resetExp: null,
+            coin: 0,
+            home: "/",
+            authLevels: [ "Basic" ],
+            location: "/the-front",
+            attributes: {
+                translation: 0,
+                strength: 0,
+                agility: 0,
+                defense: 0
+            },
+            inventory: []
+        });
+        user.id = found._id;
+        user.data = found.data.backups[0].data;
+        user.email = user.data.email;
+        await user.commit();
 
         return user;
     }
