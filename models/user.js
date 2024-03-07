@@ -20,22 +20,24 @@ export default class User extends Spirit {
         let query = null;
 
         if (id) {
-            query = Spirit.buildQuery("user", null, null, id);
+            query = Spirit.buildBackupQuery("user", null, null, id);
         }
         else if (username) {
-            query = Spirit.buildQuery("user", { username: username });
+            query = Spirit.buildBackupQuery("user", { username: username });
         }
         else if (email) {
-            query = Spirit.buildQuery("user", { email: email });
+            query = Spirit.buildBackupQuery("user", { email: email });
         }
         else return null;
         
+        console.log(query);
         let found = await Spirit.db.findOne(query);
 
         if (found) {
             user.memory = found;
             user.id = found._id;
-            user.email = found.data.email;
+            user.context = found.data.backups[0].data;
+            user.email = user.context.email;
             
             return user;
         }

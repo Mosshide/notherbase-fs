@@ -70,7 +70,7 @@ export default class Creation {
                 let user = await req.db.User.recallOne(req.session.currentUser);
                 if (user) {
                     context.userID = user.id;
-                    context.user = user.memory.data;
+                    context.user = user.context;
                 };
 
                 res.render(req.toRender, context);

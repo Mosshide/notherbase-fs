@@ -41,6 +41,24 @@ export default class Spirit {
         return query;
     }
 
+    static buildBackupQuery = (service, data = null, parent = null, id = null) => {
+        let query = {
+            service: service,
+            parent: parent
+        };
+        
+        if (id) query._id = id;
+        else if (data){
+            let keys = Object.keys(data);
+            for (let i = 0; i < keys.length; i++) {
+                
+                query[`data.backups.0.data.${keys[i]}`] = data[keys[i]];
+            }
+        }
+    
+        return query;
+    }
+
     /**
      * Creates a spirit in the database.
      * @param {String} service The name of the spirit.
@@ -183,7 +201,7 @@ export default class Spirit {
             let oldData = this.memory.data;
             this.memory.data = {
                 _backupsEnabled: true,
-                backups: [ oldData ]
+                backups: [{ _lastUpdate: Date.now(), data: oldData }]
             };
         }
 
