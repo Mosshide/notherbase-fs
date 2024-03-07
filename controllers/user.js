@@ -114,12 +114,12 @@ export default class User {
         let spirit = await req.db.User.recallOne(req.body.email);
 
         if (check(res, spirit, "User not found.")) {
-            let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
+            let passResult = await bcrypt.compare(req.body.password, spirit.data.password);
             
             if (check(res, passResult, "Password doesn't match the email.")) {
                 req.session.currentUser = req.body.email;
         
-                success(res, "Logged in.", spirit.memory.data.username);
+                success(res, "Logged in.", spirit.data.username);
             }
         }
     }
