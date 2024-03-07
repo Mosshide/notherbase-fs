@@ -30,7 +30,6 @@ export default class User extends Spirit {
         }
         else return null;
         
-        console.log(query);
         let found = await Spirit.db.findOne(query);
 
         if (found) {
