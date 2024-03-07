@@ -179,7 +179,7 @@ export default class Spirit {
      * @param {Object} data Data to add to the backup.
      */
     addBackup = async (data, max = 5) => {
-        if (!this.memory.data._backupsEnabled) {
+        if (!this.memory.data?._backupsEnabled) {
             let oldData = this.memory.data;
             this.memory.data = {
                 _backupsEnabled: true,
