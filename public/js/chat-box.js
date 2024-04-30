@@ -71,8 +71,15 @@ class ChatBox {
     /**
      * Sends a new chat message to the server.
      */
-    sendMessage = () => {
-        if (this.$entry.val() !== ""){
+    sendMessage = (override = null) => {
+        if (override !== null) {
+            this.socket.emit('chat message', {
+                name: this.username,
+                time: Date.now(),
+                text: override
+            });
+        }
+        else if (this.$entry.val() !== ""){
             let val = this.$entry.val();
             this.$entry.val("");
 
