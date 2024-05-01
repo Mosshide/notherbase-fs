@@ -72,12 +72,12 @@
             response = await base.attemptLogin(this.oldEmail, this.oldPassword);
             this.$info.append(response.message + "<br>");
 
-            response = await base.do("add-gold", null, "/the-front");
-            this.$info.append(response.message + "<br>");
+            // response = await base.do("add-gold", null, "/the-front");
+            // this.$info.append(response.message + "<br>");
 
-            let amountLocal = await base.load("gold");
-            let amountGlobal = await base.load("gold", "global");
-            this.$gold.text(`${amountLocal.gold}/${amountGlobal.gold} Gold Added`);
+            // let amountLocal = await base.load("gold");
+            // let amountGlobal = await base.load("gold", "global");
+            // this.$gold.text(`${amountLocal.gold}/${amountGlobal.gold} Gold Added`);
 
             response = await base.resetPassword(this.oldEmail, true);
             this.$info.append(response.message + "<br>");

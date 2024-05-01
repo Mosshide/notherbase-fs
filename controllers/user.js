@@ -78,6 +78,11 @@ export default class User {
                 const hash = await bcrypt.hash(req.body.password, salt);
         
                 spirit.memory.data.password = hash;
+                spirit.addBackup({
+                    ...spirit.memory.data.backups[0].data,
+                    password: hash
+                });
+                
                 await spirit.commit();
         
                 success(res, "Password changed successfully!");
