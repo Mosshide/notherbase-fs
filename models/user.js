@@ -36,7 +36,8 @@ export default class User extends Spirit {
             user.memory = found;
             user.id = found._id;
             user.data = found.data.backups[0].data;
-            user.email = user.data.email;
+            user.email = found.data.backups[0].data.email;
+            user.username = found.data.backups[0].data.username;
             
             return user;
         }
