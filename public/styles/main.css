@@ -619,6 +619,10 @@ iframe {
     width: 250px;
 }
 
+.login-cover a img {
+    width: 50%;
+}
+
 .dialogue {
     width: var(--fillFromMargin);
     border-radius: var(--borderRadius);

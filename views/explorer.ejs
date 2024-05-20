@@ -13,25 +13,62 @@
     <% if (requireUser && !user) { %>
         <div class="login-cover">
             <a class="header-link" href="/">
+                <img src="/img/logo.png">
                 <h1>NotherBase</h1>
             </a>
-            <h3>Login to Your Account</h3>
-            <input type="email" placeholder="user@email.com" id="email">
-            <input type="password" placeholder="password" id="pass">
-            <button id="login" onclick="coverLogin()">Login</button>
-            <a href="/the-front/keeper">Reset Password</a>
+            <div class="form">
+                <h3>Login to Your Account</h3>
+                <label>
+                    <h4>Your Email:</h4>
+                    <input type="email" placeholder="user@email.com" id="email">
+                </label>
+                <label>
+                    <h4>Your Password:</h4>
+                    <input type="password" placeholder="password" id="pass">
+                </label>
+                <button id="login" onclick="coverLogin()">Login</button>
+                <a href="/the-front/keeper">Reset Password</a>
+            </div>
             <p class="info"></p>
 
             <script>
                 const coverLogin = async () => {
-                    let response = await base.attemptLogin(
-                        $(".login-cover #email").val(),
-                        $(".login-cover #pass").val()
-                    );
+                    let $email = $(".login-cover #email");
+                    let email = $email.val();
+                    $email.val("");
+                    let $pass = $(".login-cover #pass");
+                    let pass = $pass.val();
+                    $pass.val("");
 
+                    let $form = $(".login-cover .form");
+                    $form.css("display", "none");
+                    let $info = $(".login-cover .info");
+                    $info.text("Attempting to login...");
+
+                    let response = await base.attemptLogin(email, pass);
+
+                    $form.css("display", "initial");
+                    $info.text(response.message);
                     if (response.status === "success") location.reload();
-                    $(".login-cover .info").text(response.message);
+                    else {
+                        $email.focus();
+                        $email.val(email);
+                    }
                 };
+
+                $('.login-cover #email').keypress(function (e) {
+                    if (e.which == 13) {
+                        coverLogin();
+                        e.stopPropagation();
+                    }
+                });
+
+                $('.login-cover #pass').keypress(function (e) {
+                    if (e.which == 13) {
+                        coverLogin();
+                        e.stopPropagation();
+                    }
+                });
             </script>
         </div>
     <% } else { %>
