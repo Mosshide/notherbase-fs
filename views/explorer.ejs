@@ -41,16 +41,16 @@
                     $pass.val("");
 
                     let $form = $(".login-cover .form");
-                    $form.css("display", "none");
+                    $form.addClass("invisible");
                     let $info = $(".login-cover .info");
                     $info.text("Attempting to login...");
 
                     let response = await base.attemptLogin(email, pass);
 
-                    $form.css("display", "initial");
                     $info.text(response.message);
                     if (response.status === "success") location.reload();
                     else {
+                        $form.removeClass("invisible");
                         $email.focus();
                         $email.val(email);
                     }
