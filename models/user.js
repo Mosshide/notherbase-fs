@@ -36,7 +36,8 @@ export default class User extends Spirit {
             user.memory = found;
             user.id = found._id;
             user.data = found.data.backups[0].data;
-            user.email = user.data.email;
+            user.email = found.data.backups[0].data.email;
+            user.username = found.data.backups[0].data.username;
             
             return user;
         }
@@ -80,8 +81,8 @@ export default class User extends Spirit {
             },
             inventory: []
         });
-        user.id = found._id;
-        user.data = found.data.backups[0].data;
+        user.id = user.memory._id;
+        user.data = user.memory.data.backups[0].data;
         user.email = user.data.email;
         await user.commit();
 
