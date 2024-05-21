@@ -107,6 +107,8 @@ export default class Spirit {
                 if (spirit.memory.data?._backupsEnabled) {
                     spirit.memory.backups = spirit.memory.data.backups;
                     spirit.memory.data = spirit.memory.backups[0].data;
+                    spirit.memory.markModified("backups");
+                    await spirit.commit();
                 }
             }
 
@@ -137,6 +139,8 @@ export default class Spirit {
             if (spirit.memory.data?._backupsEnabled) {
                 spirit.memory.backups = spirit.memory.data.backups;
                 spirit.memory.data = spirit.memory.backups[0].data;
+                spirit.memory.markModified("backups");
+                await spirit.commit();
             }
 
             return spirit;
@@ -166,6 +170,8 @@ export default class Spirit {
         if (spirit.memory.data?._backupsEnabled) {
             spirit.memory.backups = spirit.memory.data.backups;
             spirit.memory.data = spirit.memory.backups[0].data;
+            spirit.memory.markModified("backups");
+            await spirit.commit();
         }
 
         return spirit;
