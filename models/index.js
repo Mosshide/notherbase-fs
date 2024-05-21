@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 import Spirit from "./spirit.js";
-import Item from "./item.js";
-import User from "./user.js";
 import SendMail from "./send-mail.js";
 
 mongoose.set('strictQuery', true);
@@ -30,86 +28,7 @@ catch (err) {
     console.log(`Mongoose on connect: ${err}`);
 }
 
-// let migrate = function () {
-//     // migrate
-
-//     const user = mongoose.model('users', new mongoose.Schema({
-//         username: String,
-//         password: String,
-//         email: String,
-//         coin: Number,
-//         home: String,
-//         authLevels: [ String ],
-//         location: String,
-//         attributes: {
-//             translation: Number,
-//             strength: Number,
-//             agility: Number,
-//             defense: Number
-//         },
-//         reset: {
-//             token: Number,
-//             exp: Number
-//         }
-//     }));
-//     const page = mongoose.model('pages', new mongoose.Schema({
-//     	name: String,
-//     	type: String,
-//         user: { 
-//             type: mongoose.Schema.Types.ObjectId, 
-//             ref: "users",
-//             required: false
-//         },
-//         data: {}
-//     }));
-    
-//     user.find({}, async (err, users) => {
-//         for (let i = 0; i < users.length; i++) {
-//             let userSpirit = await Spirit.create({
-//                 route: "/",
-//                 service: "user",
-//                 scope: "global",
-//                 parent: null,
-//                 _lastUpdate: Date.now()
-//             }, {
-//                 username: users[i].username,
-//                 password: users[i].password,
-//                 email: users[i].email,
-//                 resetToken: null,
-//                 resetExp: null,
-//                 coin: 0,
-//                 home: "/",
-//                 authLevels: [ "Basic" ],
-//                 location: "/the-front",
-//                 attributes: {
-//                     translation: 0,
-//                     strength: 0,
-//                     agility: 0,
-//                     defense: 0
-//                 },
-//                 inventory: []
-//             });
-            
-//             let foundPages = await page.find({ user: users[i]._id });
-    
-//             for (let i = 0; i < foundPages.length; i++) {
-//                 let spirit = await Spirit.create({
-//                     route: `/${foundPages[i].name}`,
-//                     service: foundPages[i].name,
-//                     scope: foundPages[i].type,
-//                     parent: userSpirit.memory._id,
-//                     _lastUpdate: 0
-//                 }, foundPages[i].data.tickets);
-//             }
-//         }
-//     });
-// }
-
-// migrate();
-
 export default {
     SendMail: SendMail,
-    Spirit: Spirit,
-    User: User,
-    Item: Item
+    Spirit: Spirit
 }

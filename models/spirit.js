@@ -13,7 +13,11 @@ export default class Spirit {
             ref: "spirits",
             required: false
         },
-        data: {}
+        data: {},
+        backups: [{
+            _lastUpdate: Number,
+            data: {}
+        }]
     }));
 
     /**
@@ -41,30 +45,30 @@ export default class Spirit {
         return query;
     }
 
-    static buildBackupQuery = (service, data = null, parent = null, id = null) => {
-        let query = {
-            service: service,
-            parent: parent
-        };
+    // static buildBackupQuery = (service, data = null, parent = null, id = null) => {
+    //     let query = {
+    //         service: service,
+    //         parent: parent
+    //     };
         
-        if (id) query._id = id;
-        else if (data){
-            let keys = Object.keys(data);
-            for (let i = 0; i < keys.length; i++) {
+    //     if (id) query._id = id;
+    //     else if (data){
+    //         let keys = Object.keys(data);
+    //         for (let i = 0; i < keys.length; i++) {
                 
-                query[`data.backups.0.data.${keys[i]}`] = data[keys[i]];
-            }
-        }
+    //             query[`data.backups.0.data.${keys[i]}`] = data[keys[i]];
+    //         }
+    //     }
     
-        return query;
-    }
+    //     return query;
+    // }
 
     /**
      * Creates a spirit in the database.
      * @param {String} service The name of the spirit.
      * @param {Object} data An object with data to create the spirit with.
      * @param {ObjectID} parent The MongoDB id of the parent of the spirit to be created.
-     * @returns A new user spirit.
+     * @returns A new spirit.
      */
     static create = async (service, data = {}, parent = null) => {
         let spirit = new Spirit();
@@ -73,7 +77,8 @@ export default class Spirit {
             service,
             parent,
             _lastUpdate: Date.now(),
-            data: data
+            data: data,
+            backups: []
         });
 
         return spirit;
@@ -82,35 +87,30 @@ export default class Spirit {
     /**
      * Recalls all spirits in the database with a given name.
      * @param {String} service The name of the spirit.
-     * @returns All spirits of the given name.
+     * @param {ObjectID} parent The MongoDB id of the parent spirit to search by.
+     * @param {Object} data An object with data to query the spirit by.
+     * @param {ObjectID} id The exact id of the MongoDB document.
+     * @returns All spirits found.
      */
     static recallAll = async (service, parent = null, data = {}, id = null) => {
-        let spirit = new Spirit();
+        let spirits = [];
 
         let query = Spirit.buildQuery(service, data, parent, id);
 
         let found = await Spirit.db.find(query);
 
         if (found) {
-            spirit.memory = found;
-            return spirit;
-        }
-        else return null;
-    }
+            for (let i = 0; i < found.length; i++) {
+                let spirit = new Spirit(found[i]);
+                spirits.push(spirit);
+                // convert old backups to new format
+                if (spirit.memory.data?._backupsEnabled) {
+                    spirit.memory.backups = spirit.memory.data.backups;
+                    spirit.memory.data = spirit.memory.backups[0].data;
+                }
+            }
 
-    /**
-     * Recalls any spirit from the database.
-     * @param {String} service The name of the spirit.
-     * @returns Any spirit found.
-     */
-    static recallAny = async (service) => {
-        let spirit = new Spirit();
-
-        let found = await Spirit.db.find({ service: service });
-
-        if (found) {
-            spirit.memory = found;
-            return spirit;
+            return spirits;
         }
         else return null;
     }
@@ -121,17 +121,52 @@ export default class Spirit {
      * @param {ObjectID} parent The MongoDB id of the parent spirit to search by.
      * @param {Object} data An object with data to query the spirit by.
      * @param {ObjectID} id The exact id of the MongoDB document.
-     * @returns The spirit found or a new one created in the database..
+     * @returns The spirit found or a new one created in the database.
      */
     static recallOne = async (service, parent = null, data = {}, id = null) => {
-        let spirit = new Spirit();
+        let spirit = null;
 
         let query = Spirit.buildQuery(service, data, parent, id);
 
         let found = await Spirit.db.findOne(query);
         
-        if (found) spirit.memory = found;
-        else spirit = await Spirit.create(service, {}, parent);
+        if (found) {
+            spirit = new Spirit(found);
+
+            // convert old backups to new format
+            if (spirit.memory.data?._backupsEnabled) {
+                spirit.memory.backups = spirit.memory.data.backups;
+                spirit.memory.data = spirit.memory.backups[0].data;
+            }
+
+            return spirit;
+        }
+        else return null;
+    }
+
+    /**
+     * Recalls or creates a spirit in the database.
+     * @param {String} service The name of the spirit.
+     * @param {ObjectID} parent The MongoDB id of the parent spirit to search by.
+     * @param {Object} data An object with data to query the spirit by.
+     * @param {ObjectID} id The exact id of the MongoDB document.
+     * @returns The spirit found or a new one created in the database.
+     */
+    static recallOrCreateOne = async (service, parent = null, data = {}, id = null) => {
+        let spirit = null;
+
+        let query = Spirit.buildQuery(service, data, parent, id);
+
+        let found = await Spirit.db.findOne(query);
+
+        if (found) spirit = new Spirit(found);
+        else spirit = await Spirit.create(service, data, parent);
+
+        // convert old backups to new format
+        if (spirit.memory.data?._backupsEnabled) {
+            spirit.memory.backups = spirit.memory.data.backups;
+            spirit.memory.data = spirit.memory.backups[0].data;
+        }
 
         return spirit;
     }
@@ -139,21 +174,19 @@ export default class Spirit {
     /**
      * Deletes all of the specified spirit.
      * @param {String} service The name of the spirit.
-     * @param {Object} data An object with data to query the spirit by.
      * @param {ObjectID} parent The MongoDB id of the parent spirit to search with.
+     * @param {Object} data An object with data to query the spirit by.
      * @param {ObjectID} id The exact id of the MongoDB document.
      * @returns The number of documents deleted.
      */
-    static delete = async (service, data = {}, parent = null, id = null) => {
+    static delete = async (service, parent = null, data = {}, id = null) => {
         let found = await Spirit.db.deleteMany(Spirit.buildQuery(service, data, parent, id));
 
         return found.deletedCount;
     }
 
-    constructor() {
-        this.memory = {
-            data: {}
-        };
+    constructor(memory = {}) {
+        this.memory = memory;
     }
 
     /**
@@ -161,25 +194,12 @@ export default class Spirit {
      * @param {Object} data Data to save.
      * @returns Updated
      */
-    commit = async (data = this.memory.data, which = -1) => {
+    commit = async (data = this.memory.data) => {
         this.memory._lastUpdate = Date.now();
 
-        if (!Array.isArray(this.memory)) {
-            this.memory.data = data;
-            this.memory.markModified("data");
-            await this.memory.save();
-        }
-        else {
-            for (let i = 0; i < this.memory.length; i++) {
-                if (data) {
-                    if (which < 0) this.memory[i].data = data;
-                    else if (which === i) this.memory[i].data = data;
-                }
-                
-                this.memory[i].markModified("data");
-                await this.memory[i].save();
-            }
-        }
+        this.memory.data = data;
+        this.memory.markModified("data");
+        await this.memory.save();
 
         return "Updated";
     }
@@ -193,25 +213,20 @@ export default class Spirit {
 
     /**
      * Adds a new backup to the spirit's data.
-     * If backups have not already been enabled, the old dat will be moved to a backup.
      * @param {Object} data Data to add to the backup.
      */
-    addBackup = async (data, max = 5) => {
-        if (!this.memory.data?._backupsEnabled) {
-            let oldData = this.memory.data;
-            this.memory.data = {
-                _backupsEnabled: true,
-                backups: [{ _lastUpdate: Date.now(), data: oldData }]
-            };
-        }
-
-        this.memory.data.backups.unshift({
+    addBackup = (data, max = 5) => {
+        this.memory.backups.unshift({
             _lastUpdate: Date.now(),
-            data: data
+            data: this.memory.data
         });
 
+        this.memory.data = data;
+
         if (max > 1) {
-            while (this.memory.data.backups.length > max) this.memory.data.backups.pop();
+            while (this.memory.backups.length > max) this.memory.backups.pop();
         }
+
+        this.memory.markModified("backups");
     }
 };

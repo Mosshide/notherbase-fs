@@ -17,8 +17,6 @@ export default class User {
         this.router.post("/changeEmail", this.changeEmail);
         this.router.post("/changeUsername", this.changeUsername);
         this.router.post("/deletePermanently", this.deletePermanently);
-        this.router.post("/getInventory", this.getInventory);
-        this.router.post("/getAttributes", this.getAttributes);
         this.router.post("/getInfo", this.getInfo);
         this.router.post("/getView", this.getView);
         this.router.post("/setView", this.setView);
@@ -41,7 +39,7 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     sendPasswordReset = async (req, res) => {
-        let spirit = await req.db.User.recallOne(req.body.email);
+        let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
 
         if (spirit) {
             let token = Math.floor(Math.random() * 9999);
@@ -65,7 +63,7 @@ export default class User {
      */
     changePassword = async (req, res) => {
         if (check(res, req.body.token, "No token provided!")){
-            let spirit = await req.db.User.recallOne(req.body.email);
+            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
     
             if (check(res, spirit, "User not found!") &&
                 check(res, spirit.memory.data.resetToken == req.body.token, "Reset token not valid!") &&
@@ -79,7 +77,7 @@ export default class User {
         
                 spirit.memory.data.password = hash;
                 spirit.addBackup({
-                    ...spirit.memory.data.backups[0].data,
+                    ...spirit.memory.data,
                     password: hash
                 });
                 
@@ -100,10 +98,30 @@ export default class User {
             check(res, req.body.email.length > 7, "Email too short.") &&
             check(res, req.body.username.length > 2, "Username too short.")) 
         {
-            let spirit = await req.db.User.recallOne(req.body.email);
+            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
     
             if (check(res, !spirit, "Email already in use!")) {
-                spirit = await req.db.User.create(req.body.username, req.body.password, req.body.email);
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(req.body.password, salt);
+
+                spirit = await req.db.Spirit.create("user", { 
+                    username: req.body.username, 
+                    email: req.body.email,
+                    password: hash,
+                    resetToken: null,
+                    resetExp: null,
+                    coin: 0,
+                    home: "/",
+                    authLevels: [ "Basic" ],
+                    location: "/the-front",
+                    attributes: {
+                        translation: 0,
+                        strength: 0,
+                        agility: 0,
+                        defense: 0
+                    },
+                    inventory: []
+                });
         
                 success(res, "Registration successful!");
             }
@@ -116,15 +134,15 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     login = async (req, res) => {
-        let spirit = await req.db.User.recallOne(req.body.email);
+        let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
 
         if (check(res, spirit, "User not found.")) {
-            let passResult = await bcrypt.compare(req.body.password, spirit.data.password);
+            let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
             
             if (check(res, passResult, "Password doesn't match the email.")) {
                 req.session.currentUser = req.body.email;
         
-                success(res, "Logged in.", spirit.data.username);
+                success(res, "Logged in.", spirit.memory.data.username);
             }
         }
     }
@@ -136,10 +154,10 @@ export default class User {
      */
     changeEmail = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.User.recallOne(req.body.email);
+            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
     
             if (check(res, !spirit, "Email already in use!")) {
-                spirit = await req.db.User.recallOne(req.session.currentUser);
+                spirit = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
         
                 spirit.memory.data.email = req.body.email;
                 await spirit.commit();
@@ -158,10 +176,10 @@ export default class User {
      */
     changeUsername = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.User.recallOne(null, req.body.username);
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
     
             if (check(res, !spirit, "Username already in use!")) {
-                spirit = await req.db.User.recallOne(req.session.currentUser);
+                spirit = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
         
                 spirit.memory.data.username = req.body.username;
                 await spirit.commit();
@@ -178,48 +196,12 @@ export default class User {
      */
     deletePermanently = async (req, res) => {
         if (loginCheck(req, res)) {
-            let deleted = await req.db.User.delete(req.session.currentUser);
+            let deleted = await req.db.Spirit.delete("user",  null, { email: req.session.currentUser });
     
             if (check(res, deleted > 0, "No account deleted")) {
                 await req.session.destroy();
         
                 success(res, "Account deleted.");
-            }
-        }
-    }
-
-    /**
-     * Gets a user's inventory.
-     * @param {Object} req An Express.js request.
-     * @param {Object} res An Express.js response.
-     */
-    getInventory = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let spirit = await req.db.User.recallOne(req.session.currentUser);
-
-            if (check(res, spirit, "Account not found!")) {
-                if (check(res, spirit.memory._lastUpdate > req.body._lastUpdate, "Inventory up to date.")) {
-                    let inv = spirit.memory.data.inventory;
-                
-                    success(res, "Inventory found", inv, spirit.memory._lastUpdate);
-                }
-            }
-        }
-    }
-
-    /**
-     * Gets a user attributes.
-     * @param {Object} req An Express.js request.
-     * @param {Object} res An Express.js response.
-     */
-    getAttributes = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let user = await req.db.User.recallOne(req.session.currentUser);
-    
-            if(check(res, user, "Account not found!")) {
-                if (check(res, user.memory._lastUpdate > req.body._lastUpdate, "Attributes up to date.")) {
-                    success(res, "Attributes found", user.memory.data.attributes);
-                }
             }
         }
     }
@@ -231,7 +213,7 @@ export default class User {
      */
     getInfo = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.User.recallOne(req.session.currentUser);
+            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
     
             if (check(res, user, "Account not found!")) {
                 if (check(res, user.memory._lastUpdate > req.body._lastUpdate, "Info up to date.")) {
@@ -249,7 +231,7 @@ export default class User {
      */
     getView = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.User.recallOne(req.session.currentUser);
+            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
 
             if (check(res, user, "Account not found!")) {
                 success(res, "View found", user.memory.data.view);
@@ -262,7 +244,7 @@ export default class User {
      */
     setView = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.User.recallOne(req.session.currentUser);
+            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
 
             if (check(res, user, "Account not found!")) {
                 user.memory.data.view = req.body.view;

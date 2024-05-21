@@ -10,7 +10,7 @@
 </script>
 
 <main class="override">
-    <% if (requireUser && !user) { %>
+    <% if (requireUser && !user?.memory) { %>
         <div class="login-cover">
             <a class="header-link" href="/">
                 <img src="/img/logo.png">

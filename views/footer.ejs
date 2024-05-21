@@ -1,7 +1,10 @@
 
 <footer>
-    <%- user ? `<p class="login-status">Logged In: ${user.username}</p><button onclick="base.logout()">Logout</button>` : `<p class="login-status">Not Logged In</p>` %>
+    <% if (user) { %> 
+        <p class="login-status">Logged In: <%= user.memory.data.username %></p><button onclick="base.logout()">Logout</button>
+    <% } else { %>
+        <p class="login-status">Not Logged In</p>
+    <% } %>
 </footer>
-
 </body>
 </html>

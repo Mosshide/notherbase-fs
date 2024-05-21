@@ -98,7 +98,7 @@ export default class SpiritWorld {
 
             // if the scope is local, the parent is the user's id
             if (req.body.scope === "local") {
-                let user = await req.db.User.recallOne(req.session.currentUser);
+                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
                 if (user?.id) parent = user.id;
                 else {
                     fail(res, "User had no id on load()");
@@ -107,21 +107,9 @@ export default class SpiritWorld {
             } 
 
             // recall all spirits with the given service name and parent
-            let spirit = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
+            let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
 
-            // if the spirit is not an array, it's a single spirit
-            if (!Array.isArray(spirit.memory)) {
-                let togo = spirit.memory;
-                res.send(togo);
-            }
-            // if the spirit is an array, it's multiple spirits
-            else {
-                let togo = [];
-                for (let i = 0; i < spirit.memory.length; i++) {
-                    togo.push(spirit.memory[i]);
-                }
-                res.send(togo);
-            }
+            res.send(spirits);
         } catch (error) {
             console.log(error);
             fail(res, "Server error");
@@ -140,7 +128,7 @@ export default class SpiritWorld {
             let script, result = null;
 
             if (fs.existsSync(scriptPath)) {
-                let user = await req.db.User.recallOne(req.session.currentUser);
+                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
 
                 script = await import(scriptPath);
                 result = await script.default(req, user, this.io);

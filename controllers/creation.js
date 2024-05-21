@@ -52,9 +52,9 @@ export default class Creation {
     explore = async (req, res, next) => {
         try {
             if (fs.existsSync(req.main + ".ejs")) {
-                let stats = await req.db.Spirit.recallOne("stats");
-                if (stats.memory.data[req.path]) stats.memory.data[req.path].visits++;
-                else stats.memory.data[req.path] = { visits: 1 };
+                let stats = await req.db.Spirit.recallOrCreateOne("stats", null, { route: req.path });
+                if (stats.memory.data.visits) stats.memory.data.visits++;
+                else stats.memory.data.visits = 1;
                 await stats.commit();
 
                 let context = {
@@ -67,11 +67,9 @@ export default class Creation {
                     requireUser: req.lock
                 }
 
-                let user = await req.db.User.recallOne(req.session.currentUser);
-                if (user) {
-                    context.userID = user.id;
-                    context.user = user.data;
-                };
+                if (req.session.currentUser) {
+                    context.user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+                }
 
                 res.render(req.toRender, context);
             }

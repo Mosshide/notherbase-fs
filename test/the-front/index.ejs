@@ -15,7 +15,7 @@
 
 <input type="number" id="token">
 <button onclick="test.continueTest()">Continue Test</button>
-<button onclick="base.do('incTranslation')">inc trans</button>
+<button onclick="base.do('add-gold', { route: '/the-front' })">add gold</button>
 
 <hr>
 
@@ -57,8 +57,9 @@
             this.$info.append(this.newEmail + "<br>");
             this.$info.append(this.newPassword + "<br>");
 
-            let loaded = await base.load("gold", "global");
-            this.$gold.text(`?/${loaded.gold ? loaded.gold : 0} Gold Added`);
+            let loaded = await base.loadAll("gold", "global");
+            console.log(loaded);
+            this.$gold.text(`?/${loaded[0]?.memory?.data?.amount !== null ? loaded[0].memory.data.amount : 0} Gold Added`);
         }
 
         runTest = async () => {
@@ -72,7 +73,7 @@
             response = await base.attemptLogin(this.oldEmail, this.oldPassword);
             this.$info.append(response.message + "<br>");
 
-            // response = await base.do("add-gold", null, "/the-front");
+            
             // this.$info.append(response.message + "<br>");
 
             // let amountLocal = await base.load("gold");
@@ -84,7 +85,7 @@
         }
 
         continueTest = async () => {
-            let response = await base.logout();
+            let response = await base.logout(true);
             this.$info.append(response.message + "<br>");
 
             response = await base.changePassword(
@@ -98,7 +99,7 @@
             response = await base.attemptLogin(this.oldEmail, this.newPassword);
             this.$info.append(response.message + "<br>");
 
-            response = await base.logout();
+            response = await base.logout(true);
             this.$info.append(response.message + "<br>");
         }
     }

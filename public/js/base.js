@@ -12,73 +12,23 @@ class Base {
     
         return response;
     }
-
-    /**
-     * Services for the player's account.
-     */
-    #AccountServices = class AccountServices {
-        constructor() {
-            this.username = "";
-            this.email = "";
-            this.lastUpdate = 0;
-        }
-    
-        /**
-         * Confirms and submits an email edit.
-         */
-        async updateEmail() {
-            let $info = $(".content#account #info");
-            let $email = $(".content#account .setting#email p");
-            let $emailInput = $(".content#account .edit#email input");
-
-            let response = await Base.commune("changeEmail", { email: $emailInput.val() });
-    
-            if (response.status === "success") {
-                this.email = $emailInput.val();
-                $email.text($emailInput.val());
-                $info.text("Email Updated.");
-            }
-            else {
-                $info.text("Email Not Updated!");
-            }
-            this.cancelEmail();
-        }
-    
-        /**
-         * Confirms and submits a username edit.
-         */
-        async updateUsername() {
-            let $info = $(".content#account #info");
-            let $username = $(".content#account .setting#username p");
-            let $usernameInput = $(".content#account .edit#username input");
-
-            let response = await Base.commune("changeUsername", { username: $usernameInput.val() });
-    
-            if (response.status === "success") {
-                this.username = $usernameInput.val();
-                $username.text($usernameInput.val());
-                $info.text("Username Updated.");
-            }
-            else {
-                $info.text("Username Not Updated!");
-            }
-            this.cancelUsername();
-        }
-    }
     
     constructor() {
-        this.playerAccount = new this.#AccountServices();
+        this.playerAccount = {
+            username: null,
+            email: null
+        };
     }
 
     /**
      * Communes to logout.
      * @returns Communion response.
      */
-    logout = async () => {
+    logout = async (test = false) => {
         let response = await Base.commune("logout");
 
-        location.reload();
-        //return response;
+        if (!test) location.reload();
+        else return response;
     }
 
     /**
@@ -172,6 +122,9 @@ class Base {
         return response;
     }
 
+    /**
+     * Creates the toggle view button.
+     */
     createToggleViewButton = async () => {
         Base.commune("getView").then((res) => {
             // add a button to the footer for toggling between compact and full view
@@ -185,6 +138,10 @@ class Base {
         });
     }
 
+    /**
+     * Toggles the view between compact and full.
+     * @param {Boolean} save Whether or not to save the view state.
+     */
     toggleView = async (save = true) => {
         if (this.$viewToggle.text() === ">") {
             this.$viewToggle.text("<");
