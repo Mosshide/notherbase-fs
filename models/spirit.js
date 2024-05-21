@@ -14,10 +14,7 @@ export default class Spirit {
             required: false
         },
         data: {},
-        backups: [{
-            _lastUpdate: Number,
-            data: {}
-        }]
+        backups: []
     }));
 
     /**
