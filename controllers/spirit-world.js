@@ -20,6 +20,7 @@ export default class SpiritWorld {
         this.user = new User();
 
         this.router.post("/loadAll", this.loadAll);
+        this.router.post("/load", this.load);
         this.router.post("/serve", this.serve);
         this.router.use("/user", this.user.router);
 
@@ -99,7 +100,7 @@ export default class SpiritWorld {
             // if the scope is local, the parent is the user's id
             if (req.body.scope === "local") {
                 let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
-                if (user?.id) parent = user.id;
+                if (user?.memory?._id) parent = user.memory._id;
                 else {
                     fail(res, "User had no id on load()");
                     return;
@@ -110,6 +111,38 @@ export default class SpiritWorld {
             let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
 
             res.send(spirits);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
+    }
+
+    /**
+     * This API route requests a spirit of a kind from the database.
+     * @param {Object} req
+     * @param {Object} res
+     * @returns {Object} The requested spirit.
+     */
+    load = async (req, res) => {
+        try {
+            let parent = null;
+            let data = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
+
+            // if the scope is local, the parent is the user's id
+            if (req.body.scope === "local") {
+                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+                if (user?.memory?._id) parent = user.memory._id;
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
+            } 
+
+            // recall all spirits with the given service name and parent
+            let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
+
+            res.send(spirit);
         } catch (error) {
             console.log(error);
             fail(res, "Server error");

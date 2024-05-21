@@ -57,9 +57,11 @@
             this.$info.append(this.newEmail + "<br>");
             this.$info.append(this.newPassword + "<br>");
 
-            let loaded = await base.loadAll("gold", "global");
+            let loaded = await base.load("gold", "global");
             console.log(loaded);
-            this.$gold.text(`?/${loaded[0]?.memory?.data?.amount !== null ? loaded[0].memory.data.amount : 0} Gold Added`);
+            this.$gold.text(`?/${loaded?.memory?.data?.amount !== null ? loaded.memory.data.amount : 0} Gold Added`);
+            loaded = await base.loadAll("gold");
+            console.log(loaded);
         }
 
         runTest = async () => {
