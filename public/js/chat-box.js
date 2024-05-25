@@ -105,9 +105,11 @@ class ChatBox {
         this.$entry = $(`<input autocomplete="off" type="text" class="chat-entry">`).appendTo(this.$div);
         this.$send = $(`<button class="chat-send">Send</button>`).appendTo(this.$div);
 
-        this.$send.on("click", this.sendMessage);
+        this.$send.on("click", (e) => {
+            this.sendMessage(null);
+        });
         this.$entry.on("keyup", (e) => {
-            if (e.keyCode == 13) this.sendMessage();
+            if (e.keyCode == 13) this.sendMessage(null);
         });
     }
 
