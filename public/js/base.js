@@ -18,6 +18,9 @@ class Base {
             username: null,
             email: null
         };
+
+        this.$viewToggle = null;
+        this.viewState = "compact";
     }
 
     /**
@@ -142,14 +145,14 @@ class Base {
      * Creates the toggle view button.
      */
     createToggleViewButton = async () => {
-        Base.commune("getView").then((res) => {
-            // add a button to the footer for toggling between compact and full view
-            this.$viewToggle = $("<button>").addClass("view-toggle").text(">");
-            this.$viewToggle.on("click", () => {
-                this.toggleView();
-            });
-            $("footer").append(this.$viewToggle);
+        // add a button to the footer for toggling between compact and full view
+        this.$viewToggle = $("<button>").addClass("view-toggle").text(">");
+        this.$viewToggle.on("click", () => {
+            this.toggleView();
+        });
+        $("footer").append(this.$viewToggle);
 
+        Base.commune("getView").then((res) => {
             if (res.data === "full") this.toggleView(false);
         });
     }
@@ -159,16 +162,18 @@ class Base {
      * @param {Boolean} save Whether or not to save the view state.
      */
     toggleView = async (save = true) => {
-        if (this.$viewToggle.text() === ">") {
+        if (this.viewState === "compact") {
+            this.viewState = "full";
             this.$viewToggle.text("<");
             $("main").addClass("full-view");
-            if (save) Base.commune("setView", { view: "full" });
         }
         else {
+            this.viewState = "compact";
             this.$viewToggle.text(">");
             $("main").removeClass("full-view");
-            if (save) Base.commune("setView", { view: "compact" });
         }
+        
+        if (save) Base.commune("setView", { view: this.viewState });
     }
 
     /**
