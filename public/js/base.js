@@ -170,4 +170,12 @@ class Base {
             if (save) Base.commune("setView", { view: "compact" });
         }
     }
+
+    /**
+     * Appends html to the head.
+     * @param {String} html The html to append.
+     */
+    appendToHead = (html) => {
+        $("head").append($(html));
+    }
 }
