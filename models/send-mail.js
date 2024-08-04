@@ -1,4 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
 import nodemailer from "nodemailer";
+import { google } from "googleapis";
+
+const OAuth2 = google.auth.OAuth2;
+const OAuth2Client = new OAuth2(process.env.CLIENTID, process.env.CLIENTSECRET);
+OAuth2Client.setCredentials({ refresh_token: process.env.CLIENTREFRESH });
+
 
 /**
  * Sends an email with a password reset code. WIP
@@ -19,17 +27,23 @@ const passwordReset = async (toEmail, resetToken) => {
  * @param {String} html Body of the email.
  * @returns 
  */
-const send = async (toEmail, subject, html) => {
-    const transporter = nodemailer.createTransport({
+const send = async (toEmail, subject, html, name = "NotherBase") => {
+    let accessToken = OAuth2Client.getAccessToken();
+
+    let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: process.env.NOREPLY,
-          pass: process.env.EMAILPW
+            type: 'OAuth2',
+            user: process.env.NOREPLY,
+            clientId: process.env.CLIENTID,
+            clientSecret: process.env.CLIENTSECRET,
+            refreshToken: process.env.CLIENTREFRESH,
+            accessToken: accessToken
         }
-      });
+    });
 
-    var mailOptions = {
-        from: process.env.NOREPLY,
+    let mailOptions = {
+        from: name + " <" + process.env.NOREPLY +">",
         to: toEmail,
         subject: subject,
         html: html
