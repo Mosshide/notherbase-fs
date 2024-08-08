@@ -53,13 +53,15 @@ class NotherBaseFS {
         else this.app.use(favicon(__dirname + '/public/img/logo.png'));
     
         //enable cookies
+        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
         this.app.use(session({
             store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
             secret: process.env.SECRET,
+            name: 'session-id',
             resave: false,
             saveUninitialized: false,
             cookie: { 
-                secure: process.env.PRODUCTION === "true",
+                secure: process.env.PRODUCTION == "true",
                 maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
             } 
         }));
