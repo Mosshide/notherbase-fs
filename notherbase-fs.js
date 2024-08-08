@@ -57,7 +57,11 @@ class NotherBaseFS {
             store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
             secret: process.env.SECRET,
             resave: false,
-            saveUninitialized: false
+            saveUninitialized: false,
+            cookie: { 
+                secure: process.env.PRODUCTION === "true",
+                maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
+            } 
         }));
 
         //provide database access and etc to use in routes
