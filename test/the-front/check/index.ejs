@@ -24,7 +24,7 @@
 
     base.loadAll("test-save3").then((res) => {
         console.log(res);
-        if (res[0].data.text) $inp.attr("placeholder", res[0].data.text);
+        if (res[0]?.memory.data.text) $inp.attr("placeholder", res[0].memory.data.text);
         else  $inp.attr("placeholder", "No Input Saved");
     });
 

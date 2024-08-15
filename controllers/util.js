@@ -31,6 +31,15 @@ export const success = (res, msg = "Success!", data = null, lastUpdate = 0) => {
     });
 };
 
+export const successJSON = (res, msg = "Success!", data = null, lastUpdate = 0) => {
+    res.json({
+        status: "success",
+        message: msg,
+        lastUpdate: lastUpdate,
+        data: data
+    });
+}
+
 /**
  * Respond to the client with failure.
  * @param {Object} res An Express.js response.

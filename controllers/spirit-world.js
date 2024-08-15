@@ -99,7 +99,7 @@ export default class SpiritWorld {
 
             // if the scope is local, the parent is the user's id
             if (req.body.scope === "local") {
-                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
                 if (user?.memory?._id) parent = user.memory._id;
                 else {
                     fail(res, "User had no id on load()");
@@ -131,7 +131,7 @@ export default class SpiritWorld {
 
             // if the scope is local, the parent is the user's id
             if (req.body.scope === "local") {
-                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
                 if (user?.memory?._id) parent = user.memory._id;
                 else {
                     fail(res, "User had no id on load()");
@@ -161,7 +161,7 @@ export default class SpiritWorld {
             let script, result = null;
 
             if (fs.existsSync(scriptPath)) {
-                let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
 
                 script = await import(scriptPath);
                 result = await script.default(req, user, this.io);

@@ -27,10 +27,10 @@ export default class Spirit {
      */
     static buildQuery = (service, data = null, parent = null, id = null) => {
         let query = {
-            service: service,
             parent: parent
         };
         
+        if (service) query.service = service;
         if (id) query._id = id;
         else if (data){
             let keys = Object.keys(data);

@@ -1,15 +1,13 @@
 <%- include("./head.ejs"); %>
 
-<script src="/socket.io/socket.io.js"></script>
-
-<script src="/js/base.js"></script>
-<script>
-    const currentRoute = "<%- route %>";
-
-    const base = new Base();
-</script>
-
 <main class="override">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/base.js"></script>
+    <script>
+        const currentRoute = "<%- route %>";
+        const base = new Base();
+    </script>
+
     <% if (requireUser && !user?.memory) { %>
         <div class="login-cover">
             <a class="header-link" href="/">
@@ -19,8 +17,8 @@
             <div class="form">
                 <h3>Login to Your Account</h3>
                 <label>
-                    <h4>Your Email:</h4>
-                    <input type="email" placeholder="user@email.com" id="email">
+                    <h4>Your Name:</h4>
+                    <input type="text" placeholder="Username" id="username">
                 </label>
                 <label>
                     <h4>Your Password:</h4>
@@ -32,38 +30,40 @@
             <p class="info"></p>
 
             <script>
+                let $username = $(".login-cover #username");
+                let $pass = $(".login-cover #pass");
+                let $form = $(".login-cover .form");
+                let $info = $(".login-cover .info");
+
                 const coverLogin = async () => {
-                    let $email = $(".login-cover #email");
-                    let email = $email.val();
-                    $email.val("");
-                    let $pass = $(".login-cover #pass");
+                    let username = $username.val();
+                    $username.val("");
                     let pass = $pass.val();
                     $pass.val("");
 
-                    let $form = $(".login-cover .form");
                     $form.addClass("invisible");
-                    let $info = $(".login-cover .info");
                     $info.text("Attempting to login...");
 
-                    let response = await base.attemptLogin(email, pass);
+                    let response = await base.attemptLogin(username, pass);
 
                     $info.text(response.message);
+
                     if (response.status === "success") location.reload();
                     else {
                         $form.removeClass("invisible");
-                        $email.focus();
-                        $email.val(email);
+                        $username.focus();
+                        $username.val(username);
                     }
                 };
 
-                $('.login-cover #email').keypress(function (e) {
+                $username.keypress(function (e) {
                     if (e.which == 13) {
                         coverLogin();
                         e.stopPropagation();
                     }
                 });
 
-                $('.login-cover #pass').keypress(function (e) {
+                $pass.keypress(function (e) {
                     if (e.which == 13) {
                         coverLogin();
                         e.stopPropagation();

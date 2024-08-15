@@ -1,6 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { check, success, fail, loginCheck } from "./util.js";
+import { check, success, successJSON, fail, loginCheck } from "./util.js";
 
 /**
  * API routes for user functions.
@@ -10,16 +10,16 @@ export default class User {
         this.router = express.Router();
 
         this.router.post("/logout", this.logout);
-        this.router.post("/sendPasswordReset", this.sendPasswordReset);
         this.router.post("/changePassword", this.changePassword);
         this.router.post("/register", this.register);
         this.router.post("/login", this.login);
-        this.router.post("/changeEmail", this.changeEmail);
-        this.router.post("/changeUsername", this.changeUsername);
         this.router.post("/deletePermanently", this.deletePermanently);
         this.router.post("/getInfo", this.getInfo);
         this.router.post("/getView", this.getView);
         this.router.post("/setView", this.setView);
+        this.router.post("/downloadData", this.downloadData);
+        this.router.post("/deleteAlldata", this.deleteAlldata);
+        this.router.post("/importData", this.importData);
     }
 
     /**
@@ -34,56 +34,33 @@ export default class User {
     }
 
     /**
-     * Sends an email with a password reset code.
-     * @param {Object} req An Express.js request.
-     * @param {Object} res An Express.js response.
-     */
-    sendPasswordReset = async (req, res) => {
-        let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
-
-        if (spirit) {
-            let token = Math.floor(Math.random() * 9999);
-
-            spirit.memory.data.resetToken = token;
-            spirit.memory.data.resetExp = Date.now() + (1000 * 60 * 10);
-            await spirit.commit();
-    
-            if (req.body.test) console.log("token: " + token);
-            else req.db.SendMail.passwordReset(req.body.email, token);
-    
-            success(res, "Password reset token sent.");
-        }
-        else fail(res, "User not found.");
-    }
-
-    /**
      * Change a user's password.
      * @param {Object} req An Express.js request.
      * @param {Object} res An Express.js response.
      */
     changePassword = async (req, res) => {
-        if (check(res, req.body.token, "No token provided!")){
-            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
-    
+        if (loginCheck(req, res)) {
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+
             if (check(res, spirit, "User not found!") &&
-                check(res, spirit.memory.data.resetToken == req.body.token, "Reset token not valid!") &&
-                check(res, spirit.memory.data.resetExp > Date.now(), "Reset token expired!") &&
-                check(res, req.body.password === req.body.confirmation, "Passwords must match!")) 
+                check(res, req.body.newPassword === req.body.confirmation, "New password and confirmation must match!") &&
+                check(res, req.body.oldPassword != req.body.newPassword, "New password must be different from the old one."))
             {
-                spirit.memory.data.resetExp = -1;
-        
-                const salt = await bcrypt.genSalt(10);
-                const hash = await bcrypt.hash(req.body.password, salt);
-        
-                spirit.memory.data.password = hash;
-                spirit.addBackup({
-                    ...spirit.memory.data,
-                    password: hash
-                });
-                
-                await spirit.commit();
-        
-                success(res, "Password changed successfully!");
+                let passResult = await bcrypt.compare(req.body.oldPassword, spirit.memory.data.password);
+
+                if (check(res, passResult, "Old password incorrect.")) {
+                    const salt = await bcrypt.genSalt(10);
+                    const hash = await bcrypt.hash(req.body.newPassword, salt);
+    
+                    spirit.addBackup({
+                        ...spirit.memory.data,
+                        password: hash
+                    });
+                    
+                    await spirit.commit();
+            
+                    success(res, "Password changed successfully!");
+                }
             }
         }
     }
@@ -94,33 +71,20 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     register = async (req, res) => {
-        if (check(res, req.body.password.length > 7, "Password too short.") &&
-            check(res, req.body.email.length > 7, "Email too short.") &&
+        if (check(res, req.body.password.length > 10, "Password must be >10 characters long.") &&
             check(res, req.body.username.length > 2, "Username too short.")) 
         {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
     
-            if (check(res, !spirit, "Email already in use!")) {
+            if (check(res, !spirit, "Username already in use!")) {
                 const salt = await bcrypt.genSalt(10);
                 const hash = await bcrypt.hash(req.body.password, salt);
 
                 spirit = await req.db.Spirit.create("user", { 
                     username: req.body.username, 
-                    email: req.body.email,
                     password: hash,
-                    resetToken: null,
-                    resetExp: null,
-                    coin: 0,
-                    home: "/",
                     authLevels: [ "Basic" ],
-                    location: "/the-front",
-                    attributes: {
-                        translation: 0,
-                        strength: 0,
-                        agility: 0,
-                        defense: 0
-                    },
-                    inventory: []
+                    view: "compact"
                 });
         
                 success(res, "Registration successful!");
@@ -134,57 +98,15 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     login = async (req, res) => {
-        let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
+        let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
 
         if (check(res, spirit, "User not found.")) {
             let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
             
-            if (check(res, passResult, "Password doesn't match the email.")) {
-                req.session.currentUser = req.body.email;
-        
+            if (check(res, passResult, "Password doesn't match the username.")) {
+                req.session.currentUser = req.body.username;
+                
                 success(res, "Logged in.", spirit.memory.data.username);
-            }
-        }
-    }
-
-    /**
-     * Changes a user's email address on file.
-     * @param {Object} req An Express.js request.
-     * @param {Object} res An Express.js response.
-     */
-    changeEmail = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
-    
-            if (check(res, !spirit, "Email already in use!")) {
-                spirit = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
-        
-                spirit.memory.data.email = req.body.email;
-                await spirit.commit();
-        
-                req.session.currentUser = req.body.email;
-        
-                success(res, "Email changed.");
-            }
-        }
-    }
-
-    /**
-     * Changes a user's display name.
-     * @param {Object} req An Express.js request.
-     * @param {Object} res An Express.js response.
-     */
-    changeUsername = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
-    
-            if (check(res, !spirit, "Username already in use!")) {
-                spirit = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
-        
-                spirit.memory.data.username = req.body.username;
-                await spirit.commit();
-        
-                success(res, "Username changed");
             }
         }
     }
@@ -196,12 +118,20 @@ export default class User {
      */
     deletePermanently = async (req, res) => {
         if (loginCheck(req, res)) {
-            let deleted = await req.db.Spirit.delete("user",  null, { email: req.session.currentUser });
-    
-            if (check(res, deleted > 0, "No account deleted")) {
-                await req.session.destroy();
-        
-                success(res, "Account deleted.");
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+
+            if (check(res, spirit, "User not found.")) {
+                let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
+
+                if (check(res, passResult, "Password doesn't match the username.")) {
+                    let deleted = await req.db.Spirit.delete("user",  null, { username: req.session.currentUser });
+            
+                    if (check(res, deleted > 0, "No account deleted")) {
+                        await req.session.destroy();
+                
+                        success(res, "Account deleted.");
+                    }
+                }
             }
         }
     }
@@ -213,15 +143,12 @@ export default class User {
      */
     getInfo = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
     
             if (check(res, user, "Account not found!")) {
-                if (check(res, user.memory._lastUpdate > req.body._lastUpdate, "Info up to date.")) {
-                    success(res, "Info found", {
-                        email: user.memory.data.email,
-                        username: user.memory.data.username
-                    });
-                }
+                success(res, "Info found", {
+                    username: user.memory.data.username
+                });
             }
         }
     }
@@ -231,7 +158,7 @@ export default class User {
      */
     getView = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
 
             if (check(res, user, "Account not found!")) {
                 success(res, "View found", user.memory.data.view);
@@ -244,13 +171,70 @@ export default class User {
      */
     setView = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { email: req.session.currentUser });
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
 
             if (check(res, user, "Account not found!")) {
-                user.memory.data.view = req.body.view;
+                user.memory.data.view = req.body.view == "compact" ? "compact" : "full";
                 await user.commit();
 
                 success(res, "View set");
+            }
+        }
+    }
+
+    //download all spirit data belonging to the user
+    downloadData = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+
+            if (check(res, user, "Account not found!")) {
+                let data = await req.db.Spirit.recallAll(null, user.memory._id);
+                let dataToDownload = data.map(d => d.memory);
+                dataToDownload.unshift(user.memory.data);
+
+                successJSON(res, "Data Downloaded", dataToDownload);
+            }
+        }
+    }
+
+    //delete all spirit data belonging to the user
+    deleteAlldata = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+
+            if (check(res, user, "Account not found!")) {
+                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+
+                if (check(res, passResult, "Password doesn't match the username.")) {
+                    let deleted = await req.db.Spirit.delete(null, user.memory._id);
+                    if (check(res, deleted > 0, "No data deleted")) {
+                        success(res, "Data Deleted", deleted);
+                    }
+                }
+            }
+        }
+    }
+
+    // import spirit data from a JSON file
+    importData = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser }); 
+
+            if (check(res, user, "Account not found!")) {
+                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+
+                if (check(res, passResult, "Password doesn't match the username.")) {
+                    let data = req.body.data;
+                    let imported = 0;
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i].parent != null) {
+                            let spirit = await req.db.Spirit.create(data[i].service, data[i].data, user.memory._id);
+                            if (spirit) imported++;
+                        }
+                    }
+
+                    success(res, "Data Imported", imported);
+                }
             }
         }
     }

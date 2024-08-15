@@ -15,12 +15,15 @@ class Base {
     
     constructor() {
         this.playerAccount = {
-            username: null,
-            email: null
+            username: null
         };
 
         this.$viewToggle = null;
         this.viewState = "compact";
+
+        Base.commune("getView").then((res) => {
+            if (res.data === "full") this.toggleView(false);
+        });
     }
 
     /**
@@ -31,7 +34,11 @@ class Base {
         let response = await Base.commune("logout");
 
         if (!test) location.reload();
-        else return response;
+        else {
+            this.playerAccount.username = null;
+            this.updateLoginStatus();
+            return response;
+        }
     }
 
     /**
@@ -41,9 +48,9 @@ class Base {
      * @param {String} password The user's ****.
      * @returns Communion response.
      */
-    attemptRegister = async (email, username, password) => {
+    attemptRegister = async (username, password) => {
         let response = await Base.commune("register", { 
-            email, username, password 
+            username, password 
         });
         
         return response;
@@ -55,31 +62,18 @@ class Base {
      * @param {String} password The user's password.
      * @returns Communion response.
      */
-    attemptLogin = async (email, password) => {
+    attemptLogin = async (username, password) => {
         let response = await Base.commune("login", {
-            email: email,
-            password: password
+            username, password
         });
 
         if (response.status === "success") {
             this.playerAccount.username = response.data;
-            this.playerAccount.email = email;
+            this.updateLoginStatus(response.data);
         }
         
         return response;
     };
-
-    /**
-     * Communes to send a password reset email.
-     * @param {String} email The user's email.
-     * @param {Boolean} test Debug mode
-     * @returns Communion response.
-     */
-    resetPassword = async (email, test = false) => {
-        let response = await Base.commune("sendPasswordReset", { email, test });
-        
-        return response;
-    }
 
     /**
      * Communes to finalize a password change.
@@ -89,8 +83,8 @@ class Base {
      * @param {String} confirmation Confirmation of the user's new password.
      * @returns Communion response.
      */
-    changePassword = async (token, email, password, confirmation) => {
-        let response = await Base.commune("changePassword", { token, email, password, confirmation });
+    changePassword = async (oldPassword, newPassword, confirmation) => {
+        let response = await Base.commune("changePassword", { oldPassword, newPassword, confirmation });
         
         return response;
     }
@@ -150,11 +144,7 @@ class Base {
         this.$viewToggle.on("click", () => {
             this.toggleView();
         });
-        $("footer").append(this.$viewToggle);
-
-        Base.commune("getView").then((res) => {
-            if (res.data === "full") this.toggleView(false);
-        });
+        $("footer").append(this.$viewToggle);       
     }
 
     /**
@@ -164,12 +154,12 @@ class Base {
     toggleView = async (save = true) => {
         if (this.viewState === "compact") {
             this.viewState = "full";
-            this.$viewToggle.text("<");
+            if (this.$viewToggle) this.$viewToggle.text("<");
             $("main").addClass("full-view");
         }
         else {
             this.viewState = "compact";
-            this.$viewToggle.text(">");
+            if (this.$viewToggle) this.$viewToggle.text(">");
             $("main").removeClass("full-view");
         }
         
@@ -182,5 +172,57 @@ class Base {
      */
     appendToHead = (html) => {
         $("head").append($(html));
+    }
+
+    //update login status
+    updateLoginStatus = (name = null) => {
+        let $status = $("footer .login-status");
+        let $logout = $("footer .logout");
+
+        if (name) {
+            $status.text(`Logged In: ${name}`);
+            $logout.removeClass("invisible");
+        }
+        else {
+            $status.text("Not Logged In");
+            $logout.addClass("invisible");
+        }
+    }
+
+    // download your data
+    downloadData = async () => {
+        let response = await Base.commune("downloadData");
+        console.log(response);
+        
+
+        if (response.status === "success") {
+            let blob = new Blob([JSON.stringify(response.data)], { type: "application/json" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement("a");
+            a.href = url;
+            a.download = "data.json";
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            a.remove();
+        }
+    }
+
+    deleteData = async (password) => {
+        let response = await Base.commune("deleteAlldata", { password });
+
+        console.log("Deleted: ", response.status === "success" ? response.data : "no");
+    }
+
+    importData = async (password, data) => {
+        
+        let reader = new FileReader();
+        reader.addEventListener('load', async (event) => {
+            let parsed = JSON.parse(event.target.result);
+            //console.log(parsed);
+            let response = await Base.commune("importData", { password, data: parsed });
+            console.log("Imported: ", response.status === "success" ? response.data : "no");
+        });
+        reader.readAsText(data);
     }
 }
