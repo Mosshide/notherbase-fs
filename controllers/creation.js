@@ -11,64 +11,66 @@ import MongoStore from 'connect-mongo';
  * Creation is all the renedered pages in a base.
  */
 export default class Creation {
-    constructor(bases = []) {
+    constructor(bases = {}) {
         this.bases = bases;
         this.router = express.Router();
-        for (let base of this.bases) {
-            this.router.use(subdomain(base.subdomain, this.routeToBase(base)));
-        }
 
-        this.router.use(this.routeToBase(bases[0]));
-    }
-
-    routeToBase = (base) => {
-        let router = express.Router();
-
-        //enable cookies
-        router.use(session({
-            store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-            secret: process.env.SECRET,
-            name: base.subdomain + '-session-id',
-            resave: false,
-            saveUninitialized: false,
-            cookie: { 
-                secure: process.env.PRODUCTION == "true",
-                maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
-            } 
-        }));
-        
-        router.use(express.static(`${base.directory}/public`));
-
-        router.use(favicon(base.directory + base.favicon));
-
-        router.use((req, res, next) => {
-            req.contentPath = base.directory;
+        this.router.use((req, res, next) => {
+            req.hosting = req.hostname.split(".")[0];
+            console.log(req.hosting);
+            req.contentPath = this.bases[req.hosting].directory;
             next();
         });
 
-        //home
-        router.get("/", this.front, this.explore);
-
-        //the-front
-        router.get(`/the-front`, this.front, this.explore);
-        router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
-
-        //pages
-        router.get(`/:page`, this.page, this.explore);
-
-        //the-front optional shortcuts
-        router.get(`/:frontDetail`, this.frontDetail, this.explore);
-
-        //explorer
-        router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
-        router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
-
-        //void
-        router.use(function(req, res) {
-            res.redirect("/void");
+        this.router.use((req, res) => {
+            console.log(req.contentPath);
+            
+            return express.static(`${req.contentPath}/public`);
         });
 
-        return router;
+        this.router.use((req, res) => {
+            console.log(this.bases[req.hosting].favicon);
+            return favicon(req.contentPath + this.bases[req.hosting].favicon);
+        });
+
+        //enable cookies
+        this.router.use((req, res) => {
+            console.log(req.hosting);
+            
+            return session({
+                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+                secret: process.env.SECRET,
+                name: req.hosting + '-session-id',
+                resave: false,
+                saveUninitialized: false,
+                cookie: { 
+                    secure: process.env.PRODUCTION == "true",
+                    maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
+                } 
+            })
+        });
+
+        //home
+        this.router.get("/", this.front, this.explore);
+
+        //the-front
+        this.router.get(`/the-front`, this.front, this.explore);
+        this.router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
+
+        //pages
+        this.router.get(`/:page`, this.page, this.explore);
+
+        //the-front optional shortcuts
+        this.router.get(`/:frontDetail`, this.frontDetail, this.explore);
+
+        //explorer
+        this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
+        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
+
+        //void
+        this.router.use(function(req, res) {
+            res.redirect("/void");
+        });
     }
 
     /**

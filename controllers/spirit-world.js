@@ -15,7 +15,7 @@ export default class SpiritWorld {
      * Sets up the spirit world.
      * @param {Server} io 
      */
-    constructor(io, bases = []) {
+    constructor(io, bases = {}) {
         this.bases = bases;
         this.io = io;
         this.rooms = {};
@@ -23,40 +23,32 @@ export default class SpiritWorld {
 
         this.user = new User();
         this.router = express.Router();
-        for (let base of this.bases) {
-            this.router.use(subdomain(base.subdomain, this.routeToBase(base)));
-        }    
-
-        this.router.use(this.routeToBase(bases[0]));
-    }
-
-    routeToBase = (base) => {
-        let router = express.Router();
-
-        //enable cookies
-        router.use(session({
-            store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-            secret: process.env.SECRET,
-            name: base.subdomain + '-session-id',
-            resave: false,
-            saveUninitialized: false,
-            cookie: { 
-                secure: process.env.PRODUCTION == "true",
-                maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
-            } 
-        }));
-
-        router.use((req, res, next) => {
+        
+        this.router.use((req, res, next) => {
             req.contentPath = base.directory;
+            req.hosting = req.hostname.split(":")[0];
             next();
         });
 
-        router.post("/loadAll", this.loadAll);
-        router.post("/load", this.load);
-        router.post("/serve", this.serve);
-        router.use("/user", this.user.router);
-        
-        return router;
+        //enable cookies
+        this.router.use((req, res) => {
+            return session({
+                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+                secret: process.env.SECRET,
+                name: req.hosting + '-session-id',
+                resave: false,
+                saveUninitialized: false,
+                cookie: { 
+                    secure: process.env.PRODUCTION == "true",
+                    maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
+                } 
+            })
+        });
+
+        this.router.post("/loadAll", this.loadAll);
+        this.router.post("/load", this.load);
+        this.router.post("/serve", this.serve);
+        this.router.use("/user", this.user.router);
     }
 
     /**
