@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- font-family: 'Roboto' or 'Roboto Condensed', sans-serif; -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+    <!-- 'Redacted Script', cursive; -->
+    <link href="https://fonts.googleapis.com/css2?family=Redacted+Script:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/menu.css">
+    <link rel="stylesheet" href="/styles/inventory.css">
+    <link rel="stylesheet" href="/styles/player.css">
+    <link rel="stylesheet" href="/styles/account.css">
+    <link rel="stylesheet" href="/styles/more.css">
+    <link rel="stylesheet" href="/styles/chat.css">
+    <script src="/js/base.js"></script>
+</head>
+<script>
+    const currentRoute = "<%- route %>";
+</script>
+
+<body>
+    <main>
+        <div class="chatter" id="adam"></div>
+        <input type="text" id="adam">
+        <button id="adam">Chat</button>
+    </main>
+</body>
+
+<script>
+    class Spirit {
+        constructor(name) {
+            this.name = name;
+            this.children = {};
+        }
+
+        addChild(child, parent) {
+            if (!this.children[child.name]) {
+                this.children[child.name] = 1;
+            }
+
+            this.children[child.name]++;
+        }
+    }
+
+    class Chatter {
+        constructor(id) {
+            this.name = id;
+            this.brain = new Spirit("i");
+            this.$div = $(`.chatter#${id}`);
+            this.$input = $(`input#${id}`);
+            this.$submit = $(`button#${id}`);
+
+            this.$submit.click(() => {
+                this.listen(this.$input.val());
+            });
+        }
+
+        register = (word) => {
+            if (!this.brain[word]) {
+                this.brain[word] = new Spirit(word);
+            }
+
+            return this.brain[word];
+        }
+
+        think = () => {
+
+        }
+
+        listen = (message) => {
+            message = message.toLowerCase();
+            let words = message.split(" ");
+
+            //add words to the dialogue tree
+            this.register(words[0]);    
+            for (let i = 0; i < words.length; i++) {
+                if (i < words.length - 1) {
+                    let child = this.register(words[i + 1]);
+                    if (i > 0) this.brain[words[i]].addChild(child, this.brain[words[i - 1]]);
+                    else this.brain[words[i]].addChild(child, null);
+                }
+            }
+
+            //think
+
+            this.respond(message);
+        }
+
+        respond(message) {
+            this.$div.append(`<p>${this.name}: ${message}</p>`);
+        }
+    }
+
+    const adam = new Chatter("adam");
+    adam.listen(`In the beginning God created the heavens and the earth`);
+    adam.listen("if i have the first two words in a three word relationship can the third word be guessed")
+</script>
+</html>

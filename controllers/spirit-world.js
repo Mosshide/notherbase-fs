@@ -15,35 +15,13 @@ export default class SpiritWorld {
      * Sets up the spirit world.
      * @param {Server} io 
      */
-    constructor(io, bases = {}) {
-        this.bases = bases;
+    constructor(io) {
         this.io = io;
         this.rooms = {};
         this.io.on('connection', this.setupChat);
 
         this.user = new User();
         this.router = express.Router();
-        
-        this.router.use((req, res, next) => {
-            req.contentPath = base.directory;
-            req.hosting = req.hostname.split(":")[0];
-            next();
-        });
-
-        //enable cookies
-        this.router.use((req, res) => {
-            return session({
-                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-                secret: process.env.SECRET,
-                name: req.hosting + '-session-id',
-                resave: false,
-                saveUninitialized: false,
-                cookie: { 
-                    secure: process.env.PRODUCTION == "true",
-                    maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
-                } 
-            })
-        });
 
         this.router.post("/loadAll", this.loadAll);
         this.router.post("/load", this.load);

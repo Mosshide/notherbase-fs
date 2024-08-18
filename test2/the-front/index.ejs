@@ -1,0 +1,100 @@
+<h1>NotherBase 2</h1>
+
+<p>
+    Welcome to The Front Test.
+</p>
+
+<p id="gold">0 Gold Added</p>
+
+<hr>
+
+<h3>Test Accounts</h3>
+<button onclick="test.runTest()">Run Test</button>
+
+<p id="info"></p>
+
+<input type="number" id="token">
+<button onclick="test.continueTest()">Continue Test</button>
+<button onclick="base.do('add-gold', { route: '/the-front' })">add gold</button>
+<!-- download you data -->
+<button onclick="base.downloadData()">Download Data</button>
+<!-- delete all your data -->
+<button onclick="base.deleteData($('#password').val())">Delete Data</button>
+<!-- import your data -->
+<button onclick="base.importData($('#password').val(), $('#fileInput')[0].files[0])">Import Data</button>
+<input type="file" id="fileInput">
+<!-- password input -->
+<input type="test" id="password" placeholder="pass">
+
+<hr>
+
+<a href="/coast/tall-beach/nono-cove" class="to nother-base">
+    Go inside
+</a>
+
+<a href="/check">
+    Go to The Check
+</a>
+
+<script>
+    class Test {
+        constructor() {
+            this.$info = $("main #info");
+            this.$gold = $("#gold");
+
+            this.oldID = Math.floor(Math.random() * 1000);
+            this.oldUsername = `testuser00${this.oldID}`;
+            this.oldPassword = `password00${this.oldID}`;
+
+            this.newID = Math.floor(Math.random() * 1000);
+            this.newUsername = `testuser00${this.newID}`;
+            this.newPassword = `password00${this.newID}`;
+
+            this.prepTest();
+        }
+
+        prepTest = async () => {
+            this.$info.empty();
+
+            this.$info.append(this.oldUsername + "<br>");
+            this.$info.append(this.oldPassword + "<br>");
+
+            this.$info.append(this.newUsername + "<br>");
+            this.$info.append(this.newPassword + "<br>");
+
+            let loaded = await base.load("gold", "global");
+            console.log("global gold ", loaded);
+            this.$gold.text(`?/${loaded?.memory?.data?.amount !== null ? loaded.memory.data.amount : 0} Gold Added`);
+            loaded = await base.loadAll("gold");
+            console.log("local gold ", loaded);
+        }
+
+        runTest = async () => {
+            let response = await base.attemptRegister(this.oldUsername, this.oldPassword);
+            this.$info.append(response.message + "<br>");
+
+            response = await base.attemptLogin(this.oldUsername, this.oldPassword);
+            this.$info.append(response.message + "<br>");
+        }
+
+        continueTest = async () => {
+            let response = await base.changePassword(
+                this.oldPassword,
+                this.newPassword, 
+                this.newPassword
+            );
+            this.$info.append(response.message + "<br>");
+
+            response = await base.logout(true);
+            this.$info.append(response.message + "<br>");
+
+            response = await base.attemptLogin(this.oldUsername, this.newPassword);
+            this.$info.append(response.message + "<br>");
+
+            response = await base.logout(true);
+            this.$info.append(response.message + "<br>");
+        }
+    }
+
+    let test = new Test();
+</script>

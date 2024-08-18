@@ -1,11 +1,6 @@
 import express from "express";
 import fs from 'fs';
 import { fileURLToPath } from 'node:url';
-const __dirname = fileURLToPath(new URL('./', import.meta.url));
-import subdomain from 'express-subdomain';
-import favicon from 'serve-favicon';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
 
 /**
  * Creation is all the renedered pages in a base.
@@ -14,41 +9,6 @@ export default class Creation {
     constructor(bases = {}) {
         this.bases = bases;
         this.router = express.Router();
-
-        this.router.use((req, res, next) => {
-            req.hosting = req.hostname.split(".")[0];
-            console.log(req.hosting);
-            req.contentPath = this.bases[req.hosting].directory;
-            next();
-        });
-
-        this.router.use((req, res) => {
-            console.log(req.contentPath);
-            
-            return express.static(`${req.contentPath}/public`);
-        });
-
-        this.router.use((req, res) => {
-            console.log(this.bases[req.hosting].favicon);
-            return favicon(req.contentPath + this.bases[req.hosting].favicon);
-        });
-
-        //enable cookies
-        this.router.use((req, res) => {
-            console.log(req.hosting);
-            
-            return session({
-                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-                secret: process.env.SECRET,
-                name: req.hosting + '-session-id',
-                resave: false,
-                saveUninitialized: false,
-                cookie: { 
-                    secure: process.env.PRODUCTION == "true",
-                    maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
-                } 
-            })
-        });
 
         //home
         this.router.get("/", this.front, this.explore);
