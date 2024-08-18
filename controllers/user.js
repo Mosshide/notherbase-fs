@@ -105,8 +105,6 @@ export default class User {
             
             if (check(res, passResult, "Password doesn't match the username.")) {
                 req.session.currentUser = req.body.username;
-                console.log(req.session.currentUser, req.body.username);
-                
                 
                 success(res, "Logged in.", spirit.memory.data.username);
             }
