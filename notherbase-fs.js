@@ -11,7 +11,7 @@ import SpiritWorld from "./controllers/spirit-world.js";
 import favicon from 'serve-favicon';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import { log } from "console";
+
 
 /**
  * The engine that runs a nother base.
@@ -21,6 +21,7 @@ class NotherBaseFS {
         this.bases = bases;
         let baseKeys = Object.keys(this.bases);
         for (let i = 0; i < baseKeys.length; i++) {
+            this.bases[baseKeys[i]].directory = fileURLToPath(new URL(this.bases[baseKeys[i]].directory, import.meta.url));
             this.bases[baseKeys[i]].static = express.static(this.bases[baseKeys[i]].directory + "/public");
             this.bases[baseKeys[i]].favicon = favicon(this.bases[baseKeys[i]].directory + this.bases[baseKeys[i]].icon);
             this.bases[baseKeys[i]].session = session({
