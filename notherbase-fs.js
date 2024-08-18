@@ -55,8 +55,12 @@ class NotherBaseFS {
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
-            req.hosting = req.hostname.split(".")[0];
-            console.log(req.hosting, req.hostname);            
+            let split = req.hostname.split(".");
+            if (split.length > 2) {
+                if (split[split.length - 2].length < 3) req.hosting = split[split.length - 3] + split[split.length - 2];
+                else req.hosting = split[split.length - 2];
+            }
+            else req.hosting = split[0];         
             req.contentPath = this.bases[req.hosting].directory;
             next();
         });

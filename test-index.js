@@ -7,6 +7,11 @@ const notherBaseFS = new NotherBaseFS({}, {
         directory: fileURLToPath(new URL('./test', import.meta.url)),
         icon: '/public/drum.png'
     },
+    notherbaselo: {
+        title: "NotherBase",
+        directory: fileURLToPath(new URL('./test', import.meta.url)),
+        icon: '/public/drum.png'
+    },
     test: {
         title: "TestBase",
         directory: fileURLToPath(new URL('./test2', import.meta.url)),
