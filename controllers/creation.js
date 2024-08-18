@@ -1,35 +1,74 @@
 import express from "express";
 import fs from 'fs';
+import { fileURLToPath } from 'node:url';
+const __dirname = fileURLToPath(new URL('./', import.meta.url));
+import subdomain from 'express-subdomain';
+import favicon from 'serve-favicon';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 
 /**
  * Creation is all the renedered pages in a base.
  */
 export default class Creation {
-    constructor(siteTitle = "Base") {
-        this.siteTitle = siteTitle;
+    constructor(bases = []) {
+        this.bases = bases;
         this.router = express.Router();
+        for (let base of this.bases) {
+            this.router.use(subdomain(base.subdomain, this.routeToBase(base)));
+        }
+
+        this.router.use(this.routeToBase(bases[0]));
+    }
+
+    routeToBase = (base) => {
+        let router = express.Router();
+
+        //enable cookies
+        router.use(session({
+            store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+            secret: process.env.SECRET,
+            name: base.subdomain + '-session-id',
+            resave: false,
+            saveUninitialized: false,
+            cookie: { 
+                secure: process.env.PRODUCTION == "true",
+                maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
+            } 
+        }));
+        
+        router.use(express.static(`${base.directory}/public`));
+
+        router.use(favicon(base.directory + base.favicon));
+
+        router.use((req, res, next) => {
+            req.contentPath = base.directory;
+            next();
+        });
 
         //home
-        this.router.get("/", this.front, this.explore);
+        router.get("/", this.front, this.explore);
 
         //the-front
-        this.router.get(`/the-front`, this.front, this.explore);
-        this.router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
+        router.get(`/the-front`, this.front, this.explore);
+        router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
 
         //pages
-        this.router.get(`/:page`, this.page, this.explore);
+        router.get(`/:page`, this.page, this.explore);
 
         //the-front optional shortcuts
-        this.router.get(`/:frontDetail`, this.frontDetail, this.explore);
+        router.get(`/:frontDetail`, this.frontDetail, this.explore);
 
         //explorer
-        this.router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
-        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
+        router.get(`/:region/:area/:poi`, this.lock, this.poi, this.explore);
+        router.get(`/:region/:area/:poi/:detail`, this.lock, this.detail, this.explore);
 
         //void
-        this.router.use(function(req, res) {
+        router.use(function(req, res) {
             res.redirect("/void");
         });
+
+        return router;
     }
 
     /**

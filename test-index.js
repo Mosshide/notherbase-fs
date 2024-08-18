@@ -1,5 +1,10 @@
 import NotherBaseFS from "./notherbase-fs.js";
 import { fileURLToPath } from 'node:url';
-const __dirname = fileURLToPath(new URL('./test', import.meta.url));
 
-const notherBaseFS = new NotherBaseFS(__dirname);
+const notherBaseFS = new NotherBaseFS({}, [
+    {
+        subdomain: "test",
+        directory: fileURLToPath(new URL('./test', import.meta.url)),
+        favicon: '/public/drum.png'
+    }
+]);

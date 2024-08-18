@@ -22,9 +22,9 @@
 
 <script src="/js/chat-box.js"></script>
 <script>
-    let chatTest = new ChatBox("<%= user.username %>", "test-chat");
-    let chatTest2 = new ChatBox("<%= user.username %>", "test-chat-2");
-    let chatTest3 = new ChatBox("<%= user.username %>", "test-chat-3");
+    let chatTest = new ChatBox("<%= user.memory.data.username %>", "test-chat");
+    let chatTest2 = new ChatBox("<%= user.memory.data.username %>", "test-chat-2");
+    let chatTest3 = new ChatBox("<%= user.memory.data.username %>", "test-chat-3");
 
     chatTest.sendMessage("Hello, world!");
 </script>

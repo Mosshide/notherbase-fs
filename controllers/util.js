@@ -61,5 +61,5 @@ export const fail = (res, msg = "Failed!") => {
  * @returns True if a user is logged in, else false.
  */
 export const loginCheck = (req, res) => {
-    return check(res, req.session.currentUser, "Please login first.");
+    return check(res, req.session?.currentUser, "Please login first.");
 }

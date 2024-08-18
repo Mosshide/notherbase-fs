@@ -3,10 +3,6 @@ dotenv.config();
 import Models from "./models/index.js";
 import { Server } from "socket.io";
 import express from "express";
-import session from 'express-session';
-import methodOverride from 'method-override';
-import MongoStore from 'connect-mongo';
-import favicon from 'serve-favicon';
 import http from 'http';
 import { fileURLToPath } from 'node:url';
 const __dirname = fileURLToPath(new URL('./', import.meta.url));
@@ -17,60 +13,34 @@ import SpiritWorld from "./controllers/spirit-world.js";
  * The engine that runs a nother base.
  */
 class NotherBaseFS {
-    constructor(contentPath, globals = null, settings = {}) {
-        this.settings = {
-            siteTitle: "NotherBase",
-            favicon: null,
-            ...settings
-        }
+    constructor(globals = {}, bases = []) {
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
-        this.creation = new Creation(this.settings.siteTitle);
-        this.spiritWorld = new SpiritWorld(this.io);
+        this.spiritWorld = new SpiritWorld(this.io, bases);
+        this.creation = new Creation(bases);
         
         //set views path
         this.app.set("view engine", "ejs");
         this.app.set("views", `${__dirname}/views`); 
-    
-        // allows us to delete
-        this.app.use(methodOverride('_method'));
     
         // allows us to use post body data
         this.app.use(express.json({
             extended: true,
             inflate: true,
             type: 'application/x-www-form-urlencoded'
-          }));
-        //this.app.use(express.urlencoded({ extended: true }));
+        }));
     
         // allows us to get static files like css
         this.app.use(express.static('public'));
-        this.app.use(express.static(`${__dirname}/public`));
     
-        // sets the favicon image
-        if (this.settings.favicon) this.app.use(favicon(this.settings.favicon));
-        else this.app.use(favicon(__dirname + '/public/img/logo.png'));
-    
-        //enable cookies
+        //be safe
         if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
-        this.app.use(session({
-            store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-            secret: process.env.SECRET,
-            name: 'session-id',
-            resave: false,
-            saveUninitialized: false,
-            cookie: { 
-                secure: process.env.PRODUCTION == "true",
-                maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
-            } 
-        }));
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
             req.globals = globals;
             req.db = Models;
-            req.contentPath = contentPath;
             req.lock = false;
             next();
         });
