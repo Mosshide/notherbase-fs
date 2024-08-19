@@ -3,9 +3,6 @@ import { stripHtml } from "string-strip-html";
 import { success, fail } from "./util.js";
 import User from "./user.js";
 import fs from 'fs';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
-import subdomain from 'express-subdomain';
 
 /**
 * The spirit world is the API of a base.
@@ -22,7 +19,6 @@ export default class SpiritWorld {
 
         this.user = new User();
         this.router = express.Router();
-
         this.router.post("/loadAll", this.loadAll);
         this.router.post("/load", this.load);
         this.router.post("/serve", this.serve);
