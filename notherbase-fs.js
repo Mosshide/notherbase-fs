@@ -40,23 +40,20 @@ class NotherBaseFS {
 
         //be safe, needs to be before session
         if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
-        
-        this.app.use(cors());
 
         let baseKeys = Object.keys(this.bases);
+        let store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
         for (let i = 0; i < baseKeys.length; i++) {
             this.bases[baseKeys[i]].static = express.static(this.bases[baseKeys[i]].directory + "/public");
             this.bases[baseKeys[i]].favicon = favicon(this.bases[baseKeys[i]].directory + this.bases[baseKeys[i]].icon);
             this.bases[baseKeys[i]].session = session({
-                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+                store: store,
                 secret: process.env.SECRET,
                 name: baseKeys[i] + '-session-id',
                 resave: false,
                 saveUninitialized: false,
-                proxy: process.env.PRODUCTION == "true",
                 cookie: { 
                     secure: process.env.PRODUCTION == "true",
-                    sameSite: process.env.PRODUCTION == "true" ? 'none' : 'lax',
                     maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
                 } 
             });
@@ -78,8 +75,6 @@ class NotherBaseFS {
         this.app.use((req, res, next) => {
             this.bases[req.hosting].favicon(req, res, next);
         });
-
-        
 
         //enable cookies
         this.app.use((req, res, next) => {
