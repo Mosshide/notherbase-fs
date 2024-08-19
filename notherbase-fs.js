@@ -91,6 +91,8 @@ class NotherBaseFS {
             req.globals = globals;
             req.db = Models;
             req.lock = false;
+            // enables sessions only if the protocol is https and we are in production, or if we are in development
+            req.sessionsEnabled = (process.env.PRODUCTION == "true" && req.secure) || process.env.PRODUCTION == "false";
             next();
         });
 
