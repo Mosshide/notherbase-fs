@@ -11,7 +11,6 @@ import SpiritWorld from "./controllers/spirit-world.js";
 import favicon from 'serve-favicon';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
-import cors from 'cors';
 
 
 /**
