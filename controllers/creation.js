@@ -69,9 +69,7 @@ export default class Creation {
 
                 if (req.session.currentUser) {
                     context.user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
-                }
-                console.log(req.session.currentUser, context.user);
-                
+                }                
 
                 res.render(req.toRender, context);
             }
