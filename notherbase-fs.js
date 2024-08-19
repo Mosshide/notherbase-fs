@@ -62,7 +62,7 @@ class NotherBaseFS {
             }
             else req.hosting = split[0];         
             console.log(req.hosting);
-            console.log(req.session);
+            
             
             
             req.contentPath = this.bases[req.hosting].directory;
@@ -89,6 +89,7 @@ class NotherBaseFS {
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
+            console.log(req.session);
             req.globals = globals;
             req.db = Models;
             req.lock = false;
