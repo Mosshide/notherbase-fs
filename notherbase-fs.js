@@ -27,18 +27,28 @@ class NotherBaseFS {
         this.spiritWorld = new SpiritWorld(this.io);
         this.creation = new Creation(bases);
 
+        //set views path
+        this.app.set("view engine", "ejs");
+        this.app.set("views", `${__dirname}/views`); 
+    
+        // allows us to use post body data
+        this.app.use(express.json({
+            extended: true,
+            inflate: true,
+            type: 'application/x-www-form-urlencoded'
+        }));
+
         //be safe, needs to be before session
         if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
         
         this.app.use(cors());
 
         let baseKeys = Object.keys(this.bases);
-        let mongoStore = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
         for (let i = 0; i < baseKeys.length; i++) {
             this.bases[baseKeys[i]].static = express.static(this.bases[baseKeys[i]].directory + "/public");
             this.bases[baseKeys[i]].favicon = favicon(this.bases[baseKeys[i]].directory + this.bases[baseKeys[i]].icon);
             this.bases[baseKeys[i]].session = session({
-                store: mongoStore,
+                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
                 secret: process.env.SECRET,
                 name: baseKeys[i] + '-session-id',
                 resave: false,
@@ -51,17 +61,6 @@ class NotherBaseFS {
                 } 
             });
         }
-        
-        //set views path
-        this.app.set("view engine", "ejs");
-        this.app.set("views", `${__dirname}/views`); 
-    
-        // allows us to use post body data
-        this.app.use(express.json({
-            extended: true,
-            inflate: true,
-            type: 'application/x-www-form-urlencoded'
-        }));
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
