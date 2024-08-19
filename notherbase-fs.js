@@ -61,10 +61,7 @@ class NotherBaseFS {
                 if (split[split.length - 2].length < 3) req.hosting = split[split.length - 3] + split[split.length - 2];
                 else req.hosting = split[split.length - 2];
             }
-            else req.hosting = split[0];         
-            console.log(req.hosting);
-            
-            
+            else req.hosting = split[0];        
             
             req.contentPath = this.bases[req.hosting].directory;
             next();
@@ -73,6 +70,9 @@ class NotherBaseFS {
         this.app.use((req, res, next) => {
             this.bases[req.hosting].favicon(req, res, next);
         });
+
+        //be safe, needs to be before session
+        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
 
         //enable cookies
         this.app.use((req, res, next) => {
@@ -84,13 +84,9 @@ class NotherBaseFS {
         this.app.use((req, res, next) => {
             this.bases[req.hosting].static(req, res, next);
         });
-    
-        //be safe
-        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
-            console.log(req.session);
             req.globals = globals;
             req.db = Models;
             req.lock = false;
