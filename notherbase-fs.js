@@ -43,6 +43,7 @@ class NotherBaseFS {
                 proxy: process.env.PRODUCTION == "true",
                 cookie: { 
                     secure: process.env.PRODUCTION == "true",
+                    sameSite: 'none',
                     maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
                 } 
             });
