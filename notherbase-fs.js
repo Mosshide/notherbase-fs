@@ -11,6 +11,7 @@ import SpiritWorld from "./controllers/spirit-world.js";
 import favicon from 'serve-favicon';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import cors from 'cors';
 
 
 /**
@@ -28,6 +29,8 @@ class NotherBaseFS {
 
         //be safe, needs to be before session
         if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
+        
+        this.app.use(cors());
 
         let baseKeys = Object.keys(this.bases);
         let mongoStore = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
