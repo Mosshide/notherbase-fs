@@ -20,11 +20,12 @@ class NotherBaseFS {
     constructor(globals = {}, bases = {}) {
         this.bases = bases;
         let baseKeys = Object.keys(this.bases);
+        let mongoStore = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
         for (let i = 0; i < baseKeys.length; i++) {
             this.bases[baseKeys[i]].static = express.static(this.bases[baseKeys[i]].directory + "/public");
             this.bases[baseKeys[i]].favicon = favicon(this.bases[baseKeys[i]].directory + this.bases[baseKeys[i]].icon);
             this.bases[baseKeys[i]].session = session({
-                store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+                store: mongoStore,
                 secret: process.env.SECRET,
                 name: baseKeys[i] + '-session-id',
                 resave: false,
