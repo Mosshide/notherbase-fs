@@ -62,6 +62,8 @@ class NotherBaseFS {
             }
             else req.hosting = split[0];         
             console.log(req.hosting);
+            console.log(req.session);
+            
             
             req.contentPath = this.bases[req.hosting].directory;
             next();
