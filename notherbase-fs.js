@@ -19,6 +19,16 @@ import MongoStore from 'connect-mongo';
 class NotherBaseFS {
     constructor(globals = {}, bases = {}) {
         this.bases = bases;
+
+        this.app = express();
+        this.server = http.createServer(this.app);
+        this.io = new Server(this.server);
+        this.spiritWorld = new SpiritWorld(this.io);
+        this.creation = new Creation(bases);
+
+        //be safe, needs to be before session
+        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
+
         let baseKeys = Object.keys(this.bases);
         let mongoStore = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
         for (let i = 0; i < baseKeys.length; i++) {
@@ -36,12 +46,6 @@ class NotherBaseFS {
                 } 
             });
         }
-
-        this.app = express();
-        this.server = http.createServer(this.app);
-        this.io = new Server(this.server);
-        this.spiritWorld = new SpiritWorld(this.io);
-        this.creation = new Creation(bases);
         
         //set views path
         this.app.set("view engine", "ejs");
@@ -71,8 +75,7 @@ class NotherBaseFS {
             this.bases[req.hosting].favicon(req, res, next);
         });
 
-        //be safe, needs to be before session
-        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 1);
+        
 
         //enable cookies
         this.app.use((req, res, next) => {
