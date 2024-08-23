@@ -81,10 +81,10 @@ class NotherBaseFS {
         });       
 
         // allows us to get static files like css
-        this.app.use(express.static(`${__dirname}/public`));
         this.app.use((req, res, next) => {
             this.bases[req.hosting].static(req, res, next);
         });
+        this.app.use(express.static(`${__dirname}/public`));
 
         //provide database access and etc to use in routes
         this.app.use((req, res, next) => {
