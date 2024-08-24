@@ -192,8 +192,6 @@ class Base {
     // download your data
     downloadData = async () => {
         let response = await Base.commune("downloadData");
-        console.log(response);
-        
 
         if (response.status === "success") {
             let blob = new Blob([JSON.stringify(response.data)], { type: "application/json" });
@@ -206,23 +204,20 @@ class Base {
             URL.revokeObjectURL(url);
             a.remove();
         }
+
+        return response;
     }
 
     deleteData = async (password) => {
         let response = await Base.commune("deleteAlldata", { password });
 
-        console.log("Deleted: ", response.status === "success" ? response.data : "no");
+        return response;
     }
 
     importData = async (password, data) => {
+        let text = await data.text(data);
         
-        let reader = new FileReader();
-        reader.addEventListener('load', async (event) => {
-            let parsed = JSON.parse(event.target.result);
-            //console.log(parsed);
-            let response = await Base.commune("importData", { password, data: parsed });
-            console.log("Imported: ", response.status === "success" ? response.data : "no");
-        });
-        reader.readAsText(data);
+        let response = await Base.commune("importData", { password, data: text });
+        return response;
     }
 }

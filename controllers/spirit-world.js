@@ -162,7 +162,7 @@ export default class SpiritWorld {
             if (fs.existsSync(scriptPath)) {
                 let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
 
-                script = await import(scriptPath);
+                script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
                 result = await script.default(req, user, this.io);
                 success(res, "Served.", result);
             }

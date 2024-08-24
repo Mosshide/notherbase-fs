@@ -17,11 +17,11 @@
 <button onclick="test.continueTest()">Continue Test</button>
 <button onclick="base.do('add-gold', { route: '/the-front' })">add gold</button>
 <!-- download you data -->
-<button onclick="base.downloadData()">Download Data</button>
+<button onclick="downloadData()">Download Data</button>
 <!-- delete all your data -->
-<button onclick="base.deleteData($('#password').val())">Delete Data</button>
+<button onclick="deleteData()">Delete Data</button>
 <!-- import your data -->
-<button onclick="base.importData($('#password').val(), $('#fileInput')[0].files[0])">Import Data</button>
+<button onclick="importData()">Import Data</button>
 <input type="file" id="fileInput">
 <!-- password input -->
 <input type="test" id="password" placeholder="pass">
@@ -97,4 +97,21 @@
     }
 
     let test = new Test();
+
+    let downloadData = async () => {
+        let res = base.downloadData();
+        console.log(res.message);
+    }
+
+    let deleteData = async () => {
+        let res = base.deleteData($('#password').val());
+        console.log(res.message);
+    }
+
+    let importData = async () => {
+        let pass = $('#password').val();         
+        let file = $('#fileInput')[0].files[0];
+        let res = await base.importData(pass, file);
+        console.log(res.message);
+    }
 </script>

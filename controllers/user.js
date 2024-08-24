@@ -224,7 +224,7 @@ export default class User {
                 let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
 
                 if (check(res, passResult, "Password doesn't match the username.")) {
-                    let data = req.body.data;
+                    let data = JSON.parse(req.body.data);
                     let imported = 0;
                     for (let i = 0; i < data.length; i++) {
                         if (data[i].parent != null) {
