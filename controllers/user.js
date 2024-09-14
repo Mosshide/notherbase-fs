@@ -221,19 +221,21 @@ export default class User {
             let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser }); 
 
             if (check(res, user, "Account not found!")) {
-                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                if (check(res, req.body.password, "Password error.")) {
+                    let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
 
-                if (check(res, passResult, "Password doesn't match the username.")) {
-                    let data = JSON.parse(req.body.data);
-                    let imported = 0;
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i].parent != null) {
-                            let spirit = await req.db.Spirit.create(data[i].service, data[i].data, user.memory._id);
-                            if (spirit) imported++;
+                    if (check(res, passResult, "Password doesn't match the username.")) {
+                        let data = JSON.parse(req.body.data);
+                        let imported = 0;
+                        for (let i = 0; i < data.length; i++) {
+                            if (data[i].parent != null) {
+                                let spirit = await req.db.Spirit.create(data[i].service, data[i].data, user.memory._id);
+                                if (spirit) imported++;
+                            }
                         }
-                    }
 
-                    success(res, "Data Imported", imported);
+                        success(res, "Data Imported", imported);
+                    }
                 }
             }
         }

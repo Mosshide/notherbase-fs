@@ -19,10 +19,20 @@ export default class SpiritWorld {
 
         this.user = new User();
         this.router = express.Router();
-        this.router.post("/loadAll", this.loadAll);
-        this.router.post("/load", this.load);
-        this.router.post("/serve", this.serve);
-        this.router.use("/user", this.user.router);
+        this.router.post("/loadAll", this.catchErrors, this.loadAll);
+        this.router.post("/load", this.catchErrors, this.load);
+        this.router.post("/serve", this.catchErrors, this.serve);
+        this.router.use("/user", this.catchErrors, this.user.router);
+    }
+
+    // abstract out the try catch pattern
+    catchErrors = async (req, res, next) => {
+        try {
+            await next();
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
     }
 
     /**
@@ -91,29 +101,24 @@ export default class SpiritWorld {
      * @returns {Object} The requested spirits.
      */
     loadAll = async (req, res) => {
-        try {
-            let parent = null;
-            let data = req.body.data ? req.body.data : {};
-            let id = req.body.id ? req.body.id : null;
+        let parent = null;
+        let data = req.body.data ? req.body.data : {};
+        let id = req.body.id ? req.body.id : null;
 
-            // if the scope is local, the parent is the user's id
-            if (req.body.scope === "local") {
-                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
-                if (user?.memory?._id) parent = user.memory._id;
-                else {
-                    fail(res, "User had no id on load()");
-                    return;
-                }
-            } 
+        // if the scope is local, the parent is the user's id
+        if (req.body.scope === "local") {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+            if (user?.memory?._id) parent = user.memory._id;
+            else {
+                fail(res, "User had no id on load()");
+                return;
+            }
+        } 
 
-            // recall all spirits with the given service name and parent
-            let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
+        // recall all spirits with the given service name and parent
+        let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
 
-            res.send(spirits);
-        } catch (error) {
-            console.log(error);
-            fail(res, "Server error");
-        }
+        res.send(spirits);
     }
 
     /**
@@ -123,29 +128,24 @@ export default class SpiritWorld {
      * @returns {Object} The requested spirit.
      */
     load = async (req, res) => {
-        try {
-            let parent = null;
-            let data = req.body.data ? req.body.data : {};
-            let id = req.body.id ? req.body.id : null;
+        let parent = null;
+        let data = req.body.data ? req.body.data : {};
+        let id = req.body.id ? req.body.id : null;
 
-            // if the scope is local, the parent is the user's id
-            if (req.body.scope === "local") {
-                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
-                if (user?.memory?._id) parent = user.memory._id;
-                else {
-                    fail(res, "User had no id on load()");
-                    return;
-                }
-            } 
+        // if the scope is local, the parent is the user's id
+        if (req.body.scope === "local") {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+            if (user?.memory?._id) parent = user.memory._id;
+            else {
+                fail(res, "User had no id on load()");
+                return;
+            }
+        } 
 
-            // recall all spirits with the given service name and parent
-            let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
+        // recall all spirits with the given service name and parent
+        let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
 
-            res.send(spirit);
-        } catch (error) {
-            console.log(error);
-            fail(res, "Server error");
-        }
+        res.send(spirit);
     }
 
     /**
@@ -154,22 +154,17 @@ export default class SpiritWorld {
      * @param {Object} res 
      */
     serve = async (req, res) => {
-        try {
-            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
-            
-            let script, result = null;
+        let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
+        
+        let script, result = null;
 
-            if (fs.existsSync(scriptPath)) {
-                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+        if (fs.existsSync(scriptPath)) {
+            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
 
-                script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
-                result = await script.default(req, user, this.io);
-                success(res, "Served.", result);
-            }
-            else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
-        } catch (error) {
-            console.log(error);
-            fail(res, "Server error");
+            script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
+            result = await script.default(req, user, this.io);
+            success(res, "Served.", result);
         }
+        else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
     }
 }
