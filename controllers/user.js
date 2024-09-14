@@ -190,7 +190,6 @@ export default class User {
             if (check(res, user, "Account not found!")) {
                 let data = await req.db.Spirit.recallAll(null, user.memory._id);
                 let dataToDownload = data.map(d => d.memory);
-                dataToDownload.unshift(user.memory.data);
 
                 successJSON(res, "Data Downloaded", dataToDownload);
             }
