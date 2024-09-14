@@ -203,12 +203,14 @@ export default class User {
             let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
 
             if (check(res, user, "Account not found!")) {
-                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                if (check(res, req.body.password, "Password error.")) {
+                    let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
 
-                if (check(res, passResult, "Password doesn't match the username.")) {
-                    let deleted = await req.db.Spirit.delete(null, user.memory._id);
-                    if (check(res, deleted > 0, "No data deleted")) {
-                        success(res, "Data Deleted", deleted);
+                    if (check(res, passResult, "Password doesn't match the username.")) {
+                        let deleted = await req.db.Spirit.delete(null, user.memory._id);
+                        if (check(res, deleted > 0, "No data deleted")) {
+                            success(res, "Data Deleted", deleted);
+                        }
                     }
                 }
             }
