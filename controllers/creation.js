@@ -64,12 +64,31 @@ export default class Creation {
                     main: req.main,
                     query: req.query,
                     route: req.path,
-                    requireUser: req.lock
+                    requireUser: req.lock,
+                    preprocessed: {}
                 }
 
                 if (req.session.currentUser) {
                     context.user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
-                }                
+                }      
+
+                //preprocess
+                let preprocessScripts = fs.existsSync(req.preprocess) ? fs.readdirSync(req.preprocess) : [];
+                for (let preprocessScript of preprocessScripts) {
+                    try {
+                        let scriptPath = `${req.preprocess}/${preprocessScript}`;
+
+                        if (fs.existsSync(scriptPath)) {
+                            let script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
+                            let result = await script.default(req, context.user, this.io);
+                            context.preprocessed[preprocessScript.split(".")[0]] = result;
+                        }
+                        else context.preprocessed[preprocessScript.split(".")[0]] = `Error: Script Not Found`;
+                    } catch (error) {
+                        console.log(error);
+                        context.preprocessed[preprocessScript.split(".")[0]] = `Error: Server Error`;
+                    }
+                }
 
                 res.render(req.toRender, context);
             }
@@ -89,6 +108,7 @@ export default class Creation {
      */
     front = async (req, res, next) => {
         req.main = req.contentPath + "/the-front/index";
+        req.preprocess = req.contentPath + "/the-front/_preprocess";
         req.siteTitle = this.bases[req.hosting].title;
         req.toRender = "explorer";
         next();
@@ -102,6 +122,7 @@ export default class Creation {
      */
     frontDetail = async (req, res, next) => {
         req.main = `${req.contentPath}/the-front/${req.params.frontDetail}/index`;
+        req.preprocess = `${req.contentPath}/the-front/${req.params.frontDetail}/_preprocess`;
         req.siteTitle = `${this.bases[req.hosting].title} - ${req.params.frontDetail}`;
         req.toRender = "explorer";
         next();
@@ -115,6 +136,7 @@ export default class Creation {
      */
     poi = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/index`;
+        req.preprocess = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/_preprocess`;
         req.siteTitle = `${this.bases[req.hosting].title} - ${req.params.poi}`;
         req.toRender = "explorer";
         next();
@@ -128,6 +150,7 @@ export default class Creation {
      */
     detail = async (req, res, next) => {
         req.main = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/index`;
+        req.preprocess = `${req.contentPath}/${req.params.region}/${req.params.area}/${req.params.poi}/${req.params.detail}/_preprocess`;
         req.siteTitle = `${this.bases[req.hosting].title} - ${req.params.detail}`;
         req.toRender = "explorer";
         next();
@@ -141,6 +164,7 @@ export default class Creation {
      */
     page = async (req, res, next) => {
         req.main = `${req.contentPath}/pages/${req.params.page}/index`;
+        req.preprocess = `${req.contentPath}/pages/${req.params.page}/_preprocess`;
         req.siteTitle = `${req.params.page}`;
         req.toRender = req.main;
         next();
