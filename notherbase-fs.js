@@ -26,8 +26,10 @@ class NotherBaseFS {
         this.spiritWorld = new SpiritWorld(this.io);
         this.creation = new Creation(bases);
 
-        //set views path
+        //set view engine
         this.app.set("view engine", "ejs");
+        
+        //set views path
         this.app.set("views", `${__dirname}/views`); 
     
         // allows us to use post body data
