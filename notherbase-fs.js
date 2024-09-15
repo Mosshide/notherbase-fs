@@ -36,7 +36,8 @@ class NotherBaseFS {
         this.app.use(express.json({
             extended: true,
             inflate: true,
-            type: 'application/x-www-form-urlencoded'
+            type: 'application/x-www-form-urlencoded',
+            limit: '50mb'
         }));
 
         //be safe, needs to be before session

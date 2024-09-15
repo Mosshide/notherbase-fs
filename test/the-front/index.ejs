@@ -99,12 +99,12 @@
     let test = new Test();
 
     let downloadData = async () => {
-        let res = base.downloadData();
+        let res = await base.downloadData();
         console.log(res.message);
     }
 
     let deleteData = async () => {
-        let res = base.deleteData($('#password').val());
+        let res = await base.deleteData($('#password').val());
         console.log(res.message);
     }
 
