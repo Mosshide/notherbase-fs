@@ -102,22 +102,15 @@ class NotherBaseFS {
 
         //destroy session if it is not authorized
         this.app.use(async (req, res, next) => {
-            console.log(req.user?.memory?.data?.sessions);
-            
             if (req.session.currentUser) {
                 if (req.user?.memory?.data?.sessions?.[req.session.id]) {
                     if (req.user.memory.data.sessions[req.session.id] < Date.now()) {
                         req.session.regenerate(() => {});
                         delete req.user.memory.data.sessions[req.session.id];
                         await req.user.memory.save();
-                        console.log("Session expired");
-                        
                     }
                 }
-                else {
-                    req.session.regenerate(() => {});
-                    console.log("Session not found");
-                }
+                else req.session.regenerate(() => {});
             }
 
             next();
