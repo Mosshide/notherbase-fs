@@ -25,6 +25,9 @@
 <input type="file" id="fileInput">
 <!-- password input -->
 <input type="test" id="password" placeholder="pass">
+<button onclick="sendOTP()">Get OTP</button>
+<input type="text" id="email">
+<button onclick="changeEmail()">Change Email</button>
 
 <hr>
 
@@ -112,6 +115,18 @@
         let pass = $('#password').val();         
         let file = $('#fileInput')[0].files[0];
         let res = await base.importData(pass, file);
+        console.log(res.message);
+    }
+
+    let sendOTP = async () => {
+        let res = await base.sendOTP();
+        console.log(res.message);
+    }
+
+    let changeEmail = async () => {
+        let pass = $('#password').val();
+        let email = $('#email').val();
+        let res = await base.changeEmail(pass, email);
         console.log(res.message);
     }
 </script>

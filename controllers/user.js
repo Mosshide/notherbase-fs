@@ -11,6 +11,8 @@ export default class User {
 
         this.router.post("/logout", this.logout);
         this.router.post("/changePassword", this.changePassword);
+        this.router.post("/sendOTP", this.sendOneTimePassword);
+        this.router.post("/changeEmail", this.changeEmail);
         this.router.post("/register", this.register);
         this.router.post("/login", this.login);
         this.router.post("/deletePermanently", this.deletePermanently);
@@ -20,6 +22,7 @@ export default class User {
         this.router.post("/downloadData", this.downloadData);
         this.router.post("/deleteAlldata", this.deleteAlldata);
         this.router.post("/importData", this.importData);
+
     }
 
     /**
@@ -28,7 +31,7 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     logout = async (req, res) => {
-        await req.session.destroy();
+        await req.session?.destroy();
 
         success(res, "Logged out.");
     }
@@ -65,6 +68,86 @@ export default class User {
         }
     }
 
+    validatePassword = async (req, password, user) => {
+        if (password && user?.memory?.data?.otp) {
+            if (password == user.memory.data.otp.code) {
+                if (Date.now() < user.memory.data.otp.expires) {
+                    user.memory.data.otp.expires = 0;
+                    await user.commit();
+                    return "Authenticated.";
+                }
+                else return "One-time password expired.";
+            }
+            else {
+                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                if (passResult) return "Authenticated.";
+                else return "Password doesn't match the username.";
+            }
+        }
+        else return "Password error.";
+    }
+
+    /**
+     * Change a user's email.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
+    changeEmail = async (req, res) => {       
+        if (loginCheck(req, res)) {
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+
+            if (check(res, spirit, "User not found!") &&
+                check(res, req.body.email, "New email must be provided."))
+            {
+                let result = await this.validatePassword(req, req.body.password, spirit);
+                if (result == "Authenticated.") {
+                    let other = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
+         
+                    if (check(res, !other, "Email already in use!")) {
+                        spirit.addBackup({
+                            ...spirit.memory.data,
+                            email: req.body.email
+                        });
+                        
+                        await spirit.commit();
+                
+                        success(res, "Email changed successfully!");
+                    }
+                }
+                else fail(res, result);
+            }
+        }
+    }
+
+    /**
+     * Send a one-time password to the user's email.
+     * @param {Object} req An Express.js request.
+     * @param {Object} res An Express.js response.
+     */
+    sendOneTimePassword = async (req, res) => {
+        if (loginCheck(req, res)) {
+            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+
+            if (check(res, spirit, "User not found!")) {
+                let otp = Math.floor(100000 + Math.random() * 900000);
+                spirit.memory.data.otp = {
+                    code: otp,
+                    expires: Date.now() + 1000 * 60 * 15
+                }
+                
+                await spirit.commit();
+
+                await req.db.SendMail.send(spirit.memory.data.email, 'One Time Password for NotherBase', 
+                    `<h1>Your One-Time Password:<h1>
+                    <h2>${otp}<h2>
+                    <p>Visit <a href="https://www.notherbase.com/the-front/keeper">notherbase.com/the-front/keeper</a> to use your one-time password.</p>
+                    <p>This one-time password expires in 15 minutes.<p>`);
+        
+                success(res, "One-time password sent.");
+            }
+        }
+    }
+
     /**
      * Register a new user account.
      * @param {Object} req An Express.js request.
@@ -84,7 +167,13 @@ export default class User {
                     username: req.body.username, 
                     password: hash,
                     authLevels: [ "Basic" ],
-                    view: "compact"
+                    view: "compact",
+                    email: "",
+                    otp: {
+                        code: "",
+                        expires: 0
+                    },
+                    sessions: []
                 });
         
                 success(res, "Registration successful!");
@@ -99,15 +188,30 @@ export default class User {
      */
     login = async (req, res) => {
         let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
-
         if (check(res, spirit, "User not found.")) {
-            let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
-            
-            if (check(res, passResult, "Password doesn't match the username.")) {
-                req.session.currentUser = req.body.username;
-                
-                success(res, "Logged in.", req.body.username);
+            spirit.memory.data = {
+                username: "", 
+                password: "",
+                authLevels: [ "Basic" ],
+                view: "compact",
+                email: "",
+                otp: {
+                    code: "",
+                    expires: 0
+                },
+                sessions: {},
+                ...spirit.memory.data
             }
+            await spirit.commit();
+            
+            let result = await this.validatePassword(req, req.body.password, spirit);
+            if (result === "Authenticated.") {
+                req.session.currentUser = req.body.username;
+                spirit.memory.data.sessions[req.session.id] = Date.now() + 1000 * 60 * 60 * 24 * 28; // 28 days 
+                await spirit.commit();
+                success(res, "Login successful!", req.body.username);
+            }
+            else fail(res, result);
         }
     }
 

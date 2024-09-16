@@ -81,8 +81,8 @@ class NotherBaseFS {
         //enable cookies
         this.app.use((req, res, next) => {
             this.bases[req.hosting].session(req, res, next);
-        });       
-
+        });  
+        
         // allows us to get static files like css
         this.app.use((req, res, next) => {
             this.bases[req.hosting].static(req, res, next);
@@ -90,12 +90,36 @@ class NotherBaseFS {
         this.app.use(express.static(`${__dirname}/public`));
 
         //provide database access and etc to use in routes
-        this.app.use((req, res, next) => {
+        this.app.use(async (req, res, next) => {
             req.globals = globals;
             req.db = Models;
+            req.user = req.session?.currentUser ? await req.db.Spirit.recallOne("user", null, { username: req.session.currentUser }) : null;
             req.lock = false;
             // enables sessions only if the protocol is https and we are in production, or if we are in development
             req.sessionsEnabled = (process.env.PRODUCTION == "true" && req.secure) || process.env.PRODUCTION == "false";
+            next();
+        });
+
+        //destroy session if it is not authorized
+        this.app.use(async (req, res, next) => {
+            console.log(req.user?.memory?.data?.sessions);
+            
+            if (req.session.currentUser) {
+                if (req.user?.memory?.data?.sessions?.[req.session.id]) {
+                    if (req.user.memory.data.sessions[req.session.id] < Date.now()) {
+                        req.session.regenerate(() => {});
+                        delete req.user.memory.data.sessions[req.session.id];
+                        await req.user.memory.save();
+                        console.log("Session expired");
+                        
+                    }
+                }
+                else {
+                    req.session.regenerate(() => {});
+                    console.log("Session not found");
+                }
+            }
+
             next();
         });
 

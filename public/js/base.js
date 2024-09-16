@@ -220,4 +220,16 @@ class Base {
         let response = await Base.commune("importData", { password, data: text });
         return response;
     }
+
+    sendOTP = async (email) => {
+        let response = await Base.commune("sendOTP");
+
+        return response;
+    }
+
+    changeEmail = async (password, email) => {
+        let response = await Base.commune("changeEmail", { password, email });
+
+        return response;
+    }
 }
