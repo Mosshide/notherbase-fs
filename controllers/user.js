@@ -31,9 +31,13 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     logout = async (req, res) => {
-        await req.session?.destroy();
+        if (loginCheck(req, res)) {
+            delete req.user.memory?.data?.sessions[req.session.id];
+            await req.user.commit();
+            await req.session?.destroy();
 
-        success(res, "Logged out.");
+            success(res, "Logged out.");
+        }
     }
 
     /**

@@ -107,7 +107,7 @@ class NotherBaseFS {
                     if (req.user.memory.data.sessions[req.session.id] < Date.now()) {
                         req.session.regenerate(() => {});
                         delete req.user.memory.data.sessions[req.session.id];
-                        await req.user.memory.save();
+                        await req.user.commit();
                     }
                 }
                 else req.session.regenerate(() => {});
