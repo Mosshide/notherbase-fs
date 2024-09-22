@@ -58,7 +58,6 @@ export default class Creation {
                 await stats.commit();
 
                 let context = {
-                    userID: null,
                     user: null,
                     siteTitle: req.siteTitle,
                     main: req.main,
@@ -69,7 +68,17 @@ export default class Creation {
                 }
 
                 if (req.session.currentUser) {
-                    context.user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+                    let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+                    context.user = {
+                        memory: {
+                            data: user.memory.data,
+                            backups: user.memory.backups,
+                            _id: user.memory._id,
+                            parent: user.memory.parent,
+                            service: user.memory.service,
+                            _lastUpdate: user.memory._lastUpdate
+                        }
+                    }
                 }      
 
                 //preprocess
