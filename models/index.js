@@ -19,10 +19,7 @@ mongoose.connection.on('disconnected', () => {
 });
 
 try {
-    mongoose.connect(process.env.MONGODB_URI, { 
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    });
+    mongoose.connect(process.env.MONGODB_URI);
 }
 catch (err) {
     console.log(`Mongoose on connect: ${err}`);
