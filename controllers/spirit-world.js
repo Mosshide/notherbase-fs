@@ -19,20 +19,10 @@ export default class SpiritWorld {
 
         this.user = new User();
         this.router = express.Router();
-        this.router.post("/loadAll", this.catchErrors, this.loadAll);
-        this.router.post("/load", this.catchErrors, this.load);
-        this.router.post("/serve", this.catchErrors, this.serve);
-        this.router.use("/user", this.catchErrors, this.user.router);
-    }
-
-    // abstract out the try catch pattern
-    catchErrors = async (req, res, next) => {
-        try {
-            await next();
-        } catch (error) {
-            console.log(error);
-            fail(res, "Server error");
-        }
+        this.router.post("/loadAll", this.loadAll);
+        this.router.post("/load", this.load);
+        this.router.post("/serve", this.serve);
+        this.router.use("/user", this.user.router);
     }
 
     /**
@@ -40,46 +30,22 @@ export default class SpiritWorld {
      * @param {*} socket 
      */
     setupChat = (socket) => {
-        let roomName = socket.handshake.query.room;
-        socket.join(roomName);
-        let room = this.rooms[roomName];
-        if (room) room.users.push(socket.handshake.query.name);
-        else {
-            this.rooms[roomName] = {
-                users: [ socket.handshake.query.name ]
+        try {
+            let roomName = socket.handshake.query.room;
+            socket.join(roomName);
+            let room = this.rooms[roomName];
+            if (room) room.users.push(socket.handshake.query.name);
+            else {
+                this.rooms[roomName] = {
+                    users: [ socket.handshake.query.name ]
+                }
+                room = this.rooms[roomName];
             }
-            room = this.rooms[roomName];
-        }
-    
-        this.io.to(roomName).emit("chat message", {
-            name: "Server",
-            time: Date.now(),
-            text: `${socket.handshake.query.name} has joined the room.`
-        });
-
-        this.io.to(roomName).emit("chat info", {
-            name: socket.handshake.query.room,
-            time: Date.now(),
-            data: {
-                users: room.users
-            }
-        });
-    
-        socket.on("chat message", (msg) => {
-            this.io.to(roomName).emit("chat message", {
-                name: msg.name,
-                time: msg.time,
-                text: stripHtml(msg.text).result
-            });
-        });
-    
-        socket.on('disconnect', () => {
-            room.users.splice(room.users.indexOf(socket.handshake.query.name));
-
+        
             this.io.to(roomName).emit("chat message", {
                 name: "Server",
                 time: Date.now(),
-                text: `${socket.handshake.query.name} has left the room.`
+                text: `${socket.handshake.query.name} has joined the room.`
             });
 
             this.io.to(roomName).emit("chat info", {
@@ -89,9 +55,38 @@ export default class SpiritWorld {
                     users: room.users
                 }
             });
+        
+            socket.on("chat message", (msg) => {
+                this.io.to(roomName).emit("chat message", {
+                    name: msg.name,
+                    time: msg.time,
+                    text: stripHtml(msg.text).result
+                });
+            });
+        
+            socket.on('disconnect', () => {
+                room.users.splice(room.users.indexOf(socket.handshake.query.name));
 
-            if (room.users.length < 1) delete this.rooms[roomName];
-        });
+                this.io.to(roomName).emit("chat message", {
+                    name: "Server",
+                    time: Date.now(),
+                    text: `${socket.handshake.query.name} has left the room.`
+                });
+
+                this.io.to(roomName).emit("chat info", {
+                    name: socket.handshake.query.room,
+                    time: Date.now(),
+                    data: {
+                        users: room.users
+                    }
+                });
+
+                if (room.users.length < 1) delete this.rooms[roomName];
+            });
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error: Sockets");
+        }        
     }
 
     /**
@@ -101,24 +96,29 @@ export default class SpiritWorld {
      * @returns {Object} The requested spirits.
      */
     loadAll = async (req, res) => {
-        let parent = null;
-        let data = req.body.data ? req.body.data : {};
-        let id = req.body.id ? req.body.id : null;
+        try {
+            let parent = null;
+            let data = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
 
-        // if the scope is local, the parent is the user's id
-        if (req.body.scope === "local") {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
-            if (user?.memory?._id) parent = user.memory._id;
-            else {
-                fail(res, "User had no id on load()");
-                return;
-            }
-        } 
+            // if the scope is local, the parent is the user's id
+            if (req.body.scope === "local") {
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+                if (user?.memory?._id) parent = user.memory._id;
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
+            } 
 
-        // recall all spirits with the given service name and parent
-        let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
+            // recall all spirits with the given service name and parent
+            let spirits = await req.db.Spirit.recallAll(req.body.service, parent, data, id);
 
-        res.send(spirits);
+            res.send(spirits);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
     }
 
     /**
@@ -128,24 +128,29 @@ export default class SpiritWorld {
      * @returns {Object} The requested spirit.
      */
     load = async (req, res) => {
-        let parent = null;
-        let data = req.body.data ? req.body.data : {};
-        let id = req.body.id ? req.body.id : null;
+        try {
+            let parent = null;
+            let data = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
 
-        // if the scope is local, the parent is the user's id
-        if (req.body.scope === "local") {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
-            if (user?.memory?._id) parent = user.memory._id;
-            else {
-                fail(res, "User had no id on load()");
-                return;
-            }
-        } 
+            // if the scope is local, the parent is the user's id
+            if (req.body.scope === "local") {
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+                if (user?.memory?._id) parent = user.memory._id;
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
+            } 
 
-        // recall all spirits with the given service name and parent
-        let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
+            // recall all spirits with the given service name and parent
+            let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
 
-        res.send(spirit);
+            res.send(spirit);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
     }
 
     /**
@@ -154,17 +159,22 @@ export default class SpiritWorld {
      * @param {Object} res 
      */
     serve = async (req, res) => {
-        let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
+        try {
+            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
         
-        let script, result = null;
+            let script, result = null;
 
-        if (fs.existsSync(scriptPath)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+            if (fs.existsSync(scriptPath)) {
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
 
-            script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
-            result = await script.default(req, user, this.io);
-            success(res, "Served.", result);
-        }
-        else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
+                script = await import(process.env.WINDOWS == "true" ? `file://${scriptPath}` : scriptPath);
+                result = await script.default(req, user, this.io);
+                success(res, "Served.", result);
+            }
+            else fail(res, `Script not found: ${req.body.script} at ${scriptPath}`);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }        
     }
 }
