@@ -41,7 +41,7 @@ class NotherBaseFS {
         }));
 
         //be safe, needs to be before session
-        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 2);
+        if (process.env.PRODUCTION == "true") this.app.set('trust proxy', 3);
 
         let baseKeys = Object.keys(this.bases);
         let store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
