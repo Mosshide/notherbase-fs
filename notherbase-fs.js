@@ -54,6 +54,7 @@ class NotherBaseFS {
                 name: baseKeys[i] + '-session-id',
                 resave: false,
                 saveUninitialized: false,
+                proxy: process.env.PRODUCTION == "true" ? true : undefined,
                 cookie: { 
                     secure: process.env.PRODUCTION == "true",
                     maxAge: 1000 * 60 * 60 * 24 * 28 // 28 days 
