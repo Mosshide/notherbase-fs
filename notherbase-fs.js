@@ -81,6 +81,8 @@ class NotherBaseFS {
 
         //enable cookies
         this.app.use((req, res, next) => {
+            console.log(req.ip, req.ips);
+            
             this.bases[req.hosting].session(req, res, next);
         });  
         
