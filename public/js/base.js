@@ -221,7 +221,7 @@ class Base {
         return response;
     }
 
-    sendOTP = async (email) => {
+    sendOTP = async () => {
         let response = await Base.commune("sendOTP");
 
         return response;
