@@ -17,7 +17,7 @@ export default class Creation {
         this.router.get(`/the-front/:frontDetail`, this.frontDetail, this.explore);
 
         //pages
-        this.router.get(`/:page`, this.page, this.explore);
+        // this.router.get(`/:page`, this.page, this.explore);
 
         //the-front optional shortcuts
         this.router.get(`/:frontDetail`, this.frontDetail, this.explore);
@@ -171,11 +171,11 @@ export default class Creation {
      * @param {Object} res An Express.js response.
      * @param {Function} next next()
      */
-    page = async (req, res, next) => {
-        req.main = `${req.contentPath}/pages/${req.params.page}/index`;
-        req.preprocess = `${req.contentPath}/pages/${req.params.page}/_preprocess`;
-        req.siteTitle = `${req.params.page}`;
-        req.toRender = req.main;
-        next();
-    }
+    // page = async (req, res, next) => {
+    //     req.main = `${req.contentPath}/pages/${req.params.page}/index`;
+    //     req.preprocess = `${req.contentPath}/pages/${req.params.page}/_preprocess`;
+    //     req.siteTitle = `${req.params.page}`;
+    //     req.toRender = req.main;
+    //     next();
+    // }
 }
