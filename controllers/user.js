@@ -177,7 +177,7 @@ export default class User {
                         code: "",
                         expires: 0
                     },
-                    sessions: []
+                    sessions: {}
                 });
         
                 success(res, "Registration successful!");
@@ -211,6 +211,9 @@ export default class User {
             let result = await this.validatePassword(req, req.body.password, spirit);
             if (result === "Authenticated.") {
                 req.session.currentUser = req.body.username;
+                console.log(typeof spirit.memory.data.sessions, spirit.memory.data.sessions);
+                
+                if (typeof spirit.memory.data.sessions !== "object" || Array.isArray(spirit.memory.data.sessions)) spirit.memory.data.sessions = {};
                 spirit.memory.data.sessions[req.session.id] = Date.now() + 1000 * 60 * 60 * 24 * 28; // 28 days 
                 await spirit.commit();
                 success(res, "Login successful!", req.body.username);
