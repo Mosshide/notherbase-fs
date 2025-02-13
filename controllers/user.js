@@ -262,35 +262,6 @@ export default class User {
         }
     }
 
-    /**
-     * Gets a user's saved view state.
-     */
-    getView = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
-
-            if (check(res, user, "Account not found!")) {
-                success(res, "View found", user.memory.data.view);
-            }
-        }
-    }
-
-    /**
-     * Sets a user's view state.
-     */
-    setView = async (req, res) => {
-        if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
-
-            if (check(res, user, "Account not found!")) {
-                user.memory.data.view = req.body.view == "compact" ? "compact" : "full";
-                await user.commit();
-
-                success(res, "View set");
-            }
-        }
-    }
-
     //download all spirit data belonging to the user
     downloadData = async (req, res) => {
         if (loginCheck(req, res)) {

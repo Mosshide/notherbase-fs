@@ -17,13 +17,6 @@ class Base {
         this.playerAccount = {
             username: null
         };
-
-        this.$viewToggle = null;
-        this.viewState = "compact";
-
-        Base.commune("getView").then((res) => {
-            if (res.data === "full") this.toggleView(false);
-        });
     }
 
     /**
@@ -133,37 +126,6 @@ class Base {
         let response = await $.post("/s/load", JSON.stringify({ service, scope, data, id }));
 
         return response;
-    }
-
-    /**
-     * Creates the toggle view button.
-     */
-    createToggleViewButton = async () => {
-        // add a button to the footer for toggling between compact and full view
-        this.$viewToggle = $("<button>").addClass("view-toggle").text(">");
-        this.$viewToggle.on("click", () => {
-            this.toggleView();
-        });
-        $("footer").append(this.$viewToggle);       
-    }
-
-    /**
-     * Toggles the view between compact and full.
-     * @param {Boolean} save Whether or not to save the view state.
-     */
-    toggleView = async (save = true) => {
-        if (this.viewState === "compact") {
-            this.viewState = "full";
-            if (this.$viewToggle) this.$viewToggle.text("<");
-            $("main").addClass("full-view");
-        }
-        else {
-            this.viewState = "compact";
-            if (this.$viewToggle) this.$viewToggle.text(">");
-            $("main").removeClass("full-view");
-        }
-        
-        if (save) Base.commune("setView", { view: this.viewState });
     }
 
     /**
