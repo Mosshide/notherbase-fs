@@ -17,8 +17,6 @@ export default class User {
         this.router.post("/login", this.login);
         this.router.post("/deletePermanently", this.deletePermanently);
         this.router.post("/getInfo", this.getInfo);
-        this.router.post("/getView", this.getView);
-        this.router.post("/setView", this.setView);
         this.router.post("/downloadData", this.downloadData);
         this.router.post("/deleteAlldata", this.deleteAlldata);
         this.router.post("/importData", this.importData);
