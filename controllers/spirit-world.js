@@ -3,7 +3,6 @@ import { stripHtml } from "string-strip-html";
 import { success, fail } from "./util.js";
 import User from "./user.js";
 import fs from 'fs';
-import { log } from "console";
 
 /**
 * The spirit world is the API of a base.
@@ -146,7 +145,6 @@ export default class SpiritWorld {
 
             // recall all spirits with the given service name and parent
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
-            console.log("loaded spirit ", spirit.memory);
 
             res.send(spirit);
         } catch (error) {
@@ -161,7 +159,6 @@ export default class SpiritWorld {
      * @param {Object} res 
      */
     save = async (req, res) => {
-        console.log("saving spirit ");
         try {
             let parent = null;
             let spiritData = req.body.data ? req.body.data : {};
@@ -181,7 +178,6 @@ export default class SpiritWorld {
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent, {}, id);
             
             if (spirit) {
-                console.log("saving spirit ", spirit.memory.data, " with new data ", spiritData);
                 // update existing spirit
                 await spirit.commit({ ...spirit.memory.data, ...spiritData });
             }
