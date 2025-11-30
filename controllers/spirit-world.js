@@ -176,7 +176,8 @@ export default class SpiritWorld {
             }
 
             // save the spirit with the given service name and parent
-            let spirit = await req.db.Spirit.recallOne(req.body.service, parent, {}, id);
+            let spirit = null;
+            if (id !== "new") await req.db.Spirit.recallOne(req.body.service, parent, {}, id);
             
             if (spirit) {
                 // update existing spirit
