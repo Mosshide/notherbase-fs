@@ -213,7 +213,7 @@ export default class SpiritWorld {
 
             // delete the spirits
             let deleted = await req.db.Spirit.delete(req.body.service, parent, data, id);
-            res.send(deleted);
+            res.send(`${deleted}`);
         } catch (error) {
             console.log(error);
             fail(res, "Server error");
