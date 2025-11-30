@@ -15,7 +15,7 @@
 
 <input type="number" id="token">
 <button onclick="test.continueTest()">Continue Test</button>
-<button onclick="base.do('add-gold', { route: '/the-front' })">add gold</button>
+<button onclick="myGold = myGold + 1; base.save('front-gold', 'local', { amount: myGold })">add gold</button>
 <!-- download you data -->
 <button onclick="downloadData()">Download Data</button>
 <!-- delete all your data -->
@@ -40,6 +40,8 @@
 </a>
 
 <script>
+    let myGold = 0;
+
     class Test {
         constructor() {
             this.$info = $("main #info");
@@ -65,11 +67,10 @@
             this.$info.append(this.newUsername + "<br>");
             this.$info.append(this.newPassword + "<br>");
 
-            let loaded = await base.load("gold", "global");
-            console.log("global gold ", loaded);
-            this.$gold.text(`?/${loaded?.memory?.data?.amount !== null ? loaded.memory.data.amount : 0} Gold Added`);
-            loaded = await base.loadAll("gold");
-            console.log("local gold ", loaded);
+            let loaded = await base.load("front-gold");
+            console.log("gold ", loaded);
+            myGold = loaded?.memory?.data?.amount || 0;
+            this.$gold.text(`${myGold} Gold Added`);
         }
 
         runTest = async () => {

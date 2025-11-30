@@ -3,6 +3,7 @@ import { stripHtml } from "string-strip-html";
 import { success, fail } from "./util.js";
 import User from "./user.js";
 import fs from 'fs';
+import { log } from "console";
 
 /**
 * The spirit world is the API of a base.
@@ -21,6 +22,7 @@ export default class SpiritWorld {
         this.router = express.Router();
         this.router.post("/loadAll", this.loadAll);
         this.router.post("/load", this.load);
+        this.router.post("/save", this.save);
         this.router.post("/serve", this.serve);
         this.router.use("/user", this.user.router);
     }
@@ -125,7 +127,6 @@ export default class SpiritWorld {
      * This API route requests a spirit of a kind from the database.
      * @param {Object} req
      * @param {Object} res
-     * @returns {Object} The requested spirit.
      */
     load = async (req, res) => {
         try {
@@ -145,8 +146,51 @@ export default class SpiritWorld {
 
             // recall all spirits with the given service name and parent
             let spirit = await req.db.Spirit.recallOne(req.body.service, parent, data, id);
+            console.log("loaded spirit ", spirit.memory);
 
             res.send(spirit);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
+    }
+
+    /**
+     * This API route saves a spirit to the database.
+     * @param {Object} req 
+     * @param {Object} res 
+     */
+    save = async (req, res) => {
+        console.log("saving spirit ");
+        try {
+            let parent = null;
+            let spiritData = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
+
+            // if the scope is local, the parent is the user's id
+            if (req.body.scope === "local") {
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+                if (user?.memory?._id) parent = user.memory._id;
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
+            }
+
+            // save the spirit with the given service name and parent
+            let spirit = await req.db.Spirit.recallOne(req.body.service, parent, {}, id);
+            
+            if (spirit) {
+                console.log("saving spirit ", spirit.memory.data, " with new data ", spiritData);
+                // update existing spirit
+                await spirit.commit({ ...spirit.memory.data, ...spiritData });
+            }
+            else {
+                // create new spirit
+                spirit = await req.db.Spirit.create(req.body.service, spiritData, parent);
+            }
+
+            res.send("spirit saved");
         } catch (error) {
             console.log(error);
             fail(res, "Server error");

@@ -129,6 +129,19 @@ class Base {
     }
 
     /**
+     * Saves a spirit of a certain service.
+     * @param {String} service The name of the spirit to save.
+     * @param {String} scope Defaults to local, else global.
+     * @param {Object} data Data to save the spirit with.
+     * @param {ObjectID} id The id of the spirit to save.
+     * @returns Spirit world response.
+     */
+    save = async (service, scope = "local", data = {}, id = null) => {
+        let response = await $.post("/s/save", JSON.stringify({ service, scope, data, id }));
+        return response;
+    }
+
+    /**
      * Appends html to the head.
      * @param {String} html The html to append.
      */
