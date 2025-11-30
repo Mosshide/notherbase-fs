@@ -193,6 +193,31 @@ export default class SpiritWorld {
         }
     }
 
+    delete = async (req, res) => {
+        try {
+            let parent = null;
+            let data = req.body.data ? req.body.data : {};
+            let id = req.body.id ? req.body.id : null;
+
+            // if the scope is local, the parent is the user's id
+            if (req.body.scope === "local") {
+                let user = await req.db.Spirit.recallOne("user",  null, { username: req.session?.currentUser });
+                if (user?.memory?._id) parent = user.memory._id;
+                else {
+                    fail(res, "User had no id on load()");
+                    return;
+                }
+            }
+
+            // delete the spirits
+            let deleted = await req.db.Spirit.delete(req.body.service, parent, data, id);
+            res.send(deleted);
+        } catch (error) {
+            console.log(error);
+            fail(res, "Server error");
+        }
+    }
+
     /**
      * This API route runs a script on the server. Responds with the result.
      * @param {Object} req 
