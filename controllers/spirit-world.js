@@ -186,7 +186,7 @@ export default class SpiritWorld {
                 spirit = await req.db.Spirit.create(req.body.service, spiritData, parent);
             }
 
-            res.send("spirit saved");
+            res.send(spirit.memory._id);
         } catch (error) {
             console.log(error);
             fail(res, "Server error");
