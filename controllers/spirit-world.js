@@ -22,6 +22,7 @@ export default class SpiritWorld {
         this.router.post("/loadAll", this.loadAll);
         this.router.post("/load", this.load);
         this.router.post("/save", this.save);
+        this.router.post("/delete", this.delete);
         this.router.post("/serve", this.serve);
         this.router.use("/user", this.user.router);
     }
