@@ -10,11 +10,10 @@ export default class Creation {
         this.router = express.Router();
 
         this.router.get("/", this.explore);
-        this.router.get("/the-front", this.explore);
-        this.router.get(`/:region`, this.lock, this.explore);
-        this.router.get(`/:region/:area`, this.lock, this.explore);
-        this.router.get(`/:region/:area/:poi`, this.lock, this.explore);
-        this.router.get(`/:region/:area/:poi/:detail`, this.lock, this.explore);
+        this.router.get("/:region", this.explore);
+        this.router.get("/:region/:area", this.explore);
+        this.router.get("/:region/:area/:poi", this.explore);
+        this.router.get("/:region/:area/:poi/:detail", this.explore);
 
         //void
         this.router.use(function(req, res) {
