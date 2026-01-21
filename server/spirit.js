@@ -44,6 +44,7 @@ let spiritSchema = new mongoose.Schema({
 spiritSchema.method("commit", async function(data = this.data, maxBackups = 5) {
     this._lastUpdate = Date.now();
 
+    if (!Array.isArray(this.backups)) this.backups = [];
     this.backups.unshift({
         _lastUpdate: Date.now(),
         data: this.data
@@ -65,6 +66,9 @@ spiritSchema.method("commit", async function(data = this.data, maxBackups = 5) {
  * @returns Status message.
  */
 spiritSchema.method("restoreBackup", async function(backupIndex) {
+    this._lastUpdate = Date.now();
+
+    if (!Array.isArray(this.backups)) this.backups = [];
     if (backupIndex < 0 || backupIndex >= this.backups.length) return "Invalid backup index";
     let backup = this.backups[backupIndex];
     this.backups.unshift({

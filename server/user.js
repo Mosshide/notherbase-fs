@@ -186,7 +186,6 @@ export default class User {
 
                     spirit = new req.Spirit({ 
                         service:"user", 
-                        _lastUpdate: Date.now(),
                         data: { 
                             username: req.body.username, 
                             password: hash,
@@ -198,10 +197,9 @@ export default class User {
                                 expires: 0
                             },
                             sessions: {}
-                        },
-                        backups: []
+                        }
                     });
-                    await spirit.save();
+                    await spirit.commit();
             
                     success(res, "Registration successful!");
                 }
@@ -370,7 +368,7 @@ export default class User {
                                         parent: user._id,
                                         backups: data[i].backups || []
                                     });
-                                    await spirit.save();
+                                    await spirit.commit();
                                     if (spirit) imported++;
                                 }
                             }
