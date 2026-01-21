@@ -102,7 +102,7 @@ export default class User {
             {
                 let result = await this.validatePassword(req, req.body.password, spirit);
                 if (result == "Authenticated.") {
-                    let other = await req.Spirit.recallOne("user",  null, { email: req.body.email });
+                    let other = await req.Spirit.findOne({ service: "user", email: req.body.email });
          
                     if (check(res, !other, "Email already in use!")) {
                         spirit.addBackup({
@@ -164,18 +164,24 @@ export default class User {
                 const salt = await bcrypt.genSalt(10);
                 const hash = await bcrypt.hash(req.body.password, salt);
 
-                spirit = await req.Spirit.create("user", { 
-                    username: req.body.username, 
-                    password: hash,
-                    authLevels: [ "Basic" ],
-                    view: "compact",
-                    email: "",
-                    otp: {
-                        code: "",
-                        expires: 0
+                spirit = new req.Spirit({ 
+                    service:"user", 
+                    _lastUpdate: Date.now(),
+                    data: { 
+                        username: req.body.username, 
+                        password: hash,
+                        authLevels: [ "Basic" ],
+                        view: "compact",
+                        email: "",
+                        otp: {
+                            code: "",
+                            expires: 0
+                        },
+                        sessions: {}
                     },
-                    sessions: {}
+                    backups: []
                 });
+                await spirit.save();
         
                 success(res, "Registration successful!");
             }
@@ -265,7 +271,7 @@ export default class User {
             let user = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, user, "Account not found!")) {
-                let data = await req.Spirit.recallAll(null, user._id);
+                let data = await req.Spirit.find({ parent: user._id });
                 let dataToDownload = data.map(d => d);
 
                 successJSON(res, "Data Downloaded", dataToDownload);
@@ -307,7 +313,14 @@ export default class User {
                         let imported = 0;
                         for (let i = 0; i < data.length; i++) {
                             if (data[i].parent != null) {
-                                let spirit = await req.Spirit.create(data[i].service, data[i].data, user._id);
+                                let spirit = new req.Spirit({ 
+                                    service: data[i].service, 
+                                    _lastUpdate: data[i]._lastUpdate,
+                                    data: data[i].data, 
+                                    parent: user._id,
+                                    backups: data[i].backups || []
+                                });
+                                await spirit.save();
                                 if (spirit) imported++;
                             }
                         }
