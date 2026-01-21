@@ -21,10 +21,10 @@ class NotherBaseFS {
     constructor(globals = {}, bases = {}) {
         this.bases = bases;
     
-        this.initServer();
+        this.initServer(globals);
     }
 
-    initServer() {
+    initServer(globals) {
         this.app = express();
         this.server = http.createServer(this.app);
         this.io = new Server(this.server);
@@ -100,7 +100,7 @@ class NotherBaseFS {
         this.app.use(async (req, res, next) => {
             req.Spirit = Spirit;
             req.SendMail = SendMail;
-            req.globals = globals
+            req.globals = globals;
             req.user = req.session?.currentUser ? await req.Spirit.findOne({ service: "user", username: req.session.currentUser }) : null;
             req.lock = false;
             // enables sessions only if the protocol is https and we are in production, or if we are in development
