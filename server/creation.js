@@ -58,7 +58,7 @@ export default class Creation {
             req.toRender = "explorer";
             
             if (fs.existsSync(req.main + ".ejs")) {
-                let stats = await req.Spirit.findOne({ service: "stats", data: { route: req.path } });
+                let stats = await req.Spirit.findOne({ service: "stats", "data.route": req.path });
                 if (stats == null) stats = new req.Spirit({ service: "stats", data: { route: req.path, visits: 0 } });
                 if (stats.data.visits) stats.data.visits++;
                 else stats.data.visits = 1;
@@ -75,14 +75,13 @@ export default class Creation {
                 }
 
                 if (req.session.currentUser) {
-                    let user = req.user;
                     context.user = {
-                        data: user.data,
-                        backups: user.backups,
-                        _id: user._id,
-                        parent: user.parent,
-                        service: user.service,
-                        _lastUpdate: user._lastUpdate
+                        data: req.user.data,
+                        backups: req.user.backups,
+                        _id: req.user._id,
+                        parent: req.user.parent,
+                        service: req.user.service,
+                        _lastUpdate: req.user._lastUpdate
                     }
                 }      
 

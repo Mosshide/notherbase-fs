@@ -101,7 +101,7 @@ class NotherBaseFS {
             req.Spirit = Spirit;
             req.SendMail = SendMail;
             req.globals = globals;
-            req.user = req.session?.currentUser ? await req.Spirit.findOne({ service: "user", username: req.session.currentUser }) : null;
+            req.user = req.session?.currentUser ? await req.Spirit.findOne({ service: "user", "data.username": req.session.currentUser }) : null;
             req.lock = false;
             // enables sessions only if the protocol is https and we are in production, or if we are in development
             req.sessionsEnabled = (process.env.PRODUCTION == "true" && req.secure) || process.env.PRODUCTION == "false";
