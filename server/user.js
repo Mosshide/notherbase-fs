@@ -20,7 +20,6 @@ export default class User {
         this.router.post("/downloadData", this.downloadData);
         this.router.post("/deleteAlldata", this.deleteAlldata);
         this.router.post("/importData", this.importData);
-
     }
 
     /**
@@ -30,7 +29,7 @@ export default class User {
      */
     logout = async (req, res) => {
         if (loginCheck(req, res)) {
-            delete req.user.memory?.data?.sessions[req.session.id];
+            delete req.user?.data?.sessions[req.session.id];
             await req.user.commit();
             await req.session?.destroy();
 
@@ -45,20 +44,20 @@ export default class User {
      */
     changePassword = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+            let spirit = await req.Spirit.findOne({ service: "user", username: req.session.username });  
 
             if (check(res, spirit, "User not found!") &&
                 check(res, req.body.newPassword === req.body.confirmation, "New password and confirmation must match!") &&
                 check(res, req.body.oldPassword != req.body.newPassword, "New password must be different from the old one."))
             {
-                let passResult = await bcrypt.compare(req.body.oldPassword, spirit.memory.data.password);
+                let passResult = await bcrypt.compare(req.body.oldPassword, spirit.data.password);
 
                 if (check(res, passResult, "Old password incorrect.")) {
                     const salt = await bcrypt.genSalt(10);
                     const hash = await bcrypt.hash(req.body.newPassword, salt);
     
                     spirit.addBackup({
-                        ...spirit.memory.data,
+                        ...spirit.data,
                         password: hash
                     });
                     
@@ -71,17 +70,17 @@ export default class User {
     }
 
     validatePassword = async (req, password, user) => {
-        if (password && user?.memory?.data?.otp) {
-            if (password == user.memory.data.otp.code) {
-                if (Date.now() < user.memory.data.otp.expires) {
-                    user.memory.data.otp.expires = 0;
+        if (password && user?.data?.otp) {
+            if (password == user.data.otp.code) {
+                if (Date.now() < user.data.otp.expires) {
+                    user.data.otp.expires = 0;
                     await user.commit();
                     return "Authenticated.";
                 }
                 else return "One-time password expired.";
             }
             else {
-                let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                let passResult = await bcrypt.compare(req.body.password, user.data.password);
                 if (passResult) return "Authenticated.";
                 else return "Password doesn't match the username.";
             }
@@ -96,18 +95,18 @@ export default class User {
      */
     changeEmail = async (req, res) => {       
         if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+            let spirit = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, spirit, "User not found!") &&
                 check(res, req.body.email, "New email must be provided."))
             {
                 let result = await this.validatePassword(req, req.body.password, spirit);
                 if (result == "Authenticated.") {
-                    let other = await req.db.Spirit.recallOne("user",  null, { email: req.body.email });
+                    let other = await req.Spirit.recallOne("user",  null, { email: req.body.email });
          
                     if (check(res, !other, "Email already in use!")) {
                         spirit.addBackup({
-                            ...spirit.memory.data,
+                            ...spirit.data,
                             email: req.body.email
                         });
                         
@@ -128,18 +127,18 @@ export default class User {
      */
     sendOneTimePassword = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });  
+            let spirit = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, spirit, "User not found!")) {
                 let otp = Math.floor(100000 + Math.random() * 900000);
-                spirit.memory.data.otp = {
+                spirit.data.otp = {
                     code: otp,
                     expires: Date.now() + 1000 * 60 * 15
                 }
                 
                 await spirit.commit();
 
-                await req.db.SendMail.send(spirit.memory.data.email, 'One Time Password for NotherBase', 
+                await req.SendMail.send(spirit.data.email, 'One Time Password for NotherBase', 
                     `<h1>Your One-Time Password:<h1>
                     <h2>${otp}<h2>
                     <p>Visit <a href="https://www.notherbase.com/the-front/keeper">notherbase.com/the-front/keeper</a> to use your one-time password.</p>
@@ -159,13 +158,13 @@ export default class User {
         if (check(res, req.body.password.length > 10, "Password must be >10 characters long.") &&
             check(res, req.body.username.length > 2, "Username too short.")) 
         {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
+            let spirit = await req.Spirit.findOne({ service: "user", username: req.body.username });
     
             if (check(res, !spirit, "Username already in use!")) {
                 const salt = await bcrypt.genSalt(10);
                 const hash = await bcrypt.hash(req.body.password, salt);
 
-                spirit = await req.db.Spirit.create("user", { 
+                spirit = await req.Spirit.create("user", { 
                     username: req.body.username, 
                     password: hash,
                     authLevels: [ "Basic" ],
@@ -189,9 +188,9 @@ export default class User {
      * @param {Object} res An Express.js response.
      */
     login = async (req, res) => {
-        let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.body.username });
+        let spirit = await req.Spirit.findOne({ service: "user", username: req.body.username });
         if (check(res, spirit, "User not found.")) {
-            spirit.memory.data = {
+            spirit.data = {
                 username: "", 
                 password: "",
                 authLevels: [ "Basic" ],
@@ -202,15 +201,15 @@ export default class User {
                     expires: 0
                 },
                 sessions: {},
-                ...spirit.memory.data
+                ...spirit.data
             }
             await spirit.commit();
             
             let result = await this.validatePassword(req, req.body.password, spirit);
             if (result === "Authenticated.") {
                 req.session.currentUser = req.body.username;
-                if (typeof spirit.memory.data.sessions !== "object" || Array.isArray(spirit.memory.data.sessions)) spirit.memory.data.sessions = {};
-                spirit.memory.data.sessions[req.session.id] = Date.now() + 1000 * 60 * 60 * 24 * 28; // 28 days 
+                if (typeof spirit.data.sessions !== "object" || Array.isArray(spirit.data.sessions)) spirit.data.sessions = {};
+                spirit.data.sessions[req.session.id] = Date.now() + 1000 * 60 * 60 * 24 * 28; // 28 days 
                 await spirit.commit();
                 success(res, "Login successful!", req.body.username);
             }
@@ -225,13 +224,13 @@ export default class User {
      */
     deletePermanently = async (req, res) => {
         if (loginCheck(req, res)) {
-            let spirit = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+            let spirit = await req.Spirit.findOne({ service: "user", username: req.session.username });
 
             if (check(res, spirit, "User not found.")) {
-                let passResult = await bcrypt.compare(req.body.password, spirit.memory.data.password);
+                let passResult = await bcrypt.compare(req.body.password, spirit.data.password);
 
                 if (check(res, passResult, "Password doesn't match the username.")) {
-                    let deleted = await req.db.Spirit.delete("user",  null, { username: req.session.currentUser });
+                    let deleted = await req.Spirit.deleteMany({ service: "user", username: req.session.username });
             
                     if (check(res, deleted > 0, "No account deleted")) {
                         await req.session.destroy();
@@ -250,11 +249,11 @@ export default class User {
      */
     getInfo = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+            let user = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
     
             if (check(res, user, "Account not found!")) {
                 success(res, "Info found", {
-                    username: user.memory.data.username
+                    username: user.data.username
                 });
             }
         }
@@ -263,11 +262,11 @@ export default class User {
     //download all spirit data belonging to the user
     downloadData = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+            let user = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, user, "Account not found!")) {
-                let data = await req.db.Spirit.recallAll(null, user.memory._id);
-                let dataToDownload = data.map(d => d.memory);
+                let data = await req.Spirit.recallAll(null, user._id);
+                let dataToDownload = data.map(d => d);
 
                 successJSON(res, "Data Downloaded", dataToDownload);
             }
@@ -277,14 +276,14 @@ export default class User {
     //delete all spirit data belonging to the user
     deleteAlldata = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser });
+            let user = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, user, "Account not found!")) {
                 if (check(res, req.body.password, "Password error.")) {
-                    let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                    let passResult = await bcrypt.compare(req.body.password, user.data.password);
 
                     if (check(res, passResult, "Password doesn't match the username.")) {
-                        let deleted = await req.db.Spirit.delete(null, user.memory._id);
+                        let deleted = await req.Spirit.deleteMany({ parent: user._id });
                         if (check(res, deleted > 0, "No data deleted")) {
                             success(res, "Data Deleted", deleted);
                         }
@@ -297,18 +296,18 @@ export default class User {
     // import spirit data from a JSON file
     importData = async (req, res) => {
         if (loginCheck(req, res)) {
-            let user = await req.db.Spirit.recallOne("user",  null, { username: req.session.currentUser }); 
+            let user = await req.Spirit.findOne({ service: "user", username: req.session.username }); 
 
             if (check(res, user, "Account not found!")) {
                 if (check(res, req.body.password, "Password error.")) {
-                    let passResult = await bcrypt.compare(req.body.password, user.memory.data.password);
+                    let passResult = await bcrypt.compare(req.body.password, user.data.password);
 
                     if (check(res, passResult, "Password doesn't match the username.")) {
                         let data = JSON.parse(req.body.data);
                         let imported = 0;
                         for (let i = 0; i < data.length; i++) {
                             if (data[i].parent != null) {
-                                let spirit = await req.db.Spirit.create(data[i].service, data[i].data, user.memory._id);
+                                let spirit = await req.Spirit.create(data[i].service, data[i].data, user._id);
                                 if (spirit) imported++;
                             }
                         }

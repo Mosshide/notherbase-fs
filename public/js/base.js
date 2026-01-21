@@ -108,49 +108,9 @@ class Base {
      * @param {ObjectID} id The id of the spirit to load.
      * @returns Spirit world response.
      */
-    loadAll = async (service, scope = "local", data = {}, id = null) => {
-        let response = await $.post("/s/loadAll", JSON.stringify({ service, scope, data, id }));
-
-        return response;
-    }
-
-    /**
-     * Loads a single spirit of a certain service.
-     * @param {String} service The name of the spirit to load.
-     * @param {String} scope Defaults to local, else global.
-     * @param {Object} data Data to filter the spirits by.
-     * @param {ObjectID} id The id of the spirit to load.
-     * @returns Spirit world response.
-     */ 
-    load = async (service, scope = "local", data = {}, id = null) => {
+    load = async (service, scope = "local", data = null, id = null) => {
         let response = await $.post("/s/load", JSON.stringify({ service, scope, data, id }));
 
-        return response;
-    }
-
-    /**
-     * Saves a spirit of a certain service.
-     * @param {String} service The name of the spirit to save.
-     * @param {String} scope Defaults to local, else global.
-     * @param {Object} data Data to save the spirit with.
-     * @param {ObjectID} id The id of the spirit to save.
-     * @returns Spirit world response.
-     */
-    save = async (service, scope = "local", data = {}, id = null) => {
-        let response = await $.post("/s/save", JSON.stringify({ service, scope, data, id }));
-        return response;
-    }
-
-    /**
-     * Deletes a spirit of a certain service.
-     * @param {String} service The name of the spirit to delete.
-     * @param {String} scope Defaults to local, else global.
-     * @param {Object} data Data to filter the spirits by.
-     * @param {ObjectID} id The id of the spirit to delete.
-     * @returns Spirit world response.
-     */
-    delete = async (service, scope = "local", data = {}, id = null) => {
-        let response = await $.post("/s/delete", JSON.stringify({ service, scope, data, id }));
         return response;
     }
 

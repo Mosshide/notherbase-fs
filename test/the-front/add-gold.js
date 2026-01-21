@@ -1,14 +1,6 @@
 export default async (req, user, io) => {
-    // let deleted = await req.db.Spirit.delete("gold");
-    let spirit = await req.db.Spirit.recallOrCreateOne("gold");
-    spirit.addBackup({
-        amount: spirit.memory?.data?.amount != null ? spirit.memory.data.amount + 1 : 1
-    });
-    await spirit.commit();
-
-    spirit = await req.db.Spirit.recallOrCreateOne("gold", user.memory._id);
-    spirit.addBackup({
-        amount: spirit.memory?.data?.amount != null ? spirit.memory.data.amount + 1 : 1
-    });
-    await spirit.commit();
+    if (!user) return "No user logged in";
+    let spirit = await req.Spirit.findOne({ service: "gold", parent: user._id });
+    await spirit.commit({ amount: spirit.data?.amount != null ? spirit.data.amount + 1 : 1 });
+    return spirit.data.amount;
 }
