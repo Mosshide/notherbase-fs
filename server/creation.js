@@ -17,6 +17,8 @@ export default class Creation {
 
         //void
         this.router.use(function(req, res) {
+            console.log(req.main);
+            
             res.redirect("/void");
         });
     }
