@@ -3,6 +3,7 @@ import { stripHtml } from "string-strip-html";
 import { success, fail } from "./util.js";
 import User from "./user.js";
 import fs from 'fs';
+import path from "path";
 
 /**
 * The spirit world is the API of a base.
