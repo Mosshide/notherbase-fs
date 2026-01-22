@@ -1,5 +1,6 @@
 import express from "express";
 import fs from 'fs';
+import path from "path";
 
 /**
  * Creation is all the renedered pages in a base.
@@ -17,8 +18,6 @@ export default class Creation {
 
         //void
         this.router.use(function(req, res) {
-            console.log(req.main);
-            
             res.redirect("/void");
         });
     }
@@ -43,19 +42,19 @@ export default class Creation {
     explore = async (req, res, next) => {
         try {
             req.main = `index`;
-            if (req.params.detail) req.main = req.params.detail + "\\" + req.main;
-            if (req.params.poi) req.main = req.params.poi + "\\" + req.main;
-            if (req.params.area) req.main = req.params.area + "\\" + req.main;
-            if (req.params.region) req.main = req.params.region + "\\" + req.main;
-            else req.main = "the-front\\" + req.main;
-            req.main = req.contentPath + "\\" + req.main;
+            if (req.params.detail) req.main = path.join(req.params.detail, req.main);
+            if (req.params.poi) req.main = path.join(req.params.poi, req.main);
+            if (req.params.area) req.main = path.join(req.params.area, req.main);
+            if (req.params.region) req.main = path.join(req.params.region, req.main);
+            else req.main = path.join("the-front", req.main);
+            req.main = path.join(req.contentPath, req.main);
             req.preprocess = "_preprocess";
-            if (req.params.detail) req.preprocess = req.params.detail + "\\" + req.preprocess;
-            if (req.params.poi) req.preprocess = req.params.poi + "\\" + req.preprocess;
-            if (req.params.area) req.preprocess = req.params.area + "\\" + req.preprocess;
-            if (req.params.region) req.preprocess = req.params.region + "\\" + req.preprocess;
-            else req.preprocess = "the-front\\" + req.preprocess;
-            req.preprocess = req.contentPath + "\\" + req.preprocess;
+            if (req.params.detail) req.preprocess = path.join(req.params.detail, req.preprocess);
+            if (req.params.poi) req.preprocess = path.join(req.params.poi, req.preprocess);
+            if (req.params.area) req.preprocess = path.join(req.params.area, req.preprocess);
+            if (req.params.region) req.preprocess = path.join(req.params.region, req.preprocess);
+            else req.preprocess = path.join("the-front", req.preprocess);
+            req.preprocess = path.join(req.contentPath, req.preprocess);
             req.siteTitle = `${this.bases[req.hosting].title} - ${req.params.detail || req.params.poi || req.params.area || req.params.region || "Home"}`;
             req.toRender = "explorer";
             

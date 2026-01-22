@@ -129,7 +129,7 @@ export default class SpiritWorld {
      */
     serve = async (req, res) => {
         try {
-            let scriptPath = `${req.contentPath}${req.body.route}/${req.body.script}.js`;
+            let scriptPath = path.join(req.contentPath, req.body.route, `${req.body.script}.js`);
         
             let script, result = null;
 
