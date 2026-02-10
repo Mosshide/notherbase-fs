@@ -65,7 +65,7 @@ spiritSchema.method("commit", async function(data = this.data, maxBackups = 5) {
  * @param {Number} backupIndex The index of the backup to restore.
  * @returns Status message.
  */
-spiritSchema.method("restoreBackup", async function(backupIndex) {
+spiritSchema.method("restoreBackup", async function(backupIndex = 0, maxBackups = 5) {
     this._lastUpdate = Date.now();
 
     if (!Array.isArray(this.backups)) this.backups = [];
@@ -75,6 +75,9 @@ spiritSchema.method("restoreBackup", async function(backupIndex) {
         _lastUpdate: Date.now(),
         data: this.data
     });
+    if (maxBackups > 1) {
+        while (this.backups.length > maxBackups) this.backups.pop();
+    }
     this.data = backup.data;
     this.markModified("backups");
     this.markModified("data");
