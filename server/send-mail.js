@@ -27,8 +27,8 @@ const send = async (toEmail, subject, html, name = "NotherBase") => {
             refreshToken: process.env.CLIENTREFRESH,
             // accessToken: accessToken
         },
-        logger: true,
-        debug: true
+        // logger: true,
+        // debug: true
     });
 
     let mailOptions = {
