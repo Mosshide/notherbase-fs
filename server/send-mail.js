@@ -1,11 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 import nodemailer from "nodemailer";
-import { google } from "googleapis";
+// import { google } from "googleapis";
 
-const OAuth2 = google.auth.OAuth2;
-const OAuth2Client = new OAuth2(process.env.CLIENTID, process.env.CLIENTSECRET);
-OAuth2Client.setCredentials({ refresh_token: process.env.CLIENTREFRESH });
+// const OAuth2 = google.auth.OAuth2;
+// const OAuth2Client = new OAuth2(process.env.CLIENTID, process.env.CLIENTSECRET);
+// OAuth2Client.setCredentials({ refresh_token: process.env.CLIENTREFRESH });
 
 /**
  * Sends an email. WIP
@@ -15,7 +15,7 @@ OAuth2Client.setCredentials({ refresh_token: process.env.CLIENTREFRESH });
  * @returns 
  */
 const send = async (toEmail, subject, html, name = "NotherBase") => {
-    let accessToken = OAuth2Client.getAccessToken();
+    // let accessToken = OAuth2Client.getAccessToken();
 
     let transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -25,8 +25,10 @@ const send = async (toEmail, subject, html, name = "NotherBase") => {
             clientId: process.env.CLIENTID,
             clientSecret: process.env.CLIENTSECRET,
             refreshToken: process.env.CLIENTREFRESH,
-            accessToken: accessToken
-        }
+            // accessToken: accessToken
+        },
+        logger: true,
+        debug: true
     });
 
     let mailOptions = {
